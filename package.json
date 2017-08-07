@@ -1,6 +1,6 @@
 {
   "name": "odata-v4-ng",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "scripts": {
     "ng": "ng",
@@ -10,8 +10,9 @@
     "lint": "ng lint",
     "e2e": "ng e2e"
   },
-  "private": true,
-  "dependencies": {
+  "private": false,
+  "dependencies": {},
+  "devDependencies": {
     "@angular/animations": "^4.0.0",
     "@angular/common": "^4.0.0",
     "@angular/compiler": "^4.0.0",
@@ -23,9 +24,7 @@
     "@angular/router": "^4.0.0",
     "core-js": "^2.4.1",
     "rxjs": "^5.4.1",
-    "zone.js": "^0.8.14"
-  },
-  "devDependencies": {
+    "zone.js": "^0.8.14",
     "@angular/cli": "1.2.7",
     "@angular/compiler-cli": "^4.0.0",
     "@angular/language-service": "^4.0.0",
