@@ -1,5 +1,8 @@
 # OdataV4Ng
 
+Please don't use this project till version 1.0.0 (end of September).
+This project doesn't work since it's still in a work in progress stage. 
+
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.2.7.
 
 ## Development server
