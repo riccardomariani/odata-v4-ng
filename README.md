@@ -1,4 +1,4 @@
-# OdataV4Ng
+# ODataV4NG
 
 Please don't use this project till version 1.0.0 (end of September).
 This project doesn't work since it's still in a work in progress stage. 
