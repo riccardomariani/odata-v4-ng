@@ -1,10 +1,10 @@
-import { ODataV4NGPage } from './app.po';
+import { OdataV4NgPage } from './app.po';
 
 describe('odata-v4-ng App', () => {
-  let page: ODataV4NGPage;
+  let page: OdataV4NgPage;
 
   beforeEach(() => {
-    page = new ODataV4NGPage();
+    page = new OdataV4NgPage();
   });
 
   // it('should display welcome message', () => {
