@@ -30,7 +30,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 var routes = [
     {
-        path: '',
+        path: 'odata-v4-ng',
         children: []
     }
 ];
