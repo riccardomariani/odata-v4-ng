@@ -1,4 +1,4 @@
-import { Filter } from './filter';
+import { Filter, FilterFreeForm } from './filter';
 import { Expand } from './expand';
 import { Utils } from '../utils/utils';
 import { Select } from './select';
@@ -22,7 +22,7 @@ export class QueryOptions {
     return this;
   }
 
-  filter(filter: Filter): QueryOptions {
+  filter(filter: Filter | FilterFreeForm): QueryOptions {
     Utils.requireNullOrUndefined(this._filter, 'filter');
     Utils.requireNotNullNorUndefined(filter, 'filter');
     Utils.requireNotEmpty(filter, 'filter');
@@ -49,7 +49,6 @@ export class QueryOptions {
   skip(skip: number): QueryOptions {
     Utils.requireNullOrUndefined(this._skip, 'skip');
     Utils.requireNotNullNorUndefined(skip, 'skip');
-    Utils.requireNotEmpty(skip, 'skip');
     Utils.requireNotNegative(skip, 'skip');
     this._skip = skip;
     return this;
@@ -58,22 +57,21 @@ export class QueryOptions {
   top(top: number): QueryOptions {
     Utils.requireNullOrUndefined(this._top, 'top');
     Utils.requireNotNullNorUndefined(top, 'top');
-    Utils.requireNotEmpty(top, 'top');
     Utils.requireNotNegative(top, 'top');
     this._top = top;
     return this;
   }
 
-  count(value: boolean): QueryOptions {
+  count(count: boolean): QueryOptions {
     Utils.requireNullOrUndefined(this._count, 'count');
-    Utils.requireNotNullNorUndefined(value, 'count');
-    this._count = value;
+    Utils.requireNotNullNorUndefined(count, 'count');
+    this._count = count;
     return this;
   }
 
   search(search: string): QueryOptions {
     Utils.requireNullOrUndefined(this._search, 'search');
-    Utils.requireNotNullNorUndefined(search, 'search');
+    Utils.requireNotUndefined(search, 'search');
     this._search = search;
     return this;
   }
@@ -84,7 +82,7 @@ export class QueryOptions {
 
     // add select
     if (!Utils.isNullOrUndefined(this._select)) {
-      queryOptions += this._select;
+      queryOptions += '$select=' + this._select;
     }
 
     // add filter
@@ -92,7 +90,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += '&';
       }
-      queryOptions += this._filter;
+      queryOptions += '$filter=' + this._filter;
     }
 
     // add expand
@@ -100,7 +98,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += '&';
       }
-      queryOptions += this._expand;
+      queryOptions += '$expand=' + this._expand;
     }
 
     // add orderby
@@ -108,7 +106,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += '&';
       }
-      queryOptions += this._orderby;
+      queryOptions += '$orderby=' + this._orderby;
     }
 
     // add skip
@@ -140,15 +138,9 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += '&';
       }
-      queryOptions += '$count=' + this._count;
+      queryOptions += '$search=' + this._search;
     }
 
-    return queryOptions;
-  }
-
-  toStringEncoded() {
-    let queryOptions: string = this.toString();
-    queryOptions = encodeURIComponent(queryOptions);
-    return queryOptions;
+    return encodeURIComponent(queryOptions);
   }
 }

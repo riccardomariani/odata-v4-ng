@@ -2,6 +2,25 @@
   "name": "odata-v4-ng",
   "version": "0.1.0",
   "license": "MIT",
+  "description": "OData V4 service for Angular",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riccardomariani/odata-v4-ng.git"
+  },
+  "keywords": [
+    "odata",
+    "angular",
+    "angular2",
+    "angular4",
+    "rest",
+    "api",
+    "service"
+  ],
+  "author": "Riccardo Mariani",
+  "bugs": {
+    "url": "https://github.com/riccardomariani/odata-v4-ng/issues"
+  },
+  "homepage": "https://github.com/riccardomariani/odata-v4-ng#readme",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

@@ -2,32 +2,53 @@ import { Utils } from '../utils/utils';
 import { OperatorComparison, OperatorLogical } from './operator';
 import { QueryOptionList } from './query-option-list';
 
-export class Filter extends QueryOptionList {
-    static readonly $FILTER = '$filter';
-
-    constructor(filterItems: FilterItem[]) {
-        super(filterItems, Filter.$FILTER);
-    }
-}
-
-export abstract class FilterItem {
+export abstract class Filter {
     abstract toString(): string;
 }
 
-export class FilterCompositionItem extends FilterItem {
-    private filters: Filter[];
+export abstract class FilterHasProperty {
+    protected property: string;
+
+    constructor(property: string) {
+        this.setProperty(property);
+    }
+
+    setProperty(property: string): void {
+        Utils.requireNotNullNorUndefined(property, 'property');
+        this.property = property;
+    }
+
+    getProperty(): string {
+        return this.property;
+    }
+}
+
+export abstract class FilterHasFilter {
+    protected filter: Filter | Filter[];
+
+    constructor(filter: Filter | Filter[]) {
+        this.filter = filter;
+    }
+
+    getFilter(): Filter | Filter[] {
+        return this.filter;
+    }
+}
+
+export class FilterLogical extends FilterHasFilter implements Filter {
     private operator: OperatorLogical;
 
     constructor(filters: Filter[], operator: OperatorLogical) {
-        super();
-        this.filters = filters;
+        super(filters);
+        Utils.requireNotNullNorUndefined(filters, 'filters');
+        Utils.requireNotNullNorUndefined(operator, 'operator');
         this.operator = operator;
     }
 
     toString(): string {
         let res = '';
 
-        for (const filter of this.filters) {
+        for (const filter of <Filter[]>this.filter) {
             if (!res.length) {
                 res += ` ${this.operator} `;
             }
@@ -38,54 +59,146 @@ export class FilterCompositionItem extends FilterItem {
     }
 }
 
-export class FilterBinaryItem extends FilterItem {
+export class FilterBinary extends FilterHasProperty implements Filter {
     private operator: OperatorComparison;
-    private firstOperand: any;
-    private secondOperand: any;
+    private value: any;
+    private asQuotedString: boolean;
 
-    constructor(firstOperand: any, operator: OperatorComparison, secondOperand: any) {
-        super();
-
-        Utils.requireNotNullNorUndefined(firstOperand, 'firstOperator');
-        this.firstOperand = firstOperand;
-
+    constructor(property: string, operator: OperatorComparison, value: any, asQuotedString: boolean = true) {
+        super(property);
         Utils.requireNotNullNorUndefined(operator, 'operand');
         this.operator = operator;
-
-        Utils.requireNotNullNorUndefined(secondOperand, 'secondOperator');
-        this.secondOperand = secondOperand;
+        Utils.requireNotUndefined(value, 'value');
+        this.value = value;
+        this.asQuotedString = asQuotedString;
     }
 
     toString(): string {
-        return `${this.firstOperand} ${this.operator} ${Utils.getEscapedValue(this.secondOperand)}`;
+        return `${this.property} ${this.operator} ${Utils.getValue(this.value, this.asQuotedString)}`;
     }
 }
 
-export class FilterAnyItem extends FilterItem {
-    private entitySet: string;
-    private filter: Filter;
+export enum LambdaOperator {
+    ANY, ALL
+}
 
-    constructor(entitySet: string, filter: Filter) {
-        super();
+export enum LambdaCollection {
+    PROPERTY_COLLECTION, ENTITY_SET
+}
 
-        Utils.requireNotNullNorUndefined(entitySet, 'entitySet');
-        this.entitySet = entitySet;
+export class FilterLambda extends FilterHasFilter implements Filter {
+    private lambdaCollection: LambdaCollection;
+    private propertyOrEntitySet: string;
+    private lambdaOperator: LambdaOperator;
 
+    constructor(lambdaCollection: LambdaCollection, propertyOrEntitySet: string, lambdaOperator: LambdaOperator, filter: Filter) {
+        super(filter);
+        if (this.lambdaCollection === LambdaCollection.PROPERTY_COLLECTION) {
+            this.checkProperty(filter);
+        }
+        Utils.requireNotNullNorUndefined(lambdaCollection, 'lambdaCollection');
+        this.lambdaCollection = lambdaCollection;
+        Utils.requireNotNullNorUndefined(propertyOrEntitySet, 'propertyOrEntitySet');
+        this.propertyOrEntitySet = propertyOrEntitySet;
+        Utils.requireNotNullNorUndefined(lambdaOperator, 'lambdaOperator');
+        this.lambdaOperator = lambdaOperator;
         Utils.requireNotNullNorUndefined(filter, 'filter');
-        this.filter = filter;
     }
 
     toString(): string {
-        return `${this.entitySet}/any(x:x/${this.filter.toString()})`;
+        switch (this.lambdaCollection) {
+            case LambdaCollection.PROPERTY_COLLECTION:
+                this.replaceProperty(this.filter);
+                return `${this.propertyOrEntitySet}/${LambdaOperator[this.lambdaOperator].toLowerCase()}(x:${this.filter.toString()})`;
+            case LambdaCollection.ENTITY_SET:
+                return `${this.propertyOrEntitySet}/${LambdaOperator[this.lambdaOperator].toLowerCase()}(x:x/${this.filter.toString()})`;
+            default:
+                throw new Error('unknown lambdaCollection: ' + this.lambdaCollection);
+        }
+    }
+
+    protected checkProperty(filter: Filter | Filter[]) {
+        if (Utils.isNullOrUndefined(filter)) {
+            return;
+        }
+        if (filter instanceof FilterHasProperty) {
+            if (this.propertyOrEntitySet !== filter.getProperty()) {
+                throw new Error('FilterLambda property must match inner filters property');
+            }
+        }
+        if (filter instanceof FilterHasFilter) {
+            const filterChild: Filter | Filter[] = filter.getFilter();
+            if (filterChild instanceof Filter) {
+                this.replaceProperty(filterChild);
+            } else {
+                for (const f of <Filter[]>filterChild) {
+                    this.replaceProperty(f);
+                }
+            }
+        }
+    }
+
+    protected replaceProperty(filter: Filter | Filter[]) {
+        if (Utils.isNullOrUndefined(filter)) {
+            return;
+        }
+        if (filter instanceof FilterHasProperty) {
+            filter.setProperty('x');
+        }
+        if (filter instanceof FilterHasFilter) {
+            const filterChild: Filter | Filter[] = filter.getFilter();
+            if (filterChild instanceof Filter) {
+                this.replaceProperty(filterChild);
+            } else {
+                for (const f of <Filter[]>filterChild) {
+                    this.replaceProperty(f);
+                }
+            }
+        }
     }
 }
 
-export class FilterFreeItem extends FilterItem {
+class FilterFunction extends FilterHasProperty implements Filter {
+    private functionName: string;
+    private value: any;
+    private asQuotedString: boolean;
+
+    constructor(functionName: string, property: string, value: any, asQuotedString: boolean = true) {
+        super(property);
+        Utils.requireNotNullNorUndefined(functionName, 'functionName');
+        this.functionName = functionName;
+        Utils.requireNotUndefined(value, 'value');
+        this.value = value;
+        this.asQuotedString = asQuotedString;
+    }
+
+    toString(): string {
+        return `${this.functionName}(${this.property},${Utils.getValue(this.value, this.asQuotedString)})`;
+    }
+}
+
+export class FilterContains extends FilterFunction {
+    constructor(property: string, value: any, asQuotedString: boolean = true) {
+        super('contains', property, value, asQuotedString);
+    }
+}
+
+export class FilterStartswith extends FilterFunction {
+    constructor(property: string, value: any, asQuotedString: boolean = true) {
+        super('startswith', property, value, asQuotedString);
+    }
+}
+
+export class FilterEndswith extends FilterFunction {
+    constructor(property: string, value: any, asQuotedString: boolean = true) {
+        super('endswith', property, value, asQuotedString);
+    }
+}
+
+export class FilterFreeForm {
     private filter: string;
 
     constructor(filter: string) {
-        super();
-
         Utils.requireNotNullNorUndefined(filter, 'filter');
         this.filter = filter;
     }

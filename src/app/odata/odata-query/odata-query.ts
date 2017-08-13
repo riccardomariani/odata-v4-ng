@@ -2,19 +2,19 @@ import { Utils } from '../utils/utils';
 import { QueryOptions } from '../query-options/query-options';
 
 export class ODataQuery {
-  static readonly ENTITY_SET = 'entitySet';
-  static readonly ENTITY_KEY = 'entityKey';
-  static readonly PROPERTY = 'property';
-  static readonly NAVIGATION_PROPERTY = 'navigationProperty';
-  static readonly REF = 'ref';
-  static readonly VALUE = 'value';
-  static readonly COUNT = 'count';
-  static readonly FUNCTION_CALL = 'functionCall';
-  static readonly ACTION_CALL = 'actionCall';
+  private static readonly ENTITY_SET = 'entitySet';
+  private static readonly ENTITY_KEY = 'entityKey';
+  private static readonly PROPERTY = 'property';
+  private static readonly NAVIGATION_PROPERTY = 'navigationProperty';
+  private static readonly REF = 'ref';
+  private static readonly VALUE = 'value';
+  private static readonly COUNT = 'count';
+  private static readonly FUNCTION_CALL = 'functionCall';
+  private static readonly ACTION_CALL = 'actionCall';
 
-  static readonly $REF = '$ref';
-  static readonly $VALUE = '$value';
-  static readonly $COUNT = '$count';
+  private static readonly $REF = '$ref';
+  private static readonly $VALUE = '$value';
+  private static readonly $COUNT = '$count';
 
   private queryString: string;
   private lastSegmentType: string;
@@ -33,10 +33,14 @@ export class ODataQuery {
     return this;
   }
 
-  entityKey(entityKey: any): ODataQuery {
+  entityKey(entityKey: any, asQuotedString: boolean = true): ODataQuery {
+    if (this.lastSegmentType !== ODataQuery.ENTITY_SET && this.lastSegmentType !== ODataQuery.NAVIGATION_PROPERTY) {
+      throw new Error('entityKey can only be appended to entitySet or navigationProperty');
+    }
     Utils.requireNotNullNorUndefined(entityKey, 'entityKey');
     Utils.requireNotEmpty(entityKey, 'entityKey');
-    this.queryString += '(' + Utils.getEscapedValue(entityKey) + ')';
+    entityKey = Utils.getValue(entityKey, asQuotedString);
+    this.queryString += '(' + entityKey + ')';
     this.lastSegmentType = ODataQuery.ENTITY_KEY;
     return this;
   }
@@ -50,6 +54,9 @@ export class ODataQuery {
   }
 
   navigationProperty(navigationProperty: string): ODataQuery {
+    if (this.lastSegmentType !== ODataQuery.ENTITY_KEY) {
+      throw new Error('navigationProperty can only be appended to entityKey');
+    }
     Utils.requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
     Utils.requireNotEmpty(navigationProperty, 'navigationProperty');
     this.queryString += '/' + Utils.removeEndingSeparator(navigationProperty);
@@ -58,6 +65,9 @@ export class ODataQuery {
   }
 
   ref(): ODataQuery {
+    if (this.lastSegmentType !== ODataQuery.NAVIGATION_PROPERTY) {
+      throw new Error('ref can only be appended to navigationProperty');
+    }
     this.queryString += '/' + ODataQuery.$REF;
     this.lastSegmentType = ODataQuery.REF;
     return this;
@@ -94,7 +104,7 @@ export class ODataQuery {
   queryOptions(queryOptions: QueryOptions): ODataQuery {
     Utils.requireNotNullNorUndefined(queryOptions, 'queryOptions');
     Utils.requireNotEmpty(queryOptions, 'queryOptions');
-    this.queryString += '?' + queryOptions.toStringEncoded();
+    this.queryString += '?' + queryOptions.toString();
     return this;
   }
 

@@ -1,5 +1,6 @@
+import { Utils } from '../utils/utils';
 import { Response } from '@angular/http';
-import { EntityCollection } from './entity-collection';
+import { EntitySet } from './entity-collection';
 
 export class ODataResponse {
     static readonly VALUE = 'value';
@@ -15,28 +16,49 @@ export class ODataResponse {
         return this.response.ok;
     }
 
-    toEntityCollection<T>(): EntityCollection<T> {
-        const json: any = this.response.json();
-        if (json && json.hasOwnProperty(ODataResponse.VALUE)) {
+    getBodyAsJson(): any {
+        return this.response.json();
+    }
+
+    toEntitySet<T>(): EntitySet<T> {
+        const json: any = this.getBodyAsJson();
+        if (Utils.isNotNullNorUndefined(json) && json.hasOwnProperty(ODataResponse.VALUE)) {
             let count: number = null;
             if (json.hasOwnProperty(ODataResponse.ODATA_COUNT)) {
                 count = json[ODataResponse.ODATA_COUNT];
             }
-            return new EntityCollection<T>(json[ODataResponse.VALUE], count);
+            return new EntitySet<T>(json[ODataResponse.VALUE], count);
         }
         return null;
     }
 
     toEntity<T>(): T {
-        const json: any = this.response.json();
-        if (json) {
-            return <T>json;
+        return this.toObject<T>();
+    }
+
+    toPropertyValue<T>(): T {
+        const json: any = this.getBodyAsJson();
+        if (Utils.isNotNullNorUndefined(json)) {
+            if (json.hasOwnProperty(ODataResponse.VALUE)) {
+                return <T>json[ODataResponse.VALUE];
+            }
+            return null;
+        } else {
+            return <T>JSON.parse(this.response.text());
         }
-        return null;
+    }
+
+    toComplexValue<T>(): T {
+        return this.toObject<T>();
+    }
+
+    toCount(): number {
+        return Number(this.response.text);
     }
 
     toString(): string {
         let res = `${this.response.status} ${this.response.statusText}\n`;
+
         const headers = this.response.headers;
         for (const key of headers.keys()) {
             res += key + ': ';
@@ -49,6 +71,19 @@ export class ODataResponse {
             }
             res += valueString + '\n';
         }
+
+        const json = this.getBodyAsJson();
+        if (Utils.isNotNullNorUndefined(json)) {
+            res += JSON.stringify(json, null, 4);
+        }
         return res;
+    }
+
+    protected toObject<T>(): T {
+        const json: any = this.getBodyAsJson();
+        if (Utils.isNotNullNorUndefined(json)) {
+            return <T>json;
+        }
+        return null;
     }
 }

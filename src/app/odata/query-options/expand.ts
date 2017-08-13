@@ -4,10 +4,8 @@ import { QueryOptionList } from './query-option-list';
 import { Select } from './select';
 
 export class Expand extends QueryOptionList {
-    static readonly $EXPAND = '$expand';
-
     constructor(expandItems: ExpandItem[]) {
-        super(expandItems, Expand.$EXPAND);
+        super(expandItems);
     }
 }
 
@@ -27,10 +25,10 @@ export class ExpandItem {
     toString(): string {
         let res: string = this.entitySet;
         if (!Utils.isNullOrUndefined(this.select)) {
-            res += '(' + this.select + ')';
+            res += '($select=' + this.select + ')';
         }
         if (!Utils.isNullOrUndefined(this.filter)) {
-            res += '(' + this.filter.toString() + ')';
+            res += '($filter=' + this.filter + ')';
         }
         return res;
     }

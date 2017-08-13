@@ -4,4 +4,19 @@
   </h1>
 </div>
 
+<h2>Service root</h2>
+<span>SERVICE_ROOT = {{serviceRoot}}</span>
+<hr/>
+
+<div *ngFor="let example of examples">
+  <h2>{{example.title}}</h2>
+  <h3>Query</h3>
+  <span class="queryServiceRoot">{{example.query}}</span>
+  <h3>Code</h3>
+  <pre class="codeServiceRoot">{{example.code}}</pre>
+  <h3>Response</h3>
+  <textarea class="resultServiceRoot" readonly="true">{{example.response}}</textarea>
+  <hr/>
+</div>
+
 <router-outlet></router-outlet>

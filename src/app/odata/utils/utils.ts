@@ -56,7 +56,8 @@ export class Utils {
     }
 
     static requireNotEmpty(fieldValue: any, fieldName: String) {
-        if (typeof (fieldValue) === 'string' && !(<string>fieldValue).length) {
+        if (typeof (fieldValue) === 'string' && !(<string>fieldValue).length
+            || fieldValue.hasOwnProperty('isEmpty') && !fieldValue.isEmpty()) {
             throw new Error(fieldName + ' is empty');
         }
     }
@@ -77,19 +78,22 @@ export class Utils {
         return value;
     }
 
-    static getEscapedValue(value: any): string {
-        let res: string = value;
+    static getValue(value: any, asQuotedString: boolean = true): string {
+        let res: any = value;
 
-        if (typeof (value) === 'string') {
+        if ((typeof (res) === 'string' || res instanceof String) && asQuotedString) {
             // escape single quote
-            res = res.replace('/\'/g', '/\'\'/g');
+            res = res.replace(/'/g, '\'\'');
             res = '\'' + res + '\'';
+            return res;
+        } else if (res instanceof Date) {
+            res.toISOString();
         }
 
         return res;
     }
 
-    static getEncodedValue(value: any): string {
+    static getValueURIEncoded(value: any): string {
         return encodeURIComponent(value);
     }
 }

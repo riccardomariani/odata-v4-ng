@@ -1,15 +1,11 @@
 import { Utils } from '../utils/utils';
 
 export class QueryOptionList {
-    private queryOption;
     private items: any[];
 
-    constructor(items: any[], queryOption: string) {
+    constructor(items: any[]) {
         Utils.requireNotNullNorUndefined(items, 'items');
         this.items = items;
-
-        Utils.requireNotNullNorUndefined(queryOption, 'queryOption');
-        this.queryOption = queryOption;
     }
 
     toString() {
@@ -18,10 +14,8 @@ export class QueryOptionList {
             return res;
         }
 
-        res = this.queryOption + '=';
-
         for (const item of this.items) {
-            if (res !== this.queryOption + '=') {
+            if (res.length) {
                 res += ',';
             }
             res += item;

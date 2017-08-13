@@ -6,10 +6,8 @@ export enum Order {
 }
 
 export class Orderby extends QueryOptionList {
-    static readonly $ORDERBY = '$orderby';
-
     constructor(orderbyItems: OrderbyItem[]) {
-        super(orderbyItems, Orderby.$ORDERBY);
+        super(orderbyItems);
     }
 }
 

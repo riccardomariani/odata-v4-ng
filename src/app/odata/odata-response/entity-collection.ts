@@ -1,11 +1,10 @@
-export class EntityCollection<T> {
+import { Utils } from '../utils/utils';
+export class EntitySet<T> {
     private entities: T[];
     private count: number;
 
     constructor(entities: T[], count: number) {
-        if (!entities) {
-            throw new Error('entities is null');
-        }
+        Utils.requireNotNullNorUndefined(entities, 'entities');
         this.entities = entities;
         this.count = count;
     }
