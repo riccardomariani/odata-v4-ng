@@ -13,7 +13,7 @@ class Example {
   public subscr: Subscription;
 }
 
-const SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
+const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 
 @Component({
   selector: 'ov4-root',
@@ -46,7 +46,7 @@ export class AppComponent implements OnInit, OnDestroy {
     example = new Example();
     this.examples.push(example);
     example.title = 'Get entity set';
-    example.query = 'http://services.odata.org/v4/TripPinServiceRW/People';
+    example.query = SERVICE_ROOT + '/People';
     example.code = `new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')
     .get().subscribe((odataResponse: ODataResponse) => {
       this.examples[1].response = odataResponse.toString();

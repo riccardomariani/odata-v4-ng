@@ -53,7 +53,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<span>\n  For all examples in this page we are using the publicly available TripPin service (SERVICE_ROOT): <a href=\"http://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>\n  Metadata of this service are here: <a href=\"http://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a><br/>\n  In \"app.module.ts\" import HttpModule and declare ODataService as a provider.\n</span>\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span class=\"queryServiceRoot\">{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"codeServiceRoot\">{{example.code}}</pre>\n  <h4>Response</h4>\n  <textarea class=\"resultServiceRoot\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<span>\n  For all examples in this page we are using the publicly available TripPin service (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>\n  Metadata of this service are here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a><br/>\n  In \"app.module.ts\" import HttpModule and declare ODataService as a provider.\n</span>\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span class=\"queryServiceRoot\">{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"codeServiceRoot\">{{example.code}}</pre>\n  <h4>Response</h4>\n  <textarea class=\"resultServiceRoot\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -100,7 +100,7 @@ var Example = (function () {
     }
     return Example;
 }());
-var SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
+var SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 var AppComponent = (function () {
     function AppComponent(odataService) {
         this.odataService = odataService;
@@ -124,7 +124,7 @@ var AppComponent = (function () {
         example = new Example();
         this.examples.push(example);
         example.title = 'Get entity set';
-        example.query = 'http://services.odata.org/v4/TripPinServiceRW/People';
+        example.query = SERVICE_ROOT + '/People';
         example.code = "new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')\n    .get().subscribe((odataResponse: ODataResponse) => {\n      this.examples[1].response = odataResponse.toString();\n    });";
         example.subscr = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People')
             .get().subscribe(function (odataResponse) {
