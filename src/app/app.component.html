@@ -10,6 +10,13 @@
   Metadata of this service are here: <a href="https://services.odata.org/V4/TripPinServiceRW/$metadata">{{serviceRoot}}/$metadata.</a><br/>
   In "app.module.ts" import HttpModule and declare ODataService as a provider.
 </span>
+<span>
+  <p><b><i>
+    Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>
+    The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>
+    Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.
+  </i></b><p>
+</span>
 
 <div *ngFor="let example of examples">
   <h3>{{example.title}}</h3>
