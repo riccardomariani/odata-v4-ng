@@ -1,9 +1,11 @@
 import { Utils } from '../utils/utils';
 import { OperatorComparison, OperatorLogical } from './operator';
 import { QueryOptionList } from './query-option-list';
+import { QuotedString } from '../odata-query/quoted-string';
 
 export abstract class Filter {
     abstract toString(): string;
+    abstract isEmpty(): boolean;
 }
 
 export abstract class FilterHasProperty {
@@ -57,24 +59,45 @@ export class FilterLogical extends FilterHasFilter implements Filter {
 
         return res;
     }
+
+    isEmpty(): boolean {
+        if (Utils.isNullOrUndefined(this.filter)) {
+            return true;
+        }
+        if (this.filter instanceof Filter) {
+            return this.filter.isEmpty();
+        } else if (this.filter instanceof Array) {
+            for (const filter of this.filter) {
+                if (filter.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
 
 export class FilterBinary extends FilterHasProperty implements Filter {
     private operator: OperatorComparison;
     private value: any;
-    private asQuotedString: boolean;
 
-    constructor(property: string, operator: OperatorComparison, value: any, asQuotedString: boolean = true) {
+    constructor(property: string, operator: OperatorComparison, value: boolean | number | string | QuotedString) {
         super(property);
+        Utils.requireNotNullNorUndefined(property, 'property');
         Utils.requireNotNullNorUndefined(operator, 'operand');
-        this.operator = operator;
         Utils.requireNotUndefined(value, 'value');
+        this.operator = operator;
         this.value = value;
-        this.asQuotedString = asQuotedString;
     }
 
     toString(): string {
-        return `${this.property} ${this.operator} ${Utils.getValue(this.value, this.asQuotedString)}`;
+        return `${this.property} ${this.operator} ${Utils.getValueURI(this.value, false)}`;
+    }
+
+    isEmpty(): boolean {
+        return (Utils.isNullOrUndefined(this.property) || !this.property.length)
+            && Utils.isNullOrUndefined(this.operator)
+            && Utils.isNullOrUndefined(this.value) || (this.value instanceof Filter && !this.value.isEmpty() || this.value instanceof Array && !this.value.length);
     }
 }
 
@@ -115,6 +138,10 @@ export class FilterLambda extends FilterHasFilter implements Filter {
             default:
                 throw new Error('unknown lambdaCollection: ' + this.lambdaCollection);
         }
+    }
+
+    isEmpty(): boolean {
+        return false;
     }
 
     protected checkProperty(filter: Filter | Filter[]) {
@@ -173,7 +200,11 @@ class FilterFunction extends FilterHasProperty implements Filter {
     }
 
     toString(): string {
-        return `${this.functionName}(${this.property},${Utils.getValue(this.value, this.asQuotedString)})`;
+        return `${this.functionName}(${this.property},${Utils.getValueURI(this.value, false)})`;
+    }
+
+    isEmpty(): boolean {
+        return false;
     }
 }
 
@@ -195,7 +226,7 @@ export class FilterEndswith extends FilterFunction {
     }
 }
 
-export class FilterFreeForm {
+export class FilterFreeForm implements Filter {
     private filter: string;
 
     constructor(filter: string) {
@@ -205,5 +236,9 @@ export class FilterFreeForm {
 
     toString(): string {
         return this.filter;
+    }
+
+    isEmpty(): boolean {
+        return Utils.isNullOrUndefined(this.filter) || !this.filter.length;
     }
 }

@@ -1,20 +1,19 @@
 {
   "name": "odata-v4-ng",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "license": "MIT",
-  "description": "OData V4 service for Angular",
+  "description": "OData V4 typescript client library for Angular2+",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/riccardomariani/odata-v4-ng.git"
   },
   "keywords": [
     "odata",
+    "typescript",
+    "client",
     "angular",
     "angular2",
-    "angular4",
-    "rest",
-    "api",
-    "service"
+    "angular4"
   ],
   "author": "Riccardo Mariani",
   "bugs": {
@@ -28,10 +27,12 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "buildFull": "ng lint && ng test --single-run && ng e2e && ng build --deploy-url=odata-v4-ng"
+    "buildFull": "ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng"
   },
   "private": false,
-  "dependencies": {},
+  "dependencies": {
+    "uuid": "^3.1.0"
+  },
   "devDependencies": {
     "@angular/animations": "^4.0.0",
     "@angular/common": "^4.0.0",

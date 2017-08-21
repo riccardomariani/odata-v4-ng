@@ -15,15 +15,15 @@ export class QueryOptions {
   private _search: string;
 
   select(select: Select): QueryOptions {
-    Utils.requireNullOrUndefined(this._select, 'select');
+    this.checkFieldAlreadySet(this._select, 'select');
     Utils.requireNotNullNorUndefined(select, 'select');
     Utils.requireNotEmpty(select, 'select');
     this._select = select;
     return this;
   }
 
-  filter(filter: Filter | FilterFreeForm): QueryOptions {
-    Utils.requireNullOrUndefined(this._filter, 'filter');
+  filter(filter: Filter): QueryOptions {
+    this.checkFieldAlreadySet(this._filter, 'filter');
     Utils.requireNotNullNorUndefined(filter, 'filter');
     Utils.requireNotEmpty(filter, 'filter');
     this._filter = filter;
@@ -31,7 +31,7 @@ export class QueryOptions {
   }
 
   expand(expand: Expand): QueryOptions {
-    Utils.requireNullOrUndefined(this._expand, 'expand');
+    this.checkFieldAlreadySet(this._expand, 'expand');
     Utils.requireNotNullNorUndefined(expand, 'expand');
     Utils.requireNotEmpty(expand, 'expand');
     this._expand = expand;
@@ -39,7 +39,7 @@ export class QueryOptions {
   }
 
   orderby(orderby: Orderby): QueryOptions {
-    Utils.requireNullOrUndefined(this._orderby, 'orderby');
+    this.checkFieldAlreadySet(this._orderby, 'orderby');
     Utils.requireNotNullNorUndefined(orderby, 'orderby');
     Utils.requireNotEmpty(orderby, 'orderby');
     this._orderby = orderby;
@@ -47,7 +47,7 @@ export class QueryOptions {
   }
 
   skip(skip: number): QueryOptions {
-    Utils.requireNullOrUndefined(this._skip, 'skip');
+    this.checkFieldAlreadySet(this._skip, 'skip');
     Utils.requireNotNullNorUndefined(skip, 'skip');
     Utils.requireNotNegative(skip, 'skip');
     this._skip = skip;
@@ -55,7 +55,7 @@ export class QueryOptions {
   }
 
   top(top: number): QueryOptions {
-    Utils.requireNullOrUndefined(this._top, 'top');
+    this.checkFieldAlreadySet(this._top, 'top');
     Utils.requireNotNullNorUndefined(top, 'top');
     Utils.requireNotNegative(top, 'top');
     this._top = top;
@@ -63,14 +63,14 @@ export class QueryOptions {
   }
 
   count(count: boolean): QueryOptions {
-    Utils.requireNullOrUndefined(this._count, 'count');
+    this.checkFieldAlreadySet(this._count, 'count');
     Utils.requireNotNullNorUndefined(count, 'count');
     this._count = count;
     return this;
   }
 
   search(search: string): QueryOptions {
-    Utils.requireNullOrUndefined(this._search, 'search');
+    this.checkFieldAlreadySet(this._search, 'search');
     Utils.requireNotUndefined(search, 'search');
     this._search = search;
     return this;
@@ -142,5 +142,22 @@ export class QueryOptions {
     }
 
     return encodeURIComponent(queryOptions);
+  }
+
+  isEmpty(): boolean {
+    for (const key in this) {
+      if (this.hasOwnProperty(key) && Utils.isNotNullNorUndefined(this[key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  protected checkFieldAlreadySet(fieldValue: any, fieldName: string) {
+    try {
+      Utils.requireNullOrUndefined(fieldValue, fieldName);
+    } catch (error) {
+      throw new Error(fieldName + ' is already set');
+    }
   }
 }

@@ -8,7 +8,7 @@ export class QueryOptionList {
         this.items = items;
     }
 
-    toString() {
+    toString(): string {
         let res = '';
         if (Utils.isNullOrUndefined(this.items) || !this.items.length) {
             return res;
@@ -21,5 +21,9 @@ export class QueryOptionList {
             res += item;
         }
         return res;
+    }
+
+    isEmpty(): boolean {
+        return Utils.isNullOrUndefined(this.items) || !this.items.length;
     }
 }

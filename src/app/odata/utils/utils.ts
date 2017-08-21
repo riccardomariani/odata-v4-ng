@@ -1,10 +1,13 @@
+
+import { QuotedString } from '../odata-query/quoted-string';
+
 export class Utils {
     static isNull(value: any): boolean {
         return value === null;
     }
 
     static isUndefined(value: any): boolean {
-        return typeof (value) === 'undefined';
+        return value === undefined;
     }
 
     static isNullOrUndefined(value: any): boolean {
@@ -22,8 +25,8 @@ export class Utils {
     }
 
     static requireUndefined(fieldValue: any, fieldName: String) {
-        if (typeof (fieldValue) !== 'undefined') {
-            throw new Error(fieldName + ' is null');
+        if (fieldValue !== undefined) {
+            throw new Error(fieldName + ' is not undefined');
         }
     }
 
@@ -34,7 +37,7 @@ export class Utils {
     }
 
     static requireNotUndefined(fieldValue: any, fieldName: String) {
-        if (typeof (fieldValue) === 'undefined') {
+        if (fieldValue === undefined) {
             throw new Error(fieldName + ' is undefined');
         }
     }
@@ -46,18 +49,14 @@ export class Utils {
 
     static requireNullOrUndefined(fieldValue: any, fieldName: String) {
         if (!Utils.isNull(fieldValue) && !Utils.isUndefined(fieldValue)) {
-            if (!Utils.isNull(fieldValue)) {
-                throw new Error(fieldName + ' is null');
-            }
-            if (!Utils.isUndefined(fieldValue)) {
-                throw new Error(fieldName + ' is undefined');
-            }
+            throw new Error(fieldName + ' is not null nor undefined');
         }
     }
 
     static requireNotEmpty(fieldValue: any, fieldName: String) {
-        if (typeof (fieldValue) === 'string' && !(<string>fieldValue).length
-            || fieldValue.hasOwnProperty('isEmpty') && !fieldValue.isEmpty()) {
+        if (Utils.isNullOrUndefined(fieldValue)
+            || typeof (fieldValue) === 'string' && !fieldValue.length
+            || typeof (fieldValue.isEmpty) === 'function' && fieldValue.isEmpty()) {
             throw new Error(fieldName + ' is empty');
         }
     }
@@ -68,8 +67,18 @@ export class Utils {
         }
     }
 
+    static appendSegment(path: string, segment: string): string {
+        Utils.requireNotNullNorUndefined(path, 'path');
+        Utils.requireNotNullNorUndefined(segment, 'segment');
+        if (!path.endsWith('/')) {
+            path += '/';
+        }
+        return path + segment;
+    }
+
     static removeEndingSeparator(value: string): string {
-        if (!Utils.isNullOrUndefined(value) && value.endsWith('/')) {
+        Utils.requireNotNullNorUndefined(value, 'value');
+        if (value.endsWith('/')) {
             if (value.length === 1) {
                 return '';
             }
@@ -78,22 +87,31 @@ export class Utils {
         return value;
     }
 
-    static getValue(value: any, asQuotedString: boolean = true): string {
+    static getValueURI(value: boolean | number | string | QuotedString, encodeURI: boolean): any {
+        Utils.requireNotNullNorUndefined(value, 'value');
+        Utils.requireNotNullNorUndefined(encodeURI, 'encodeURI');
+
         let res: any = value;
 
-        if ((typeof (res) === 'string' || res instanceof String) && asQuotedString) {
+        if (typeof (res) === 'string') {
+            // encode uri component
+            if (Utils.isNotNullNorUndefined(encodeURI) && encodeURI) {
+                res = encodeURIComponent(res);
+            }
+        } else if (res instanceof QuotedString) {
             // escape single quote
-            res = res.replace(/'/g, '\'\'');
+            res = res.toString().replace(/'/g, '\'\'');
+
+            // encode uri component
+            if (Utils.isNotNullNorUndefined(encodeURI) && encodeURI) {
+                res = encodeURIComponent(res);
+            }
+
+            // add start/ending quotes
             res = '\'' + res + '\'';
-            return res;
-        } else if (res instanceof Date) {
-            res.toISOString();
         }
 
+        // boolean, number
         return res;
-    }
-
-    static getValueURIEncoded(value: any): string {
-        return encodeURIComponent(value);
     }
 }

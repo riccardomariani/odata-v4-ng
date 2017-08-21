@@ -3,24 +3,17 @@ import { ODataService } from './odata/odata-service/odata.service';
 import { ODataQuery } from './odata/odata-query/odata-query';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
+import { ODataQueryBatch } from './odata/odata-query/odata-query-batch';
+
+class Example {
+  public title: string;
+  public query: string;
+  public code: string;
+  public response: string;
+  public subscr: Subscription;
+}
 
 const SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
-//
-const QUERY_SERVICE_ROOT = SERVICE_ROOT;
-const CODE_SERVICE_ROOT = `let odataQuery: ODataQuery = new ODataQuery(SERVICE_ROOT);
-this.examples[0].subscr = this.odataService.get(odataQuery).subscribe(
-  (odataResponse: ODataResponse) => {
-    this.examples[0].response = JSON.stringify(odataResponse.getBody(), null, 4);
-  }
-);`;
-//
-const QUERY_ENTITY_SET = 'http://services.odata.org/v4/TripPinServiceRW/People';
-const CODE_ENTITY_SET = `odataQuery = new ODataQuery(SERVICE_ROOT).entitySet('People');
-this.examples[1].subscr = this.odataService.get(odataQuery).subscribe(
-  (odataResponse: ODataResponse) => {
-    this.examples[1].response = JSON.stringify(odataResponse.getBody(), null, 4);
-  }
-);`;
 
 @Component({
   selector: 'ov4-root',
@@ -30,27 +23,38 @@ this.examples[1].subscr = this.odataService.get(odataQuery).subscribe(
 export class AppComponent implements OnInit, OnDestroy {
   title = 'odata-v4-ng';
   serviceRoot: string = SERVICE_ROOT;
-  examples: Example[] = [
-    new Example('Get service document', QUERY_SERVICE_ROOT, CODE_SERVICE_ROOT),
-    new Example('Get entity set', QUERY_ENTITY_SET, CODE_ENTITY_SET)
-  ];
+  examples: Example[];
 
   constructor(private odataService: ODataService) { }
 
   ngOnInit() {
-    let odataQuery: ODataQuery = new ODataQuery(SERVICE_ROOT);
-    this.examples[0].subscr = this.odataService.get(odataQuery).subscribe(
-      (odataResponse: ODataResponse) => {
-        this.examples[0].response = JSON.stringify(odataResponse.getBodyAsJson(), null, 4);
-      }
-    );
+    this.examples = [];
     //
-    odataQuery = new ODataQuery(SERVICE_ROOT).entitySet('People');
-    this.examples[1].subscr = this.odataService.get(odataQuery).subscribe(
-      (odataResponse: ODataResponse) => {
-        this.examples[1].response = JSON.stringify(odataResponse.getBodyAsJson(), null, 4);
-      }
-    );
+    let example: Example = new Example();
+    this.examples.push(example);
+    example.title = 'Get service document';
+    example.query = SERVICE_ROOT;
+    example.code = `new ODataQuery(this.odataService, SERVICE_ROOT)
+    .get().subscribe((odataResponse: ODataResponse) => {
+      this.examples[0].response = odataResponse.toString();
+    });`;
+    example.subscr = new ODataQuery(this.odataService, SERVICE_ROOT)
+      .get().subscribe((odataResponse: ODataResponse) => {
+        this.examples[0].response = odataResponse.toString();
+      });
+    //
+    example = new Example();
+    this.examples.push(example);
+    example.title = 'Get entity set';
+    example.query = 'http://services.odata.org/v4/TripPinServiceRW/People';
+    example.code = `new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')
+    .get().subscribe((odataResponse: ODataResponse) => {
+      this.examples[1].response = odataResponse.toString();
+    });`;
+    example.subscr = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')
+      .get().subscribe((odataResponse: ODataResponse) => {
+        this.examples[1].response = odataResponse.toString();
+      });
     //
   }
 
@@ -59,14 +63,4 @@ export class AppComponent implements OnInit, OnDestroy {
       example.subscr.unsubscribe();
     }
   }
-}
-
-class Example {
-  constructor(
-    public title: string,
-    public query: String,
-    public code: String,
-    public response: String = null,
-    public subscr: Subscription = null,
-  ) { }
 }
