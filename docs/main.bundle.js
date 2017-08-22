@@ -53,7 +53,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<span>\n  For all examples in this page we are using the publicly available TripPin service (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>\n  Metadata of this service are here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a><br/>\n  In \"app.module.ts\" import HttpModule and declare ODataService as a provider.\n</span>\n<span>\n  <p><b><i>\n    Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n    The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n    Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n  </i></b><p>\n</span>\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span class=\"queryServiceRoot\">{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"codeServiceRoot\">{{example.code}}</pre>\n  <h4>Response</h4>\n  <textarea class=\"resultServiceRoot\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule.</p>\n<p>\n  For all examples in this page we are using the publicly available TripPin service (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service are here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow.</p>\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4>Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -65,7 +65,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".codeServiceRoot {\n  margin: 0;\n}\n.resultServiceRoot {\n  width: 50%;\n  height: 150px;\n}\n", ""]);
+exports.push([module.i, ".code {\n  margin: 0;\n}\n.response {\n  width: 50%;\n  height: 150px;\n}\n", ""]);
 
 // exports
 
@@ -108,35 +108,32 @@ var AppComponent = (function () {
         this.serviceRoot = SERVICE_ROOT;
     }
     AppComponent.prototype.ngOnInit = function () {
-        var _this = this;
         this.examples = [];
         //
         var example = new Example();
         this.examples.push(example);
         example.title = 'Get service document';
         example.query = SERVICE_ROOT;
-        example.code = "new ODataQuery(this.odataService, SERVICE_ROOT)\n    .get().subscribe((odataResponse: ODataResponse) => {\n      this.examples[0].response = odataResponse.toString();\n    });";
-        example.subscr = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .get().subscribe(function (odataResponse) {
-            _this.examples[0].response = odataResponse.toString();
-        });
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {\n      example.response = odataResponse.toString();\n    });";
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT);
         //
         example = new Example();
         this.examples.push(example);
         example.title = 'Get entity set';
         example.query = SERVICE_ROOT + '/People';
-        example.code = "new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')\n    .get().subscribe((odataResponse: ODataResponse) => {\n      this.examples[1].response = odataResponse.toString();\n    });";
-        example.subscr = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People')
-            .get().subscribe(function (odataResponse) {
-            _this.examples[1].response = odataResponse.toString();
-        });
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People');\n    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {\n      example.response = odataResponse.toString();\n    });";
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People');
         //
     };
     AppComponent.prototype.ngOnDestroy = function () {
-        for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
-            var example = _a[_i];
-            example.subscr.unsubscribe();
+        if (this.subscr) {
+            this.subscr.unsubscribe();
         }
+    };
+    AppComponent.prototype.execute = function (example) {
+        example.odataQuery.get().subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        });
     };
     return AppComponent;
 }());
@@ -158,12 +155,11 @@ var _a;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__ = __webpack_require__("../../../../../src/app/odata/odata.module.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -176,26 +172,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
-
 var AppModule = (function () {
     function AppModule() {
     }
     return AppModule;
 }());
 AppModule = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["b" /* NgModule */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["b" /* NgModule */])({
         declarations: [
-            __WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]
+            __WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */]
         ],
         imports: [
-            __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__["a" /* BrowserModule */],
-            __WEBPACK_IMPORTED_MODULE_3__app_routing_module__["a" /* AppRoutingModule */],
-            __WEBPACK_IMPORTED_MODULE_5__angular_http__["a" /* HttpModule */]
+            __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
+            __WEBPACK_IMPORTED_MODULE_2__app_routing_module__["a" /* AppRoutingModule */],
+            __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__["a" /* ODataModule */],
         ],
-        providers: [
-            __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */]
-        ],
-        bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
+        bootstrap: [__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */]]
     })
 ], AppModule);
 
@@ -868,67 +860,161 @@ var ODataService_1, _a;
 
 /***/ }),
 
-/***/ "../../../../../src/app/odata/query-options/query-options.ts":
+/***/ "../../../../../src/app/odata/odata.module.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__("../../../common/@angular/common.es5.js");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataModule; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+
+var ODataModule = (function () {
+    function ODataModule() {
+    }
+    return ODataModule;
+}());
+ODataModule = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["b" /* NgModule */])({
+        imports: [
+            __WEBPACK_IMPORTED_MODULE_3__angular_common__["a" /* CommonModule */],
+            __WEBPACK_IMPORTED_MODULE_0__angular_http__["a" /* HttpModule */]
+        ],
+        providers: [__WEBPACK_IMPORTED_MODULE_1__odata_service_odata_service__["a" /* ODataService */]]
+    })
+], ODataModule);
+
+//# sourceMappingURL=odata.module.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/query-options/query-option-list.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QueryOptionList; });
+
+var QueryOptionList = (function () {
+    function QueryOptionList(items) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(items, 'items');
+        this.items = items;
+    }
+    QueryOptionList.toString = function (items) {
+        var res = '';
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(items) || !items.length) {
+            return res;
+        }
+        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+            var item = items_1[_i];
+            if (res.length) {
+                res += ',';
+            }
+            res += item;
+        }
+        return res;
+    };
+    QueryOptionList.isEmpty = function (items) {
+        return __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(items) || !items.length;
+    };
+    QueryOptionList.prototype.toString = function () {
+        var res = '';
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.items) || !this.items.length) {
+            return res;
+        }
+        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (res.length) {
+                res += ',';
+            }
+            res += item;
+        }
+        return res;
+    };
+    QueryOptionList.prototype.isEmpty = function () {
+        return __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.items) || !this.items.length;
+    };
+    return QueryOptionList;
+}());
+
+//# sourceMappingURL=query-option-list.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/query-options/query-options.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__query_option_list__ = __webpack_require__("../../../../../src/app/odata/query-options/query-option-list.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QueryOptions; });
+
 
 var QueryOptions = (function () {
     function QueryOptions() {
     }
     QueryOptions.prototype.select = function (select) {
         this.checkFieldAlreadySet(this._select, 'select');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
         this._select = select;
         return this;
     };
     QueryOptions.prototype.filter = function (filter) {
         this.checkFieldAlreadySet(this._filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
         this._filter = filter;
         return this;
     };
     QueryOptions.prototype.expand = function (expand) {
         this.checkFieldAlreadySet(this._expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
         this._expand = expand;
         return this;
     };
     QueryOptions.prototype.orderby = function (orderby) {
         this.checkFieldAlreadySet(this._orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
         this._orderby = orderby;
         return this;
     };
     QueryOptions.prototype.skip = function (skip) {
         this.checkFieldAlreadySet(this._skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
         this._skip = skip;
         return this;
     };
     QueryOptions.prototype.top = function (top) {
         this.checkFieldAlreadySet(this._top, 'top');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
         this._top = top;
         return this;
     };
     QueryOptions.prototype.count = function (count) {
         this.checkFieldAlreadySet(this._count, 'count');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
         this._count = count;
         return this;
     };
     QueryOptions.prototype.search = function (search) {
         this.checkFieldAlreadySet(this._search, 'search');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(search, 'search');
         this._search = search;
         return this;
     };
@@ -936,53 +1022,53 @@ var QueryOptions = (function () {
         // query options
         var queryOptions = '';
         // add select
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
-            queryOptions += '$select=' + this._select;
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
+            queryOptions += '$select=' + __WEBPACK_IMPORTED_MODULE_0__query_option_list__["a" /* QueryOptionList */].toString(this._select);
         }
         // add filter
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
             queryOptions += '$filter=' + this._filter;
         }
         // add expand
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
-            queryOptions += '$expand=' + this._expand;
+            queryOptions += '$expand=' + __WEBPACK_IMPORTED_MODULE_0__query_option_list__["a" /* QueryOptionList */].toString(this._expand);
         }
         // add orderby
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
-            queryOptions += '$orderby=' + this._orderby;
+            queryOptions += '$orderby=' + __WEBPACK_IMPORTED_MODULE_0__query_option_list__["a" /* QueryOptionList */].toString(this._orderby);
         }
         // add skip
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
             queryOptions += '$skip=' + this._skip;
         }
         // add top
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
             queryOptions += '$top=' + this._top;
         }
         // add count
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
             queryOptions += '$count=' + this._count;
         }
         // add search
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
             if (queryOptions.length) {
                 queryOptions += '&';
             }
@@ -992,7 +1078,7 @@ var QueryOptions = (function () {
     };
     QueryOptions.prototype.isEmpty = function () {
         for (var key in this) {
-            if (this.hasOwnProperty(key) && __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this[key])) {
+            if (this.hasOwnProperty(key) && !__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isEmpty(this[key])) {
                 return false;
             }
         }
@@ -1000,7 +1086,7 @@ var QueryOptions = (function () {
     };
     QueryOptions.prototype.checkFieldAlreadySet = function (fieldValue, fieldName) {
         try {
-            __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
+            __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
         }
         catch (error) {
             throw new Error(fieldName + ' is already set');
@@ -1035,24 +1121,42 @@ var Utils = (function () {
     Utils.isNotNullNorUndefined = function (value) {
         return !Utils.isNull(value) && !Utils.isUndefined(value);
     };
+    Utils.isEmpty = function (value) {
+        if (Utils.isNullOrUndefined(value)
+            || typeof (value) === 'string' && !value.length
+            || value instanceof Array && !value.length
+            || typeof (value.isEmpty) === 'function' && value.isEmpty()) {
+            return true;
+        }
+        if (value instanceof Array && value) {
+            for (var _i = 0, value_1 = value; _i < value_1.length; _i++) {
+                var v = value_1[_i];
+                if (!Utils.isEmpty(v)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    };
     Utils.requireNull = function (fieldValue, fieldName) {
         if (fieldValue !== null) {
-            throw new Error(fieldName + ' is not null');
+            throw new Error(fieldName + ' must be null');
         }
     };
     Utils.requireUndefined = function (fieldValue, fieldName) {
         if (fieldValue !== undefined) {
-            throw new Error(fieldName + ' is not undefined');
+            throw new Error(fieldName + ' must be undefined');
         }
     };
     Utils.requireNotNull = function (fieldValue, fieldName) {
         if (fieldValue === null) {
-            throw new Error(fieldName + ' is null');
+            throw new Error(fieldName + ' cannot be null');
         }
     };
     Utils.requireNotUndefined = function (fieldValue, fieldName) {
         if (fieldValue === undefined) {
-            throw new Error(fieldName + ' is undefined');
+            throw new Error(fieldName + ' cannot be undefined');
         }
     };
     Utils.requireNotNullNorUndefined = function (fieldValue, fieldName) {
@@ -1061,19 +1165,17 @@ var Utils = (function () {
     };
     Utils.requireNullOrUndefined = function (fieldValue, fieldName) {
         if (!Utils.isNull(fieldValue) && !Utils.isUndefined(fieldValue)) {
-            throw new Error(fieldName + ' is not null nor undefined');
+            throw new Error(fieldName + ' must be null or undefined');
         }
     };
     Utils.requireNotEmpty = function (fieldValue, fieldName) {
-        if (Utils.isNullOrUndefined(fieldValue)
-            || typeof (fieldValue) === 'string' && !fieldValue.length
-            || typeof (fieldValue.isEmpty) === 'function' && fieldValue.isEmpty()) {
-            throw new Error(fieldName + ' is empty');
+        if (Utils.isEmpty(fieldValue)) {
+            throw new Error(fieldName + ' cannot be empty');
         }
     };
     Utils.requireNotNegative = function (fieldValue, fieldName) {
         if (fieldValue < 0) {
-            throw new Error(fieldName + ' is negative');
+            throw new Error(fieldName + ' cannot be negative');
         }
     };
     Utils.appendSegment = function (path, segment) {

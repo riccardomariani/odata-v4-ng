@@ -10,7 +10,7 @@ class Example {
   public query: string;
   public code: string;
   public response: string;
-  public subscr: Subscription;
+  public odataQuery: ODataQuery;
 }
 
 const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
@@ -24,6 +24,7 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'odata-v4-ng';
   serviceRoot: string = SERVICE_ROOT;
   examples: Example[];
+  subscr: Subscription;
 
   constructor(private odataService: ODataService) { }
 
@@ -34,33 +35,33 @@ export class AppComponent implements OnInit, OnDestroy {
     this.examples.push(example);
     example.title = 'Get service document';
     example.query = SERVICE_ROOT;
-    example.code = `new ODataQuery(this.odataService, SERVICE_ROOT)
-    .get().subscribe((odataResponse: ODataResponse) => {
-      this.examples[0].response = odataResponse.toString();
+    example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);
+    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {
+      example.response = odataResponse.toString();
     });`;
-    example.subscr = new ODataQuery(this.odataService, SERVICE_ROOT)
-      .get().subscribe((odataResponse: ODataResponse) => {
-        this.examples[0].response = odataResponse.toString();
-      });
+    example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);
     //
     example = new Example();
     this.examples.push(example);
     example.title = 'Get entity set';
     example.query = SERVICE_ROOT + '/People';
-    example.code = `new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')
-    .get().subscribe((odataResponse: ODataResponse) => {
-      this.examples[1].response = odataResponse.toString();
+    example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People');
+    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {
+      example.response = odataResponse.toString();
     });`;
-    example.subscr = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People')
-      .get().subscribe((odataResponse: ODataResponse) => {
-        this.examples[1].response = odataResponse.toString();
-      });
+    example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People');
     //
   }
 
   ngOnDestroy() {
-    for (const example of this.examples) {
-      example.subscr.unsubscribe();
+    if (this.subscr) {
+      this.subscr.unsubscribe();
     }
+  }
+
+  execute(example: Example): void {
+    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {
+      example.response = odataResponse.toString();
+    });
   }
 }

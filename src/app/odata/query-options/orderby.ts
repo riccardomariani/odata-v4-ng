@@ -5,17 +5,11 @@ export enum Order {
     ASC, DESC
 }
 
-export class Orderby extends QueryOptionList {
-    constructor(orderbyItems: OrderbyItem[]) {
-        super(orderbyItems);
-    }
-}
-
-export class OrderbyItem {
+export class Orderby {
     private property: string;
     private order: Order;
 
-    constructor(property: string, order: Order = Order.ASC) {
+    constructor(property: string, order?: Order) {
         Utils.requireNotNullNorUndefined(property, 'property');
         this.property = property;
         this.order = order;

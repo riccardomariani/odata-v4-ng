@@ -4,7 +4,6 @@ import { ODataService } from '../odata-service/odata.service';
 import { Orderby } from '../query-options/orderby';
 import { Expand } from '../query-options/expand';
 import { FilterFreeForm, Filter } from '../query-options/filter';
-import { Select } from '../query-options/select';
 import { Utils } from '../utils/utils';
 import { QueryOptions } from '../query-options/query-options';
 import { Observable } from 'rxjs/Observable';
@@ -12,6 +11,7 @@ import { Injectable } from '@angular/core';
 import { ODataQueryBatch } from './odata-query-batch';
 import { ODataQueryAbstract } from './odata-query-abstract';
 import { QuotedString } from './quoted-string';
+import { SearchItem } from '../query-options/search/search-item';
 
 export class ODataQuery extends ODataQueryAbstract {
   // SEGMENT NAMES
@@ -147,7 +147,7 @@ export class ODataQuery extends ODataQueryAbstract {
 
   // QUERY OPTIONS
 
-  select(select: Select): ODataQuery {
+  select(select: string[]): ODataQuery {
     this.queryOptions.select(select);
     return this;
   }
@@ -157,12 +157,12 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  expand(expand: Expand): ODataQuery {
+  expand(expand: Expand[]): ODataQuery {
     this.queryOptions.expand(expand);
     return this;
   }
 
-  orderby(orderby: Orderby): ODataQuery {
+  orderby(orderby: Orderby[]): ODataQuery {
     this.queryOptions.orderby(orderby);
     return this;
   }
@@ -177,7 +177,7 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  search(search: string): ODataQuery {
+  search(search: SearchItem): ODataQuery {
     this.queryOptions.search(search);
     return this;
   }

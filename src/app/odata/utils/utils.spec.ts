@@ -10,18 +10,24 @@ describe('Utils', () => {
     fieldValue = null;
     Utils.requireNullOrUndefined(fieldValue, fieldName);
     fieldValue = {};
-    expect(() => Utils.requireNullOrUndefined(fieldValue, fieldName)).toThrowError(fieldName + ' is not null nor undefined');
+    expect(() => Utils.requireNullOrUndefined(fieldValue, fieldName)).toThrowError(fieldName + ' must be null or undefined');
   });
 
   it('test requireNotEmpty', () => {
     let fieldValue: any;
-    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' is empty');
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
     fieldValue = null;
-    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' is empty');
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
     fieldValue = '';
-    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' is empty');
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
+    fieldValue = [];
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
     fieldValue = { isEmpty(): boolean { return true; } };
-    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' is empty');
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
+    fieldValue = [''];
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
+    fieldValue = [{ isEmpty(): boolean { return true; } }];
+    expect(() => Utils.requireNotEmpty(fieldValue, fieldName)).toThrowError(fieldName + ' cannot be empty');
     fieldValue = { isEmpty(): boolean { return; } };
     Utils.requireNotEmpty(fieldValue, fieldName);
     fieldValue = { isEmpty(): boolean { return null; } };
@@ -33,14 +39,14 @@ describe('Utils', () => {
   it('test appendSegment', () => {
     let path: string;
     let segment: string;
-    expect(() => Utils.appendSegment(path, segment)).toThrowError('path is undefined');
+    expect(() => Utils.appendSegment(path, segment)).toThrowError('path cannot be undefined');
     path = '';
-    expect(() => Utils.appendSegment(path, segment)).toThrowError('segment is undefined');
+    expect(() => Utils.appendSegment(path, segment)).toThrowError('segment cannot be undefined');
     path = null;
-    expect(() => Utils.appendSegment(path, segment)).toThrowError('path is null');
+    expect(() => Utils.appendSegment(path, segment)).toThrowError('path cannot be null');
     path = '';
     segment = null;
-    expect(() => Utils.appendSegment(path, segment)).toThrowError('segment is null');
+    expect(() => Utils.appendSegment(path, segment)).toThrowError('segment cannot be null');
     path = '';
     segment = '';
     expect(Utils.appendSegment(path, segment)).toEqual('/');
@@ -57,9 +63,9 @@ describe('Utils', () => {
 
   it('test removeEndingSeparator', () => {
     let value: string;
-    expect(() => Utils.removeEndingSeparator(value)).toThrowError('value is undefined');
+    expect(() => Utils.removeEndingSeparator(value)).toThrowError('value cannot be undefined');
     value = null;
-    expect(() => Utils.removeEndingSeparator(value)).toThrowError('value is null');
+    expect(() => Utils.removeEndingSeparator(value)).toThrowError('value cannot be null');
     value = '';
     expect(Utils.removeEndingSeparator(value)).toEqual('');
     value = 'v';
@@ -73,12 +79,12 @@ describe('Utils', () => {
   it('test getValueURI', () => {
     let value: any;
     let encodeURI: any;
-    expect(() => Utils.getValueURI(value, encodeURI)).toThrowError('value is undefined');
-    expect(() => Utils.getValueURI('value', encodeURI)).toThrowError('encodeURI is undefined');
+    expect(() => Utils.getValueURI(value, encodeURI)).toThrowError('value cannot be undefined');
+    expect(() => Utils.getValueURI('value', encodeURI)).toThrowError('encodeURI cannot be undefined');
     value = null;
     encodeURI = null;
-    expect(() => Utils.getValueURI(value, encodeURI)).toThrowError('value is null');
-    expect(() => Utils.getValueURI('value', encodeURI)).toThrowError('encodeURI is null');
+    expect(() => Utils.getValueURI(value, encodeURI)).toThrowError('value cannot be null');
+    expect(() => Utils.getValueURI('value', encodeURI)).toThrowError('encodeURI cannot be null');
     value = true;
     expect(Utils.getValueURI(value, true)).toEqual(true);
     expect(Utils.getValueURI(value, false)).toEqual(true);

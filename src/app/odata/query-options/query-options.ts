@@ -1,20 +1,21 @@
+import { QueryOptionList } from './query-option-list';
 import { Filter, FilterFreeForm } from './filter';
 import { Expand } from './expand';
 import { Utils } from '../utils/utils';
-import { Select } from './select';
 import { Orderby } from './orderby';
+import { SearchItem } from './search/search-item';
 
 export class QueryOptions {
-  private _select: Select;
+  private _select: string[];
   private _filter: Filter;
-  private _expand: Expand;
-  private _orderby: Orderby;
+  private _expand: Expand[];
+  private _orderby: Orderby[];
   private _skip: number;
   private _top: number;
   private _count: boolean;
-  private _search: string;
+  private _search: SearchItem;
 
-  select(select: Select): QueryOptions {
+  select(select: string[]): QueryOptions {
     this.checkFieldAlreadySet(this._select, 'select');
     Utils.requireNotNullNorUndefined(select, 'select');
     Utils.requireNotEmpty(select, 'select');
@@ -30,7 +31,7 @@ export class QueryOptions {
     return this;
   }
 
-  expand(expand: Expand): QueryOptions {
+  expand(expand: Expand[]): QueryOptions {
     this.checkFieldAlreadySet(this._expand, 'expand');
     Utils.requireNotNullNorUndefined(expand, 'expand');
     Utils.requireNotEmpty(expand, 'expand');
@@ -38,7 +39,7 @@ export class QueryOptions {
     return this;
   }
 
-  orderby(orderby: Orderby): QueryOptions {
+  orderby(orderby: Orderby[]): QueryOptions {
     this.checkFieldAlreadySet(this._orderby, 'orderby');
     Utils.requireNotNullNorUndefined(orderby, 'orderby');
     Utils.requireNotEmpty(orderby, 'orderby');
@@ -69,9 +70,10 @@ export class QueryOptions {
     return this;
   }
 
-  search(search: string): QueryOptions {
+  search(search: SearchItem): QueryOptions {
     this.checkFieldAlreadySet(this._search, 'search');
     Utils.requireNotUndefined(search, 'search');
+    Utils.requireNotEmpty(search, 'search');
     this._search = search;
     return this;
   }
@@ -82,7 +84,7 @@ export class QueryOptions {
 
     // add select
     if (!Utils.isNullOrUndefined(this._select)) {
-      queryOptions += '$select=' + this._select;
+      queryOptions += '$select=' + QueryOptionList.toString(this._select);
     }
 
     // add filter
@@ -98,7 +100,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += '&';
       }
-      queryOptions += '$expand=' + this._expand;
+      queryOptions += '$expand=' + QueryOptionList.toString(this._expand);
     }
 
     // add orderby
@@ -106,7 +108,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += '&';
       }
-      queryOptions += '$orderby=' + this._orderby;
+      queryOptions += '$orderby=' + QueryOptionList.toString(this._orderby);
     }
 
     // add skip
@@ -146,7 +148,7 @@ export class QueryOptions {
 
   isEmpty(): boolean {
     for (const key in this) {
-      if (this.hasOwnProperty(key) && Utils.isNotNullNorUndefined(this[key])) {
+      if (this.hasOwnProperty(key) && !Utils.isEmpty(this[key])) {
         return false;
       }
     }

@@ -18,27 +18,45 @@ export class Utils {
         return !Utils.isNull(value) && !Utils.isUndefined(value);
     }
 
+    static isEmpty(value: any): boolean {
+        if (Utils.isNullOrUndefined(value)
+            || typeof (value) === 'string' && !value.length
+            || value instanceof Array && !value.length
+            || typeof (value.isEmpty) === 'function' && value.isEmpty()) {
+            return true;
+        }
+        if (value instanceof Array && value) {
+            for (const v of value) {
+                if (!Utils.isEmpty(v)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     static requireNull(fieldValue: any, fieldName: String) {
         if (fieldValue !== null) {
-            throw new Error(fieldName + ' is not null');
+            throw new Error(fieldName + ' must be null');
         }
     }
 
     static requireUndefined(fieldValue: any, fieldName: String) {
         if (fieldValue !== undefined) {
-            throw new Error(fieldName + ' is not undefined');
+            throw new Error(fieldName + ' must be undefined');
         }
     }
 
     static requireNotNull(fieldValue: any, fieldName: String) {
         if (fieldValue === null) {
-            throw new Error(fieldName + ' is null');
+            throw new Error(fieldName + ' cannot be null');
         }
     }
 
     static requireNotUndefined(fieldValue: any, fieldName: String) {
         if (fieldValue === undefined) {
-            throw new Error(fieldName + ' is undefined');
+            throw new Error(fieldName + ' cannot be undefined');
         }
     }
 
@@ -49,21 +67,19 @@ export class Utils {
 
     static requireNullOrUndefined(fieldValue: any, fieldName: String) {
         if (!Utils.isNull(fieldValue) && !Utils.isUndefined(fieldValue)) {
-            throw new Error(fieldName + ' is not null nor undefined');
+            throw new Error(fieldName + ' must be null or undefined');
         }
     }
 
     static requireNotEmpty(fieldValue: any, fieldName: String) {
-        if (Utils.isNullOrUndefined(fieldValue)
-            || typeof (fieldValue) === 'string' && !fieldValue.length
-            || typeof (fieldValue.isEmpty) === 'function' && fieldValue.isEmpty()) {
-            throw new Error(fieldName + ' is empty');
+        if (Utils.isEmpty(fieldValue)) {
+            throw new Error(fieldName + ' cannot be empty');
         }
     }
 
     static requireNotNegative(fieldValue: number, fieldName: String) {
         if (fieldValue < 0) {
-            throw new Error(fieldName + ' is negative');
+            throw new Error(fieldName + ' cannot be negative');
         }
     }
 

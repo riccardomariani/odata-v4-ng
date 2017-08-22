@@ -64,13 +64,9 @@ export class FilterLogical extends FilterHasFilter implements Filter {
         if (Utils.isNullOrUndefined(this.filter)) {
             return true;
         }
-        if (this.filter instanceof Filter) {
-            return this.filter.isEmpty();
-        } else if (this.filter instanceof Array) {
-            for (const filter of this.filter) {
-                if (filter.isEmpty()) {
-                    return true;
-                }
+        for (const filter of <Filter[]>this.filter) {
+            if (filter.isEmpty()) {
+                return true;
             }
         }
         return false;

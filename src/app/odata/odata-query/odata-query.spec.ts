@@ -4,12 +4,12 @@ import { TestBed, inject } from '@angular/core/testing';
 import { ODataQuery } from './odata-query';
 import { FilterLambda, FilterBinary, Filter, FilterContains, LambdaCollection, LambdaOperator, FilterEndswith } from '../query-options/filter';
 import { OperatorComparison } from '../query-options/operator';
-import { Expand, ExpandItem } from '../query-options/expand';
-import { Orderby, Order, OrderbyItem } from '../query-options/orderby';
-import { Select } from '../query-options/select';
+import { Expand } from '../query-options/expand';
+import { Orderby, Order } from '../query-options/orderby';
 import { QueryOptions } from '../query-options/query-options';
 import { ODataQueryBatch } from './odata-query-batch';
 import { QuotedString } from './quoted-string';
+import { SearchItemSimple } from '../query-options/search/search-item-simple';
 
 const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 const ENTITY_SET = 'People';
@@ -90,7 +90,7 @@ describe('OdataQuery', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
       .entityKey(new QuotedString('russellwhyte'))
-      .expand(new Expand([new ExpandItem('Trips')]));
+      .expand([new Expand('Trips')]);
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People(\'russellwhyte\')?' + encodeURIComponent('$expand=Trips'));
   });
@@ -99,9 +99,7 @@ describe('OdataQuery', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
       .entityKey(new QuotedString('russellwhyte'))
-      .expand(new Expand([
-        new ExpandItem('Trips', new Select(['Name']), null)
-      ]));
+      .expand([new Expand('Trips', ['Name'], null)]);
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People(\'russellwhyte\')?' + encodeURIComponent('$expand=Trips($select=Name)'));
   });
@@ -110,9 +108,7 @@ describe('OdataQuery', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
       .entityKey(new QuotedString('russellwhyte'))
-      .expand(new Expand([
-        new ExpandItem('Trips', null, new FilterBinary('Name', OperatorComparison.EQ, new QuotedString('Trip in US')))
-      ]));
+      .expand([new Expand('Trips', null, new FilterBinary('Name', OperatorComparison.EQ, new QuotedString('Trip in US')))]);
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People(\'russellwhyte\')?' + encodeURIComponent('$expand=Trips($filter=Name eq \'Trip in US\')'));
   });
@@ -120,7 +116,7 @@ describe('OdataQuery', () => {
   it('should create orderby request', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
-      .orderby(new Orderby([new OrderbyItem('EndsAt', Order.DESC)]));
+      .orderby([new Orderby('EndsAt', Order.DESC)]);
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People?' + encodeURIComponent('$orderby=EndsAt desc'));
   });
@@ -152,7 +148,7 @@ describe('OdataQuery', () => {
   it('should create select request', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
-      .select(new Select(['Name', 'IcaoCode']));
+      .select(['Name', 'IcaoCode']);
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People?' + encodeURIComponent('$select=Name,IcaoCode'));
   });
@@ -160,7 +156,7 @@ describe('OdataQuery', () => {
   it('should create search request', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
-      .search('Boise');
+      .search(new SearchItemSimple('Boise'));
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People?' + encodeURIComponent('$search=Boise'));
   });

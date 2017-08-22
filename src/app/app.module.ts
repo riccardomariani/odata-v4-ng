@@ -5,6 +5,7 @@ import { NgModule } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpModule } from '@angular/http';
+import { ODataModule } from './odata/odata.module';
 
 @NgModule({
   declarations: [
@@ -13,10 +14,7 @@ import { HttpModule } from '@angular/http';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpModule
-  ],
-  providers: [
-    ODataService
+    ODataModule,
   ],
   bootstrap: [AppComponent]
 })
