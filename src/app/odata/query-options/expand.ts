@@ -1,27 +1,21 @@
-import { Filter } from './filter';
+import { QueryOptions } from './query-options';
 import { Utils } from '../utils/utils';
-import { QueryOptionList } from './query-option-list';
 
 export class Expand {
     private entitySet: string;
-    private select: string[];
-    private filter: Filter;
+    private queryOptions: QueryOptions;
 
-    constructor(entitySet: string, select?: string[], filter?: Filter) {
+    constructor(entitySet: string, queryOptions?: QueryOptions) {
         Utils.requireNotNullNorUndefined(entitySet, 'entitySet');
         Utils.requireNotEmpty(entitySet, 'entitySet');
         this.entitySet = entitySet;
-        this.select = select;
-        this.filter = filter;
+        this.queryOptions = queryOptions;
     }
 
     toString(): string {
         let res: string = this.entitySet;
-        if (!Utils.isNullOrUndefined(this.select)) {
-            res += '($select=' + QueryOptionList.toString(this.select) + ')';
-        }
-        if (!Utils.isNullOrUndefined(this.filter)) {
-            res += '($filter=' + this.filter + ')';
+        if (!Utils.isNullOrUndefined(this.queryOptions)) {
+            res += '(' + this.queryOptions + ')';
         }
         return res;
     }

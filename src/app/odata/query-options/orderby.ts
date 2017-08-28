@@ -1,5 +1,4 @@
 import { Utils } from '../utils/utils';
-import { QueryOptionList } from './query-option-list';
 
 export enum Order {
     ASC, DESC

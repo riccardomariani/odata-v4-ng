@@ -13,8 +13,7 @@ import { ODataQueryAbstract } from '../odata-query/odata-query-abstract';
 export class ODataService {
   private static readonly REQUEST_OPTIONS_ARGS: RequestOptionsArgs = {
     headers: new Headers({ 'Content-Type': 'application/json' }),
-    withCredentials: false,
-    responseType: ResponseContentType.Json
+    withCredentials: false
   };
 
   constructor(private http: Http) { }

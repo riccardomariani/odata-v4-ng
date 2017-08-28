@@ -101,6 +101,7 @@ var Example = (function () {
     return Example;
 }());
 var SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
+var CODE_EXECUTION = "example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {\n  example.response = odataResponse.toString();\n});";
 var AppComponent = (function () {
     function AppComponent(odataService) {
         this.odataService = odataService;
@@ -109,21 +110,41 @@ var AppComponent = (function () {
     }
     AppComponent.prototype.ngOnInit = function () {
         this.examples = [];
-        //
+        // SERVICE DOCUMENT
         var example = new Example();
         this.examples.push(example);
         example.title = 'Get service document';
         example.query = SERVICE_ROOT;
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {\n      example.response = odataResponse.toString();\n    });";
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT);
-        //
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + CODE_EXECUTION;
+        // SERVICE METADATA
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get service metadata';
+        example.query = SERVICE_ROOT + '/$metadata';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).metadata();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).metadata();\n    " + CODE_EXECUTION;
+        // ENTITY SET
         example = new Example();
         this.examples.push(example);
         example.title = 'Get entity set';
         example.query = SERVICE_ROOT + '/People';
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People');\n    example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {\n      example.response = odataResponse.toString();\n    });";
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People');
-        //
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People');\n" + CODE_EXECUTION;
+        // ENTITY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get entity';
+        example.query = SERVICE_ROOT + '/People(\'russellwhyte\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People').entityKey('\'russellwhyte\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People').entityKey('russellwhyte');\n" + CODE_EXECUTION;
+        // SINGLETON
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get singleton';
+        example.query = SERVICE_ROOT + '/Me';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).singleton('Me');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).singleton('Me');\n" + CODE_EXECUTION;
     };
     AppComponent.prototype.ngOnDestroy = function () {
         if (this.subscr) {
@@ -424,12 +445,21 @@ var ODataQuery = (function (_super) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataService, 'odataService');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
-        _this.queryOptions = new __WEBPACK_IMPORTED_MODULE_1__query_options_query_options__["a" /* QueryOptions */]();
+        _this.queryOptions = new __WEBPACK_IMPORTED_MODULE_1__query_options_query_options__["a" /* QueryOptions */](__WEBPACK_IMPORTED_MODULE_1__query_options_query_options__["b" /* Purpose */].ODATA_QUERY);
         _this.segments = [];
         _this.lastSegment = null;
         return _this;
     }
     // QUERY SEGMENTS
+    ODataQuery.prototype.metadata = function () {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.METADATA), ODataQuery.METADATA);
+        if (this.segments.length) {
+            throw new Error('$metadata segment cannot be appended to other segments');
+        }
+        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$METADATA);
+        this.addSegment(ODataQuery.METADATA);
+        return this;
+    };
     ODataQuery.prototype.entitySet = function (entitySet) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.ENTITY_SET), ODataQuery.ENTITY_SET);
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entitySet, 'entitySet');
@@ -447,6 +477,13 @@ var ODataQuery = (function (_super) {
         entityKey = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].getValueURI(entityKey, true);
         this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].removeEndingSeparator(this.queryString) + '(' + entityKey + ')';
         this.addSegment(ODataQuery.ENTITY_KEY);
+        return this;
+    };
+    ODataQuery.prototype.singleton = function (singleton) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(singleton, 'singleton');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(singleton, 'singleton');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, singleton);
+        this.addSegment(ODataQuery.SINGLETON);
         return this;
     };
     ODataQuery.prototype.property = function (property) {
@@ -536,6 +573,10 @@ var ODataQuery = (function (_super) {
         this.queryOptions.orderby(orderby);
         return this;
     };
+    ODataQuery.prototype.search = function (search) {
+        this.queryOptions.search(search);
+        return this;
+    };
     ODataQuery.prototype.skip = function (skip) {
         this.queryOptions.skip(skip);
         return this;
@@ -544,8 +585,8 @@ var ODataQuery = (function (_super) {
         this.queryOptions.top(top);
         return this;
     };
-    ODataQuery.prototype.search = function (search) {
-        this.queryOptions.search(search);
+    ODataQuery.prototype.customOption = function (key, value) {
+        this.queryOptions.customOption(key, value);
         return this;
     };
     // QUERY EXECUTION
@@ -589,8 +630,10 @@ var ODataQuery = (function (_super) {
 }(__WEBPACK_IMPORTED_MODULE_3__odata_query_abstract__["a" /* ODataQueryAbstract */]));
 
 // SEGMENT NAMES
+ODataQuery.METADATA = 'metadata';
 ODataQuery.ENTITY_SET = 'entitySet';
 ODataQuery.ENTITY_KEY = 'entityKey';
+ODataQuery.SINGLETON = 'singleton';
 ODataQuery.PROPERTY = 'property';
 ODataQuery.NAVIGATION_PROPERTY = 'navigationProperty';
 ODataQuery.REF = 'ref';
@@ -599,6 +642,7 @@ ODataQuery.COUNT = 'count';
 ODataQuery.FUNCTION_CALL = 'functionCall';
 ODataQuery.ACTION_CALL = 'actionCall';
 // CONSTANT SEGMENTS
+ODataQuery.$METADATA = '$metadata';
 ODataQuery.$REF = '$ref';
 ODataQuery.$VALUE = '$value';
 ODataQuery.$COUNT = '$count';
@@ -668,7 +712,14 @@ var ODataResponse = (function () {
         return this.response.ok;
     };
     ODataResponse.prototype.getBodyAsJson = function () {
-        return this.response.json();
+        var contentType = this.response.headers.get('Content-Type');
+        if (contentType.includes('json')) {
+            return this.response.json();
+        }
+        return null;
+    };
+    ODataResponse.prototype.getBodyAsText = function () {
+        return this.response.text();
     };
     ODataResponse.prototype.toEntitySet = function () {
         var json = this.getBodyAsJson();
@@ -721,6 +772,9 @@ var ODataResponse = (function () {
         var json = this.getBodyAsJson();
         if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(json)) {
             res += JSON.stringify(json, null, 4);
+        }
+        else {
+            res += this.getBodyAsText();
         }
         return res;
     };
@@ -847,12 +901,11 @@ var ODataService = ODataService_1 = (function () {
 }());
 ODataService.REQUEST_OPTIONS_ARGS = {
     headers: new __WEBPACK_IMPORTED_MODULE_4__angular_http__["c" /* Headers */]({ 'Content-Type': 'application/json' }),
-    withCredentials: false,
-    responseType: __WEBPACK_IMPORTED_MODULE_4__angular_http__["d" /* ResponseContentType */].Json
+    withCredentials: false
 };
 ODataService = ODataService_1 = __decorate([
     __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__angular_core__["c" /* Injectable */])(),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__angular_http__["e" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_http__["e" /* Http */]) === "function" && _a || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__angular_http__["d" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_http__["d" /* Http */]) === "function" && _a || Object])
 ], ODataService);
 
 var ODataService_1, _a;
@@ -898,56 +951,38 @@ ODataModule = __decorate([
 
 /***/ }),
 
-/***/ "../../../../../src/app/odata/query-options/query-option-list.ts":
+/***/ "../../../../../src/app/odata/query-options/operator.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QueryOptionList; });
-
-var QueryOptionList = (function () {
-    function QueryOptionList(items) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(items, 'items');
-        this.items = items;
-    }
-    QueryOptionList.toString = function (items) {
-        var res = '';
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(items) || !items.length) {
-            return res;
-        }
-        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
-            var item = items_1[_i];
-            if (res.length) {
-                res += ',';
-            }
-            res += item;
-        }
-        return res;
-    };
-    QueryOptionList.isEmpty = function (items) {
-        return __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(items) || !items.length;
-    };
-    QueryOptionList.prototype.toString = function () {
-        var res = '';
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.items) || !this.items.length) {
-            return res;
-        }
-        for (var _i = 0, _a = this.items; _i < _a.length; _i++) {
-            var item = _a[_i];
-            if (res.length) {
-                res += ',';
-            }
-            res += item;
-        }
-        return res;
-    };
-    QueryOptionList.prototype.isEmpty = function () {
-        return __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.items) || !this.items.length;
-    };
-    return QueryOptionList;
-}());
-
-//# sourceMappingURL=query-option-list.js.map
+/* unused harmony export OperatorComparison */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OperatorLogical; });
+/* unused harmony export OperatorArithmetic */
+var OperatorComparison;
+(function (OperatorComparison) {
+    OperatorComparison[OperatorComparison["EQ"] = 0] = "EQ";
+    OperatorComparison[OperatorComparison["NE"] = 1] = "NE";
+    OperatorComparison[OperatorComparison["GT"] = 2] = "GT";
+    OperatorComparison[OperatorComparison["GE"] = 3] = "GE";
+    OperatorComparison[OperatorComparison["LT"] = 4] = "LT";
+    OperatorComparison[OperatorComparison["LE"] = 5] = "LE";
+    OperatorComparison[OperatorComparison["HAS"] = 6] = "HAS";
+})(OperatorComparison || (OperatorComparison = {}));
+var OperatorLogical;
+(function (OperatorLogical) {
+    OperatorLogical[OperatorLogical["AND"] = 0] = "AND";
+    OperatorLogical[OperatorLogical["OR"] = 1] = "OR";
+    OperatorLogical[OperatorLogical["NOT"] = 2] = "NOT";
+})(OperatorLogical || (OperatorLogical = {}));
+var OperatorArithmetic;
+(function (OperatorArithmetic) {
+    OperatorArithmetic[OperatorArithmetic["ADD"] = 0] = "ADD";
+    OperatorArithmetic[OperatorArithmetic["SUB"] = 1] = "SUB";
+    OperatorArithmetic[OperatorArithmetic["MUL"] = 2] = "MUL";
+    OperatorArithmetic[OperatorArithmetic["DIV"] = 3] = "DIV";
+    OperatorArithmetic[OperatorArithmetic["MOD"] = 4] = "MOD";
+})(OperatorArithmetic || (OperatorArithmetic = {}));
+//# sourceMappingURL=operator.js.map
 
 /***/ }),
 
@@ -955,130 +990,197 @@ var QueryOptionList = (function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__query_option_list__ = __webpack_require__("../../../../../src/app/odata/query-options/query-option-list.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Purpose; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QueryOptions; });
 
-
+var Purpose;
+(function (Purpose) {
+    Purpose[Purpose["ODATA_QUERY"] = 0] = "ODATA_QUERY";
+    Purpose[Purpose["EXPAND"] = 1] = "EXPAND";
+})(Purpose || (Purpose = {}));
 var QueryOptions = (function () {
-    function QueryOptions() {
+    function QueryOptions(purpose) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(purpose, 'purpose');
+        this._purpose = purpose;
+        switch (this._purpose) {
+            case Purpose.ODATA_QUERY:
+                this._separator = '&';
+                break;
+            case Purpose.EXPAND:
+                this._separator = ';';
+                break;
+            default:
+                throw new Error('Unknown purpose: ' + purpose);
+        }
+        this._select = null;
+        this._filter = null;
+        this._expand = null;
+        this._orderby = null;
+        this._search = null;
+        this._skip = null;
+        this._top = null;
+        this._count = null;
+        this._customOptions = [];
     }
     QueryOptions.prototype.select = function (select) {
         this.checkFieldAlreadySet(this._select, 'select');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
         this._select = select;
         return this;
     };
     QueryOptions.prototype.filter = function (filter) {
         this.checkFieldAlreadySet(this._filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
         this._filter = filter;
         return this;
     };
     QueryOptions.prototype.expand = function (expand) {
         this.checkFieldAlreadySet(this._expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
         this._expand = expand;
         return this;
     };
     QueryOptions.prototype.orderby = function (orderby) {
         this.checkFieldAlreadySet(this._orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
         this._orderby = orderby;
+        return this;
+    };
+    QueryOptions.prototype.search = function (search) {
+        this.checkFieldAlreadySet(this._search, 'search');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(search, 'search');
+        this._search = search;
         return this;
     };
     QueryOptions.prototype.skip = function (skip) {
         this.checkFieldAlreadySet(this._skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
         this._skip = skip;
         return this;
     };
     QueryOptions.prototype.top = function (top) {
         this.checkFieldAlreadySet(this._top, 'top');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
         this._top = top;
         return this;
     };
     QueryOptions.prototype.count = function (count) {
         this.checkFieldAlreadySet(this._count, 'count');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
         this._count = count;
         return this;
     };
-    QueryOptions.prototype.search = function (search) {
-        this.checkFieldAlreadySet(this._search, 'search');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(search, 'search');
-        this._search = search;
+    QueryOptions.prototype.customOption = function (key, value) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(key, 'key');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(key, 'key');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(value, 'value');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(value, 'value');
+        this._customOptions.push(key + '=' + value);
         return this;
     };
     QueryOptions.prototype.toString = function () {
         // query options
         var queryOptions = '';
         // add select
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
-            queryOptions += '$select=' + __WEBPACK_IMPORTED_MODULE_0__query_option_list__["a" /* QueryOptionList */].toString(this._select);
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
+            queryOptions += '$select=';
+            if (typeof (this._select) === 'string') {
+                queryOptions += this._select;
+            }
+            else {
+                queryOptions += __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].toString(this._select);
+            }
         }
         // add filter
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
             if (queryOptions.length) {
-                queryOptions += '&';
+                queryOptions += this._separator;
             }
             queryOptions += '$filter=' + this._filter;
         }
         // add expand
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
             if (queryOptions.length) {
-                queryOptions += '&';
+                queryOptions += this._separator;
             }
-            queryOptions += '$expand=' + __WEBPACK_IMPORTED_MODULE_0__query_option_list__["a" /* QueryOptionList */].toString(this._expand);
+            queryOptions += '$expand=';
+            if (typeof (this._expand) === 'string') {
+                queryOptions += this._expand;
+            }
+            else {
+                queryOptions += __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].toString(this._expand);
+            }
         }
         // add orderby
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
             if (queryOptions.length) {
-                queryOptions += '&';
+                queryOptions += this._separator;
             }
-            queryOptions += '$orderby=' + __WEBPACK_IMPORTED_MODULE_0__query_option_list__["a" /* QueryOptionList */].toString(this._orderby);
+            queryOptions += '$orderby=';
+            if (typeof (this._orderby) === 'string') {
+                queryOptions += this._orderby;
+            }
+            else {
+                queryOptions += __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].toString(this._orderby);
+            }
+        }
+        // add search
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
+            if (queryOptions.length) {
+                queryOptions += this._separator;
+            }
+            queryOptions += '$search=' + this._search;
         }
         // add skip
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
             if (queryOptions.length) {
-                queryOptions += '&';
+                queryOptions += this._separator;
             }
             queryOptions += '$skip=' + this._skip;
         }
         // add top
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
             if (queryOptions.length) {
-                queryOptions += '&';
+                queryOptions += this._separator;
             }
             queryOptions += '$top=' + this._top;
         }
         // add count
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
             if (queryOptions.length) {
-                queryOptions += '&';
+                queryOptions += this._separator;
             }
             queryOptions += '$count=' + this._count;
         }
-        // add search
-        if (!__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
-            if (queryOptions.length) {
-                queryOptions += '&';
+        // add custom query options
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this._customOptions) && this._customOptions.length) {
+            for (var _i = 0, _a = this._customOptions; _i < _a.length; _i++) {
+                var customOption = _a[_i];
+                if (queryOptions.length) {
+                    queryOptions += this._separator;
+                }
+                queryOptions += customOption;
             }
-            queryOptions += '$search=' + this._search;
         }
-        return encodeURIComponent(queryOptions);
+        if (this._purpose === Purpose.ODATA_QUERY) {
+            return encodeURIComponent(queryOptions);
+        }
+        return queryOptions;
     };
     QueryOptions.prototype.isEmpty = function () {
         for (var key in this) {
-            if (this.hasOwnProperty(key) && !__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isEmpty(this[key])) {
+            if (key === '_purpose' || key === '_separator') {
+                continue;
+            }
+            if (this.hasOwnProperty(key) && !__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isEmpty(this[key])) {
                 return false;
             }
         }
@@ -1086,7 +1188,7 @@ var QueryOptions = (function () {
     };
     QueryOptions.prototype.checkFieldAlreadySet = function (fieldValue, fieldName) {
         try {
-            __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
+            __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
         }
         catch (error) {
             throw new Error(fieldName + ' is already set');
@@ -1103,8 +1205,10 @@ var QueryOptions = (function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_query_quoted_string__ = __webpack_require__("../../../../../src/app/odata/odata-query/quoted-string.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__query_options_operator__ = __webpack_require__("../../../../../src/app/odata/query-options/operator.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_query_quoted_string__ = __webpack_require__("../../../../../src/app/odata/odata-query/quoted-string.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Utils; });
+
 
 var Utils = (function () {
     function Utils() {
@@ -1197,7 +1301,7 @@ var Utils = (function () {
         return value;
     };
     Utils.getValueURI = function (value, encodeURI) {
-        Utils.requireNotNullNorUndefined(value, 'value');
+        Utils.requireNotUndefined(value, 'value');
         Utils.requireNotNullNorUndefined(encodeURI, 'encodeURI');
         var res = value;
         if (typeof (res) === 'string') {
@@ -1206,7 +1310,7 @@ var Utils = (function () {
                 res = encodeURIComponent(res);
             }
         }
-        else if (res instanceof __WEBPACK_IMPORTED_MODULE_0__odata_query_quoted_string__["a" /* QuotedString */]) {
+        else if (res instanceof __WEBPACK_IMPORTED_MODULE_1__odata_query_quoted_string__["a" /* QuotedString */]) {
             // escape single quote
             res = res.toString().replace(/'/g, '\'\'');
             // encode uri component
@@ -1218,6 +1322,41 @@ var Utils = (function () {
         }
         // boolean, number
         return res;
+    };
+    Utils.toString = function (items, operator, operatorUppercase) {
+        if (operatorUppercase === void 0) { operatorUppercase = false; }
+        var res = '';
+        if (Utils.isNullOrUndefined(items) || !items.length) {
+            return res;
+        }
+        for (var _i = 0, items_1 = items; _i < items_1.length; _i++) {
+            var item = items_1[_i];
+            if (res.length) {
+                if (Utils.isNotNullNorUndefined(operator)) {
+                    var operatorString = Utils.getOperatorString(operator, operatorUppercase);
+                    res += " " + operatorString + " ";
+                }
+                else {
+                    res += ',';
+                }
+            }
+            if (Utils.isNotNullNorUndefined(operator) && operator === __WEBPACK_IMPORTED_MODULE_0__query_options_operator__["a" /* OperatorLogical */].NOT) {
+                var operatorString = Utils.getOperatorString(operator, operatorUppercase);
+                res += operatorString + " ";
+            }
+            res += item;
+        }
+        if (Utils.isNotNullNorUndefined(operator)) {
+            return "(" + res + ")";
+        }
+        return res;
+    };
+    Utils.getOperatorString = function (operator, operatorUppercase) {
+        var operatorString = __WEBPACK_IMPORTED_MODULE_0__query_options_operator__["a" /* OperatorLogical */][operator].toLowerCase();
+        if (Utils.isNotNullNorUndefined(operatorUppercase) && operatorUppercase) {
+            operatorString = operatorString.toUpperCase();
+        }
+        return operatorString;
     };
     return Utils;
 }());

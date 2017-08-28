@@ -1,22 +1,24 @@
+import { Filter } from '../query-options/filter/filter';
 import { Headers, RequestOptionsArgs } from '@angular/http';
 import { ODataResponse } from '../odata-response/odata-response';
 import { ODataService } from '../odata-service/odata.service';
 import { Orderby } from '../query-options/orderby';
 import { Expand } from '../query-options/expand';
-import { FilterFreeForm, Filter } from '../query-options/filter';
 import { Utils } from '../utils/utils';
-import { QueryOptions } from '../query-options/query-options';
+import { QueryOptions, Purpose } from '../query-options/query-options';
 import { Observable } from 'rxjs/Observable';
 import { Injectable } from '@angular/core';
 import { ODataQueryBatch } from './odata-query-batch';
 import { ODataQueryAbstract } from './odata-query-abstract';
 import { QuotedString } from './quoted-string';
-import { SearchItem } from '../query-options/search/search-item';
+import { Search } from '../query-options/search/search';
 
 export class ODataQuery extends ODataQueryAbstract {
   // SEGMENT NAMES
+  private static readonly METADATA = 'metadata';
   private static readonly ENTITY_SET = 'entitySet';
   private static readonly ENTITY_KEY = 'entityKey';
+  private static readonly SINGLETON = 'singleton';
   private static readonly PROPERTY = 'property';
   private static readonly NAVIGATION_PROPERTY = 'navigationProperty';
   private static readonly REF = 'ref';
@@ -26,6 +28,7 @@ export class ODataQuery extends ODataQueryAbstract {
   private static readonly ACTION_CALL = 'actionCall';
 
   // CONSTANT SEGMENTS
+  private static readonly $METADATA = '$metadata';
   private static readonly $REF = '$ref';
   private static readonly $VALUE = '$value';
   private static readonly $COUNT = '$count';
@@ -40,12 +43,22 @@ export class ODataQuery extends ODataQueryAbstract {
     Utils.requireNotNullNorUndefined(odataService, 'odataService');
     Utils.requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
     Utils.requireNotEmpty(serviceRoot, 'serviceRoot');
-    this.queryOptions = new QueryOptions();
+    this.queryOptions = new QueryOptions(Purpose.ODATA_QUERY);
     this.segments = [];
     this.lastSegment = null;
   }
 
   // QUERY SEGMENTS
+
+  metadata(): ODataQuery {
+    Utils.requireNullOrUndefined(this.getSegment(ODataQuery.METADATA), ODataQuery.METADATA);
+    if (this.segments.length) {
+      throw new Error('$metadata segment cannot be appended to other segments');
+    }
+    this.queryString = Utils.appendSegment(this.queryString, ODataQuery.$METADATA);
+    this.addSegment(ODataQuery.METADATA);
+    return this;
+  }
 
   entitySet(entitySet: string): ODataQuery {
     Utils.requireNullOrUndefined(this.getSegment(ODataQuery.ENTITY_SET), ODataQuery.ENTITY_SET);
@@ -65,6 +78,14 @@ export class ODataQuery extends ODataQueryAbstract {
     entityKey = Utils.getValueURI(entityKey, true);
     this.queryString = Utils.removeEndingSeparator(this.queryString) + '(' + entityKey + ')';
     this.addSegment(ODataQuery.ENTITY_KEY);
+    return this;
+  }
+
+  singleton(singleton: string) {
+    Utils.requireNotNullNorUndefined(singleton, 'singleton');
+    Utils.requireNotEmpty(singleton, 'singleton');
+    this.queryString = Utils.appendSegment(this.queryString, singleton);
+    this.addSegment(ODataQuery.SINGLETON);
     return this;
   }
 
@@ -147,23 +168,28 @@ export class ODataQuery extends ODataQueryAbstract {
 
   // QUERY OPTIONS
 
-  select(select: string[]): ODataQuery {
+  select(select: string | string[]): ODataQuery {
     this.queryOptions.select(select);
     return this;
   }
 
-  filter(filter: Filter): ODataQuery {
+  filter(filter: string | Filter): ODataQuery {
     this.queryOptions.filter(filter);
     return this;
   }
 
-  expand(expand: Expand[]): ODataQuery {
+  expand(expand: string | Expand[]): ODataQuery {
     this.queryOptions.expand(expand);
     return this;
   }
 
-  orderby(orderby: Orderby[]): ODataQuery {
+  orderby(orderby: string | Orderby[]): ODataQuery {
     this.queryOptions.orderby(orderby);
+    return this;
+  }
+
+  search(search: string | Search): ODataQuery {
+    this.queryOptions.search(search);
     return this;
   }
 
@@ -177,8 +203,8 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  search(search: SearchItem): ODataQuery {
-    this.queryOptions.search(search);
+  customOption(key: string, value: string) {
+    this.queryOptions.customOption(key, value);
     return this;
   }
 

@@ -17,7 +17,15 @@ export class ODataResponse {
     }
 
     getBodyAsJson(): any {
-        return this.response.json();
+        const contentType: string = this.response.headers.get('Content-Type');
+        if (contentType.includes('json')) {
+            return this.response.json();
+        }
+        return null;
+    }
+
+    getBodyAsText(): string {
+        return this.response.text();
     }
 
     toEntitySet<T>(): EntitySet<T> {
@@ -75,6 +83,8 @@ export class ODataResponse {
         const json = this.getBodyAsJson();
         if (Utils.isNotNullNorUndefined(json)) {
             res += JSON.stringify(json, null, 4);
+        } else {
+            res += this.getBodyAsText();
         }
         return res;
     }

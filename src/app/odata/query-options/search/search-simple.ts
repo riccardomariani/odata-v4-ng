@@ -1,10 +1,11 @@
 import { Utils } from '../../utils/utils';
-import { SearchItem } from './search-item';
+import { Search } from './search';
 
-export class SearchItemSimple extends SearchItem {
+export class SearchSimple extends Search {
     constructor(protected value: string) {
         super();
         Utils.requireNotNullNorUndefined(value, 'value');
+        Utils.requireNotEmpty(value, 'value');
     }
 
     toString(): string {
