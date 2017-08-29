@@ -19,10 +19,10 @@ describe('QueryOptions', () => {
     expect(() => queryOptions.select(select)).toThrowError('select cannot be null');
     //
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).select('value');
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$select=value'));
+    expect(queryOptions.toString()).toEqual('$select=value');
     //
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).select(['value']);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$select=value'));
+    expect(queryOptions.toString()).toEqual('$select=value');
     expect(() => queryOptions.select(select)).toThrowError('select is already set');
     //
     select = [];
@@ -42,11 +42,11 @@ describe('QueryOptions', () => {
     //
     filter = 'property eq value';
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).filter(filter);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$filter=property eq value'));
+    expect(queryOptions.toString()).toEqual('$filter=' + encodeURIComponent('property eq value'));
     //
     filter = new FilterComparison('property', OperatorComparison.EQ, 'value');
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).filter(filter);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$filter=property eq value'));
+    expect(queryOptions.toString()).toEqual('$filter=' + encodeURIComponent('property eq value'));
     expect(() => queryOptions.filter(filter)).toThrowError('filter is already set');
     //
     filter = '';
@@ -66,11 +66,11 @@ describe('QueryOptions', () => {
     //
     expand = 'value';
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).expand(expand);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$expand=value'));
+    expect(queryOptions.toString()).toEqual('$expand=value');
     //
     expand = [new Expand('value')];
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).expand(expand);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$expand=value'));
+    expect(queryOptions.toString()).toEqual('$expand=value');
     expect(() => queryOptions.expand(expand)).toThrowError('expand is already set');
     //
     expand = [];
@@ -90,11 +90,11 @@ describe('QueryOptions', () => {
     //
     orderby = 'value';
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).orderby(orderby);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$orderby=value'));
+    expect(queryOptions.toString()).toEqual('$orderby=value');
     //
     orderby = [new Orderby('value')];
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).orderby(orderby);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$orderby=value'));
+    expect(queryOptions.toString()).toEqual('$orderby=value');
     expect(() => queryOptions.orderby(orderby)).toThrowError('orderby is already set');
     //
     orderby = [];
@@ -110,16 +110,16 @@ describe('QueryOptions', () => {
     //
     search = 'value';
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).search(search);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$search=value'));
+    expect(queryOptions.toString()).toEqual('$search=' + encodeURIComponent('value'));
     //
     search = new SearchSimple('value');
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).search(search);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$search=value'));
+    expect(queryOptions.toString()).toEqual('$search=' + encodeURIComponent('value'));
     expect(() => queryOptions.search(search)).toThrowError('search is already set');
     //
     search = new SearchSimple('null');
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).search(search);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$search=null'));
+    expect(queryOptions.toString()).toEqual('$search=' + encodeURIComponent('null'));
   });
 
   it('test skip', () => {
@@ -134,7 +134,7 @@ describe('QueryOptions', () => {
     //
     skip = 0;
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).skip(skip);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$skip=0'));
+    expect(queryOptions.toString()).toEqual('$skip=0');
     expect(() => queryOptions.skip(skip)).toThrowError('skip is already set');
     //
     skip = -1;
@@ -154,7 +154,7 @@ describe('QueryOptions', () => {
     //
     top = 0;
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).top(top);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$top=0'));
+    expect(queryOptions.toString()).toEqual('$top=0');
     expect(() => queryOptions.top(top)).toThrowError('top is already set');
     //
     top = -1;
@@ -174,7 +174,7 @@ describe('QueryOptions', () => {
     //
     count = true;
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY).count(count);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$count=true'));
+    expect(queryOptions.toString()).toEqual('$count=true');
     expect(() => queryOptions.count(count)).toThrowError('count is already set');
   });
 
@@ -197,12 +197,10 @@ describe('QueryOptions', () => {
     queryOptions = new QueryOptions(Purpose.ODATA_QUERY);
     expect(() => queryOptions.customOption(key, value)).toThrowError('value cannot be null');
     //
-    key = 'key';
-    value = 'value';
-    queryOptions = new QueryOptions(Purpose.ODATA_QUERY).customOption(key, value);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('key=value'));
-    queryOptions.customOption(key, value);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('key=value&key=value'));
+    queryOptions = new QueryOptions(Purpose.ODATA_QUERY).customOption('key', 'value');
+    expect(queryOptions.toString()).toEqual('key=' + encodeURIComponent('value'));
+    queryOptions.customOption('key2', 'value2');
+    expect(queryOptions.toString()).toEqual('key=' + encodeURIComponent('value') + '&key2=' + encodeURIComponent('value2'));
   });
 
   it('test toString', () => {
@@ -215,7 +213,7 @@ describe('QueryOptions', () => {
       .skip(10)
       .top(20)
       .count(true);
-    expect(queryOptions.toString()).toEqual(encodeURIComponent('$select=value&$filter=property eq value&$expand=entitySet&$orderby=property&$search=value&$skip=10&$top=20&$count=true'));
+    expect(queryOptions.toString()).toEqual('$select=value&$filter=' + encodeURIComponent('property eq value') + '&$expand=entitySet&$orderby=property&$search=' + encodeURIComponent('value') + '&$skip=10&$top=20&$count=true');
     //
     queryOptions = new QueryOptions(Purpose.EXPAND)
       .select(['value'])
@@ -226,7 +224,7 @@ describe('QueryOptions', () => {
       .skip(10)
       .top(20)
       .count(true);
-    expect(queryOptions.toString()).toEqual('$select=value;$filter=property eq value;$expand=entitySet;$orderby=property;$search=value;$skip=10;$top=20;$count=true');
+    expect(queryOptions.toString()).toEqual('$select=value;$filter=' + encodeURIComponent('property eq value') + ';$expand=entitySet;$orderby=property;$search=' + encodeURIComponent('value') + ';$skip=10;$top=20;$count=true');
   });
 
   it('test isEmpty', () => {

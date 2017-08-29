@@ -17,6 +17,6 @@ describe('Expand', () => {
     //
     queryOptions = new QueryOptions(Purpose.EXPAND).select(['property']).filter('property eq value');
     expand = new Expand(entitySet, queryOptions);
-    expect(expand.toString()).toEqual('entitySet($select=property;$filter=property eq value)');
+    expect(expand.toString()).toEqual('entitySet($select=property;$filter=' + encodeURIComponent('property eq value)'));
   });
 });

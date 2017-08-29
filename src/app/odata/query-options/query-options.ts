@@ -1,3 +1,4 @@
+import { FilterString } from './filter/filter-string';
 import { Filter } from './filter/filter';
 import { Expand } from './expand';
 import { Utils } from '../utils/utils';
@@ -11,15 +12,15 @@ export enum Purpose {
 export class QueryOptions {
   private _purpose: Purpose;
   private _separator: string;
-  private _select: string | string[];
-  private _filter: string | Filter;
-  private _expand: string | Expand[];
-  private _orderby: string | Orderby[];
+  private _select: string[];
+  private _filter: Filter;
+  private _expand: Expand[];
+  private _orderby: Orderby[];
   private _search: string | Search;
   private _skip: number;
   private _top: number;
   private _count: boolean;
-  private _customOptions: string[];
+  private _customOptions: Map<string, string>;
 
   constructor(purpose: Purpose) {
     Utils.requireNotNullNorUndefined(purpose, 'purpose');
@@ -42,14 +43,14 @@ export class QueryOptions {
     this._skip = null;
     this._top = null;
     this._count = null;
-    this._customOptions = [];
+    this._customOptions = null;
   }
 
   select(select: string | string[]): QueryOptions {
     this.checkFieldAlreadySet(this._select, 'select');
     Utils.requireNotNullNorUndefined(select, 'select');
     Utils.requireNotEmpty(select, 'select');
-    this._select = select;
+    this._select = typeof (select) === 'string' ? [select] : select;
     return this;
   }
 
@@ -57,15 +58,15 @@ export class QueryOptions {
     this.checkFieldAlreadySet(this._filter, 'filter');
     Utils.requireNotNullNorUndefined(filter, 'filter');
     Utils.requireNotEmpty(filter, 'filter');
-    this._filter = filter;
+    this._filter = typeof (filter) === 'string' ? new FilterString(filter) : filter;
     return this;
   }
 
-  expand(expand: string | Expand[]): QueryOptions {
+  expand(expand: string | Expand | Expand[]): QueryOptions {
     this.checkFieldAlreadySet(this._expand, 'expand');
     Utils.requireNotNullNorUndefined(expand, 'expand');
     Utils.requireNotEmpty(expand, 'expand');
-    this._expand = expand;
+    this._expand = typeof (expand) === 'string' ? [new Expand(expand)] : expand instanceof Expand ? [expand] : expand;
     return this;
   }
 
@@ -73,7 +74,7 @@ export class QueryOptions {
     this.checkFieldAlreadySet(this._orderby, 'orderby');
     Utils.requireNotNullNorUndefined(orderby, 'orderby');
     Utils.requireNotEmpty(orderby, 'orderby');
-    this._orderby = orderby;
+    this._orderby = typeof (orderby) === 'string' ? [new Orderby(orderby)] : orderby;
     return this;
   }
 
@@ -113,7 +114,10 @@ export class QueryOptions {
     Utils.requireNotEmpty(key, 'key');
     Utils.requireNotNullNorUndefined(value, 'value');
     Utils.requireNotEmpty(value, 'value');
-    this._customOptions.push(key + '=' + value);
+    if (Utils.isNullOrUndefined(this._customOptions)) {
+      this._customOptions = new Map<string, string>();
+    }
+    this._customOptions.set(key, value);
     return this;
   }
 
@@ -136,7 +140,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += this._separator;
       }
-      queryOptions += '$filter=' + this._filter;
+      queryOptions += '$filter=' + encodeURIComponent(this._filter.toString());
     }
 
     // add expand
@@ -170,7 +174,7 @@ export class QueryOptions {
       if (queryOptions.length) {
         queryOptions += this._separator;
       }
-      queryOptions += '$search=' + this._search;
+      queryOptions += '$search=' + encodeURIComponent(this._search.toString());
     }
 
     // add skip
@@ -198,18 +202,15 @@ export class QueryOptions {
     }
 
     // add custom query options
-    if (Utils.isNotNullNorUndefined(this._customOptions) && this._customOptions.length) {
-      for (const customOption of this._customOptions) {
+    if (Utils.isNotNullNorUndefined(this._customOptions) && this._customOptions.size > 0) {
+      this._customOptions.forEach((value: string, key: string, map: Map<string, string>) => {
         if (queryOptions.length) {
           queryOptions += this._separator;
         }
-        queryOptions += customOption;
-      }
+        queryOptions += key + '=' + encodeURIComponent(value);
+      });
     }
 
-    if (this._purpose === Purpose.ODATA_QUERY) {
-      return encodeURIComponent(queryOptions);
-    }
     return queryOptions;
   }
 

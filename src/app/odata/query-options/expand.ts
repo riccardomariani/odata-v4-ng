@@ -19,4 +19,8 @@ export class Expand {
         }
         return res;
     }
+
+    isEmpty(): boolean {
+        return Utils.isEmpty(this.entitySet);
+    }
 }

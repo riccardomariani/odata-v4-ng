@@ -19,6 +19,7 @@ export class ODataQuery extends ODataQueryAbstract {
   private static readonly ENTITY_SET = 'entitySet';
   private static readonly ENTITY_KEY = 'entityKey';
   private static readonly SINGLETON = 'singleton';
+  private static readonly TYPE_NAME = 'typeName';
   private static readonly PROPERTY = 'property';
   private static readonly NAVIGATION_PROPERTY = 'navigationProperty';
   private static readonly REF = 'ref';
@@ -69,7 +70,12 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  entityKey(entityKey: boolean | number | string | QuotedString): ODataQuery {
+  /**
+   * @param {(any | any[])} entityKey
+   * @returns {ODataQuery}
+   * @memberof ODataQuery
+   */
+  entityKey(entityKey: any | any[]): ODataQuery {
     if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
       throw new Error('entityKey can only be appended to entitySet or navigationProperty');
     }
@@ -89,10 +95,21 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
+  typeName(typeName: string) {
+    if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY && this.lastSegment !== ODataQuery.ENTITY_KEY) {
+      throw new Error('typeName can only be appended to entitySet, navigationProperty or entityKey');
+    }
+    Utils.requireNotNullNorUndefined(typeName, 'typeName');
+    Utils.requireNotEmpty(typeName, 'typeName');
+    this.queryString = Utils.appendSegment(this.queryString, typeName);
+    this.addSegment(ODataQuery.TYPE_NAME);
+    return this;
+  }
+
   property(property: string): ODataQuery {
     Utils.requireNullOrUndefined(this.getSegment(ODataQuery.PROPERTY), ODataQuery.PROPERTY);
-    if (this.lastSegment !== ODataQuery.ENTITY_KEY) {
-      throw new Error('property can only be appended to entityKey');
+    if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
+      throw new Error('property can only be appended to entityKey or singleton');
     }
     Utils.requireNotNullNorUndefined(property, 'property');
     Utils.requireNotEmpty(property, 'property');
@@ -102,8 +119,8 @@ export class ODataQuery extends ODataQueryAbstract {
   }
 
   navigationProperty(navigationProperty: string): ODataQuery {
-    if (this.lastSegment !== ODataQuery.ENTITY_KEY) {
-      throw new Error('navigationProperty can only be appended to entityKey');
+    if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
+      throw new Error('navigationProperty can only be appended to entityKey or singleton');
     }
     Utils.requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
     Utils.requireNotEmpty(navigationProperty, 'navigationProperty');
@@ -178,7 +195,7 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  expand(expand: string | Expand[]): ODataQuery {
+  expand(expand: string | Expand | Expand[]): ODataQuery {
     this.queryOptions.expand(expand);
     return this;
   }
@@ -231,11 +248,12 @@ export class ODataQuery extends ODataQueryAbstract {
   }
 
   toString(): string {
+    let res: string = this.queryString;
     if (Utils.isNotNullNorUndefined(this.queryOptions) && !this.queryOptions.isEmpty()) {
-      this.queryString += '?' + this.queryOptions.toString();
+      res += '?' + this.queryOptions.toString();
     }
-    console.log(this.queryString);
-    return this.queryString;
+    console.log(res);
+    return res;
   }
 
   protected getSegment(segment: string): string {

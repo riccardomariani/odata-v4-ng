@@ -53,7 +53,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule.</p>\n<p>\n  For all examples in this page we are using the publicly available TripPin service (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service are here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow.</p>\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4>Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule.</p>\n<p>\n  For all examples in this page we are using the publicly available TripPin service (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4>Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -101,7 +101,7 @@ var Example = (function () {
     return Example;
 }());
 var SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
-var CODE_EXECUTION = "example.odataQuery.get().subscribe((odataResponse: ODataResponse) => {\n  example.response = odataResponse.toString();\n});";
+var CODE_EXECUTION = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
 var AppComponent = (function () {
     function AppComponent(odataService) {
         this.odataService = odataService;
@@ -122,29 +122,193 @@ var AppComponent = (function () {
         this.examples.push(example);
         example.title = 'Get service metadata';
         example.query = SERVICE_ROOT + '/$metadata';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).metadata();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).metadata();\n    " + CODE_EXECUTION;
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .metadata();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n    " + CODE_EXECUTION;
         // ENTITY SET
         example = new Example();
         this.examples.push(example);
         example.title = 'Get entity set';
         example.query = SERVICE_ROOT + '/People';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People');\n" + CODE_EXECUTION;
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + CODE_EXECUTION;
         // ENTITY
         example = new Example();
         this.examples.push(example);
         example.title = 'Get entity';
         example.query = SERVICE_ROOT + '/People(\'russellwhyte\')';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).entitySet('People').entityKey('\'russellwhyte\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People').entityKey('russellwhyte');\n" + CODE_EXECUTION;
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'');\n" + CODE_EXECUTION;
+        // PROPERTY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get property';
+        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')/Name';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('Airports')
+            .entityKey('\'KSFO\'')
+            .property('Name');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name');\n" + CODE_EXECUTION;
+        // PROPERTY RAW VALUE
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get property raw value';
+        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')/Name/$value';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('Airports')
+            .entityKey('\'KSFO\'')
+            .property('Name')
+            .value();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name')\n    .value();\n" + CODE_EXECUTION;
+        // FILTER ENTITIES
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get filtered entities';
+        example.query = SERVICE_ROOT + '/People?$filter=FirstName eq \'Scott\'';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .filter('FirstName eq \'Scott\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('FirstName eq \\'Scott\\'');\n" + CODE_EXECUTION;
+        // FILTER COMPLEX TYPES
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get filtered complex types';
+        example.query = SERVICE_ROOT + '/Airports?$filter=contains(Location/Address, \'San Francisco\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('Airports')
+            .filter('contains(Location/Address, \'San Francisco\')');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .filter('contains(Location/Address, \\'San Francisco\\')');\n" + CODE_EXECUTION;
+        // FILTER ENUM PROPERTIES
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get filtered enum properties';
+        example.query = SERVICE_ROOT + '/People?$filter=Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\\'Female\\'');\n" + CODE_EXECUTION;
+        // EXPAND
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get expanded entities';
+        example.query = SERVICE_ROOT + '/People?$expand=Trips';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .expand('Trips');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips');\n" + CODE_EXECUTION;
+        // FILTERED EXPAND
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get filtered expanded entities';
+        example.query = SERVICE_ROOT + '/People?$expand=Trips($filter=Name eq \'Trip in US\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .expand('Trips($filter=Name eq \'Trip in US\')');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips($filter=Name eq \\'Trip in US\\')');\n" + CODE_EXECUTION;
+        // ORDERBY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get ordered entities';
+        example.query = SERVICE_ROOT + '/People(\'scottketchum\')/Trips?$orderby=EndsAt desc';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .entityKey('\'scottketchum\'')
+            .navigationProperty('Trips')
+            .orderby('EndsAt desc');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'scottketchum\\'')\n    .navigationProperty('Trips')\n    .orderby('EndsAt desc');\n" + CODE_EXECUTION;
+        // TOP
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get top entities';
+        example.query = SERVICE_ROOT + '/People?$top=2';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .top(2);
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .top(2);\n" + CODE_EXECUTION;
+        // SKIP
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get skipped entities';
+        example.query = SERVICE_ROOT + '/People?$skip=18';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .skip(18);
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .skip(18);\n" + CODE_EXECUTION;
+        // COUNT
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get entities count';
+        example.query = SERVICE_ROOT + '/People?$count';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .count();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .count();\n" + CODE_EXECUTION;
+        // PROJECTED ENTITIES
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get projected entities';
+        example.query = SERVICE_ROOT + '/Airports?$select=Name, IcaoCode';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('Airports')
+            .select('Name, IcaoCode');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .select('Name, IcaoCode');\n" + CODE_EXECUTION;
+        // PROJECTED ENTITY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get projected entity';
+        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')?$select=Name, IcaoCode';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('Airports')
+            .entityKey('\'KSFO\'')
+            .select('Name, IcaoCode');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .select('Name, IcaoCode');\n" + CODE_EXECUTION;
+        // SEARCH
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get entities matching search';
+        example.query = SERVICE_ROOT + '/People?$search=Boise';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .search('Boise');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .search('Boise');\n" + CODE_EXECUTION;
         // SINGLETON
         example = new Example();
         this.examples.push(example);
         example.title = 'Get singleton';
         example.query = SERVICE_ROOT + '/Me';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT).singleton('Me');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT).singleton('Me');\n" + CODE_EXECUTION;
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .singleton('Me');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me');\n" + CODE_EXECUTION;
+        // DERIVED ENTITYSET
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get derived entity set';
+        example.query = SERVICE_ROOT + '/People(\'russellwhyte\')/Trips(1003)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'')
+            .navigationProperty('Trips')
+            .entityKey(1003)
+            .navigationProperty('PlanItems')
+            .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + CODE_EXECUTION;
+        // DERIVED ENTITY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Get derived entity';
+        example.query = SERVICE_ROOT + '/People(\'russellwhyte\')/Trips(1003)/PlanItems(21)/Microsoft.OData.SampleService.Models.TripPin.Flight';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'')
+            .navigationProperty('Trips')
+            .entityKey(1003)
+            .navigationProperty('PlanItems')
+            .entityKey(21)
+            .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .entityKey(21)\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + CODE_EXECUTION;
     };
     AppComponent.prototype.ngOnDestroy = function () {
         if (this.subscr) {
@@ -154,6 +318,8 @@ var AppComponent = (function () {
     AppComponent.prototype.execute = function (example) {
         example.odataQuery.get().subscribe(function (odataResponse) {
             example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
         });
     };
     return AppComponent;
@@ -468,6 +634,11 @@ var ODataQuery = (function (_super) {
         this.addSegment(ODataQuery.ENTITY_SET);
         return this;
     };
+    /**
+     * @param {(any | any[])} entityKey
+     * @returns {ODataQuery}
+     * @memberof ODataQuery
+     */
     ODataQuery.prototype.entityKey = function (entityKey) {
         if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
             throw new Error('entityKey can only be appended to entitySet or navigationProperty');
@@ -486,10 +657,20 @@ var ODataQuery = (function (_super) {
         this.addSegment(ODataQuery.SINGLETON);
         return this;
     };
+    ODataQuery.prototype.typeName = function (typeName) {
+        if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY && this.lastSegment !== ODataQuery.ENTITY_KEY) {
+            throw new Error('typeName can only be appended to entitySet, navigationProperty or entityKey');
+        }
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(typeName, 'typeName');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(typeName, 'typeName');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, typeName);
+        this.addSegment(ODataQuery.TYPE_NAME);
+        return this;
+    };
     ODataQuery.prototype.property = function (property) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.PROPERTY), ODataQuery.PROPERTY);
-        if (this.lastSegment !== ODataQuery.ENTITY_KEY) {
-            throw new Error('property can only be appended to entityKey');
+        if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
+            throw new Error('property can only be appended to entityKey or singleton');
         }
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(property, 'property');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(property, 'property');
@@ -498,8 +679,8 @@ var ODataQuery = (function (_super) {
         return this;
     };
     ODataQuery.prototype.navigationProperty = function (navigationProperty) {
-        if (this.lastSegment !== ODataQuery.ENTITY_KEY) {
-            throw new Error('navigationProperty can only be appended to entityKey');
+        if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
+            throw new Error('navigationProperty can only be appended to entityKey or singleton');
         }
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(navigationProperty, 'navigationProperty');
@@ -606,11 +787,12 @@ var ODataQuery = (function (_super) {
         return this.odataService.delete(this, requestOptionsArgs);
     };
     ODataQuery.prototype.toString = function () {
+        var res = this.queryString;
         if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.queryOptions) && !this.queryOptions.isEmpty()) {
-            this.queryString += '?' + this.queryOptions.toString();
+            res += '?' + this.queryOptions.toString();
         }
-        console.log(this.queryString);
-        return this.queryString;
+        console.log(res);
+        return res;
     };
     ODataQuery.prototype.getSegment = function (segment) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNull(segment, 'segment');
@@ -634,6 +816,7 @@ ODataQuery.METADATA = 'metadata';
 ODataQuery.ENTITY_SET = 'entitySet';
 ODataQuery.ENTITY_KEY = 'entityKey';
 ODataQuery.SINGLETON = 'singleton';
+ODataQuery.TYPE_NAME = 'typeName';
 ODataQuery.PROPERTY = 'property';
 ODataQuery.NAVIGATION_PROPERTY = 'navigationProperty';
 ODataQuery.REF = 'ref';
@@ -951,6 +1134,63 @@ ODataModule = __decorate([
 
 /***/ }),
 
+/***/ "../../../../../src/app/odata/query-options/expand.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Expand; });
+
+var Expand = (function () {
+    function Expand(entitySet, queryOptions) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entitySet, 'entitySet');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(entitySet, 'entitySet');
+        this.entitySet = entitySet;
+        this.queryOptions = queryOptions;
+    }
+    Expand.prototype.toString = function () {
+        var res = this.entitySet;
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.queryOptions)) {
+            res += '(' + this.queryOptions + ')';
+        }
+        return res;
+    };
+    Expand.prototype.isEmpty = function () {
+        return __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isEmpty(this.entitySet);
+    };
+    return Expand;
+}());
+
+//# sourceMappingURL=expand.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/query-options/filter/filter-string.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FilterString; });
+
+var FilterString = (function () {
+    function FilterString(filter) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
+        this.filter = filter;
+    }
+    FilterString.prototype.toString = function () {
+        return this.filter;
+    };
+    FilterString.prototype.isEmpty = function () {
+        return __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.filter) || !this.filter.length;
+    };
+    return FilterString;
+}());
+
+//# sourceMappingURL=filter-string.js.map
+
+/***/ }),
+
 /***/ "../../../../../src/app/odata/query-options/operator.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -986,13 +1226,52 @@ var OperatorArithmetic;
 
 /***/ }),
 
-/***/ "../../../../../src/app/odata/query-options/query-options.ts":
+/***/ "../../../../../src/app/odata/query-options/orderby.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* unused harmony export Order */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Orderby; });
+
+var Order;
+(function (Order) {
+    Order[Order["ASC"] = 0] = "ASC";
+    Order[Order["DESC"] = 1] = "DESC";
+})(Order || (Order = {}));
+var Orderby = (function () {
+    function Orderby(property, order) {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(property, 'property');
+        this.property = property;
+        this.order = order;
+    }
+    Orderby.prototype.toString = function () {
+        var res = this.property;
+        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this.order)) {
+            res += ' ' + Order[this.order].toLowerCase();
+        }
+        return res;
+    };
+    return Orderby;
+}());
+
+//# sourceMappingURL=orderby.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/query-options/query-options.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__filter_filter_string__ = __webpack_require__("../../../../../src/app/odata/query-options/filter/filter-string.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__expand__ = __webpack_require__("../../../../../src/app/odata/query-options/expand.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__orderby__ = __webpack_require__("../../../../../src/app/odata/query-options/orderby.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Purpose; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QueryOptions; });
+
+
+
 
 var Purpose;
 (function (Purpose) {
@@ -1001,7 +1280,7 @@ var Purpose;
 })(Purpose || (Purpose = {}));
 var QueryOptions = (function () {
     function QueryOptions(purpose) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(purpose, 'purpose');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(purpose, 'purpose');
         this._purpose = purpose;
         switch (this._purpose) {
             case Purpose.ODATA_QUERY:
@@ -1021,93 +1300,97 @@ var QueryOptions = (function () {
         this._skip = null;
         this._top = null;
         this._count = null;
-        this._customOptions = [];
+        this._customOptions = null;
     }
     QueryOptions.prototype.select = function (select) {
         this.checkFieldAlreadySet(this._select, 'select');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
-        this._select = select;
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
+        this._select = typeof (select) === 'string' ? [select] : select;
         return this;
     };
     QueryOptions.prototype.filter = function (filter) {
         this.checkFieldAlreadySet(this._filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
-        this._filter = filter;
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
+        this._filter = typeof (filter) === 'string' ? new __WEBPACK_IMPORTED_MODULE_0__filter_filter_string__["a" /* FilterString */](filter) : filter;
         return this;
     };
     QueryOptions.prototype.expand = function (expand) {
         this.checkFieldAlreadySet(this._expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
-        this._expand = expand;
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
+        this._expand = typeof (expand) === 'string' ? [new __WEBPACK_IMPORTED_MODULE_1__expand__["a" /* Expand */](expand)] : expand instanceof __WEBPACK_IMPORTED_MODULE_1__expand__["a" /* Expand */] ? [expand] : expand;
         return this;
     };
     QueryOptions.prototype.orderby = function (orderby) {
         this.checkFieldAlreadySet(this._orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
-        this._orderby = orderby;
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
+        this._orderby = typeof (orderby) === 'string' ? [new __WEBPACK_IMPORTED_MODULE_3__orderby__["a" /* Orderby */](orderby)] : orderby;
         return this;
     };
     QueryOptions.prototype.search = function (search) {
         this.checkFieldAlreadySet(this._search, 'search');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(search, 'search');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(search, 'search');
         this._search = search;
         return this;
     };
     QueryOptions.prototype.skip = function (skip) {
         this.checkFieldAlreadySet(this._skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
         this._skip = skip;
         return this;
     };
     QueryOptions.prototype.top = function (top) {
         this.checkFieldAlreadySet(this._top, 'top');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
         this._top = top;
         return this;
     };
     QueryOptions.prototype.count = function (count) {
         this.checkFieldAlreadySet(this._count, 'count');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
         this._count = count;
         return this;
     };
     QueryOptions.prototype.customOption = function (key, value) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(key, 'key');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(key, 'key');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(value, 'value');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(value, 'value');
-        this._customOptions.push(key + '=' + value);
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(key, 'key');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(key, 'key');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(value, 'value');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(value, 'value');
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._customOptions)) {
+            this._customOptions = new Map();
+        }
+        this._customOptions.set(key, value);
         return this;
     };
     QueryOptions.prototype.toString = function () {
+        var _this = this;
         // query options
         var queryOptions = '';
         // add select
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
             queryOptions += '$select=';
             if (typeof (this._select) === 'string') {
                 queryOptions += this._select;
             }
             else {
-                queryOptions += __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].toString(this._select);
+                queryOptions += __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].toString(this._select);
             }
         }
         // add filter
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
-            queryOptions += '$filter=' + this._filter;
+            queryOptions += '$filter=' + encodeURIComponent(this._filter.toString());
         }
         // add expand
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
@@ -1116,11 +1399,11 @@ var QueryOptions = (function () {
                 queryOptions += this._expand;
             }
             else {
-                queryOptions += __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].toString(this._expand);
+                queryOptions += __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].toString(this._expand);
             }
         }
         // add orderby
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
@@ -1129,49 +1412,45 @@ var QueryOptions = (function () {
                 queryOptions += this._orderby;
             }
             else {
-                queryOptions += __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].toString(this._orderby);
+                queryOptions += __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].toString(this._orderby);
             }
         }
         // add search
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
-            queryOptions += '$search=' + this._search;
+            queryOptions += '$search=' + encodeURIComponent(this._search.toString());
         }
         // add skip
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$skip=' + this._skip;
         }
         // add top
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$top=' + this._top;
         }
         // add count
-        if (!__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$count=' + this._count;
         }
         // add custom query options
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this._customOptions) && this._customOptions.length) {
-            for (var _i = 0, _a = this._customOptions; _i < _a.length; _i++) {
-                var customOption = _a[_i];
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this._customOptions) && this._customOptions.size > 0) {
+            this._customOptions.forEach(function (value, key, map) {
                 if (queryOptions.length) {
-                    queryOptions += this._separator;
+                    queryOptions += _this._separator;
                 }
-                queryOptions += customOption;
-            }
-        }
-        if (this._purpose === Purpose.ODATA_QUERY) {
-            return encodeURIComponent(queryOptions);
+                queryOptions += key + '=' + encodeURIComponent(value);
+            });
         }
         return queryOptions;
     };
@@ -1180,7 +1459,7 @@ var QueryOptions = (function () {
             if (key === '_purpose' || key === '_separator') {
                 continue;
             }
-            if (this.hasOwnProperty(key) && !__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isEmpty(this[key])) {
+            if (this.hasOwnProperty(key) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this[key])) {
                 return false;
             }
         }
@@ -1188,7 +1467,7 @@ var QueryOptions = (function () {
     };
     QueryOptions.prototype.checkFieldAlreadySet = function (fieldValue, fieldName) {
         try {
-            __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
+            __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
         }
         catch (error) {
             throw new Error(fieldName + ' is already set');
