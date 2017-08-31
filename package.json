@@ -27,7 +27,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "buildAndDeploy": "npm install && npm prune && npm outdated && ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng && npm list --depth=0 && rm -r docs && mv dist docs && npm publish"
+    "buildAndDeploy": "npm install && npm prune && npm outdated && ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng && npm list --depth=0 && rm -r docs && mv dist docs"
   },
   "private": false,
   "dependencies": {
