@@ -1,11 +1,8 @@
-import { Purpose, QueryOptions } from './odata/query-options/query-options';
-import { Expand } from './odata/query-options/expand';
 import { ODataResponse } from './odata/odata-response/odata-response';
 import { ODataService } from './odata/odata-service/odata.service';
 import { ODataQuery } from './odata/odata-query/odata-query';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs/Subscription';
-import { ODataQueryBatch } from './odata/odata-query/odata-query-batch';
 
 class Example {
   public title: string;
@@ -13,6 +10,7 @@ class Example {
   public odataQuery: ODataQuery;
   public code: string;
   public response: string;
+  public subscr: Subscription;
 }
 
 const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
@@ -34,7 +32,6 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'odata-v4-ng';
   serviceRoot: string = SERVICE_ROOT;
   examples: Example[];
-  subscr: Subscription;
 
   constructor(private odataService: ODataService) { }
 
@@ -93,6 +90,20 @@ ${CODE_EXECUTION}`;
     .entitySet('Airports')
     .entityKey('\\\'KSFO\\\'')
     .property('Name');
+${CODE_EXECUTION}`;
+    // COMPLEX TYPE PROPERTY
+    example = new Example();
+    this.examples.push(example);
+    example.title = 'Get complex type property';
+    example.query = SERVICE_ROOT + '/Airports(\'KSFO\')/Location/Address';
+    example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
+      .entitySet('Airports')
+      .entityKey('\'KSFO\'')
+      .property('Location/Address');
+    example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
+    .entitySet('Airports')
+    .entityKey('\\\'KSFO\\\'')
+    .property('Location/Address');
 ${CODE_EXECUTION}`;
     // PROPERTY RAW VALUE
     example = new Example();
@@ -161,7 +172,7 @@ ${CODE_EXECUTION}`;
     // FILTERED EXPAND
     example = new Example();
     this.examples.push(example);
-    example.title = 'Get filtered expanded entities';
+    example.title = 'Get expanded entities with nested filter';
     example.query = SERVICE_ROOT + '/People?$expand=Trips($filter=Name eq \'Trip in US\')';
     example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
       .entitySet('People')
@@ -189,7 +200,7 @@ ${CODE_EXECUTION}`;
     // TOP
     example = new Example();
     this.examples.push(example);
-    example.title = 'Get top entities';
+    example.title = 'Get entities using top';
     example.query = SERVICE_ROOT + '/People?$top=2';
     example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
       .entitySet('People')
@@ -201,7 +212,7 @@ ${CODE_EXECUTION}`;
     // SKIP
     example = new Example();
     this.examples.push(example);
-    example.title = 'Get skipped entities';
+    example.title = 'Get entities using skip';
     example.query = SERVICE_ROOT + '/People?$skip=18';
     example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
       .entitySet('People')
@@ -315,13 +326,17 @@ ${CODE_EXECUTION}`;
   }
 
   ngOnDestroy() {
-    if (this.subscr) {
-      this.subscr.unsubscribe();
+    if (this.examples) {
+      for (const example of this.examples) {
+        if (example.subscr) {
+          example.subscr.unsubscribe();
+        }
+      }
     }
   }
 
   execute(example: Example): void {
-    example.odataQuery.get().subscribe(
+    example.subscr = example.odataQuery.get().subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
       },
@@ -329,5 +344,13 @@ ${CODE_EXECUTION}`;
         example.response = error;
       }
     );
+  }
+
+  executeAll(): void {
+    if (this.examples) {
+      for (const example of this.examples) {
+        this.execute(example);
+      }
+    }
   }
 }

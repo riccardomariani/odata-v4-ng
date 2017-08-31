@@ -1,19 +1,20 @@
 import { Filter } from '../query-options/filter/filter';
-import { Headers, RequestOptionsArgs } from '@angular/http';
+import { RequestOptionsArgs } from '@angular/http';
 import { ODataResponse } from '../odata-response/odata-response';
 import { ODataService } from '../odata-service/odata.service';
 import { Orderby } from '../query-options/orderby';
 import { Expand } from '../query-options/expand';
 import { Utils } from '../utils/utils';
-import { QueryOptions, Purpose } from '../query-options/query-options';
+import { QueryOptions } from '../query-options/query-options';
 import { Observable } from 'rxjs/Observable';
-import { Injectable } from '@angular/core';
 import { ODataQueryBatch } from './odata-query-batch';
 import { ODataQueryAbstract } from './odata-query-abstract';
-import { QuotedString } from './quoted-string';
 import { Search } from '../query-options/search/search';
 
 export class ODataQuery extends ODataQueryAbstract {
+  // QUERY OPTIONS SEPARATOR
+  static readonly SEPARATOR = '&';
+
   // SEGMENT NAMES
   private static readonly METADATA = 'metadata';
   private static readonly ENTITY_SET = 'entitySet';
@@ -44,7 +45,7 @@ export class ODataQuery extends ODataQueryAbstract {
     Utils.requireNotNullNorUndefined(odataService, 'odataService');
     Utils.requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
     Utils.requireNotEmpty(serviceRoot, 'serviceRoot');
-    this.queryOptions = new QueryOptions(Purpose.ODATA_QUERY);
+    this.queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
     this.segments = [];
     this.lastSegment = null;
   }

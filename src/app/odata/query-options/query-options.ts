@@ -5,12 +5,7 @@ import { Utils } from '../utils/utils';
 import { Orderby } from './orderby';
 import { Search } from './search/search';
 
-export enum Purpose {
-  ODATA_QUERY, EXPAND
-}
-
 export class QueryOptions {
-  private _purpose: Purpose;
   private _separator: string;
   private _select: string[];
   private _filter: Filter;
@@ -22,19 +17,9 @@ export class QueryOptions {
   private _count: boolean;
   private _customOptions: Map<string, string>;
 
-  constructor(purpose: Purpose) {
-    Utils.requireNotNullNorUndefined(purpose, 'purpose');
-    this._purpose = purpose;
-    switch (this._purpose) {
-      case Purpose.ODATA_QUERY:
-        this._separator = '&';
-        break;
-      case Purpose.EXPAND:
-        this._separator = ';';
-        break;
-      default:
-        throw new Error('Unknown purpose: ' + purpose);
-    }
+  constructor(separator: string) {
+    Utils.requireNotNullNorUndefined(separator, 'separator');
+    this._separator = separator;
     this._select = null;
     this._filter = null;
     this._expand = null;

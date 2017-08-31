@@ -1,12 +1,10 @@
 import { HttpModule } from '@angular/http';
 import { ODataService } from '../odata-service/odata.service';
-import { TestBed, inject } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { ODataQuery } from './odata-query';
 import { OperatorComparison } from '../query-options/operator';
 import { Expand } from '../query-options/expand';
 import { Orderby, Order } from '../query-options/orderby';
-import { QueryOptions, Purpose } from '../query-options/query-options';
-import { ODataQueryBatch } from './odata-query-batch';
 import { QuotedString } from './quoted-string';
 import { SearchSimple } from '../query-options/search/search-simple';
 import { FilterComparison } from '../query-options/filter/filter-comparison';
@@ -136,7 +134,7 @@ describe('OdataQuery', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
       .entityKey(new QuotedString('russellwhyte'))
-      .expand([new Expand('Trips', new QueryOptions(Purpose.EXPAND).select(['Name']))]);
+      .expand(new Expand('Trips').select('Name'));
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People(\'russellwhyte\')?$expand=Trips($select=Name)');
   });
@@ -145,7 +143,7 @@ describe('OdataQuery', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
       .entityKey(new QuotedString('russellwhyte'))
-      .expand([new Expand('Trips', new QueryOptions(Purpose.EXPAND).filter(new FilterComparison('Name', OperatorComparison.EQ, new QuotedString('Trip in US'))))]);
+      .expand(new Expand('Trips').filter(new FilterComparison('Name', OperatorComparison.EQ, new QuotedString('Trip in US'))));
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People(\'russellwhyte\')?$expand=Trips($filter=' + encodeURIComponent('Name eq \'Trip in US\')'));
   });
