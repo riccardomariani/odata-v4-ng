@@ -244,7 +244,7 @@ export class ODataQuery extends ODataQueryAbstract {
     return this.odataService.patch(this, body, requestOptionsArgs);
   }
 
-  delete(body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+  delete(requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     return this.odataService.delete(this, requestOptionsArgs);
   }
 

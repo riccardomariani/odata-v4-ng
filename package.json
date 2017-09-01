@@ -1,16 +1,17 @@
 {
   "name": "odata-v4-ng",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "license": "MIT",
-  "description": "OData V4 typescript client library for Angular2+",
+  "description": "Client side OData V4 typescript library for Angular2+",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/riccardomariani/odata-v4-ng.git"
   },
   "keywords": [
-    "odata",
-    "typescript",
     "client",
+    "odata",
+    "odata v4",
+    "typescript",
     "angular",
     "angular2",
     "angular4"
@@ -27,7 +28,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "buildAndDeploy": "npm install && npm prune && npm outdated && ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng && npm list --depth=0 && rm -r docs && mv dist docs"
+    "testAndBuild": "npm install && npm prune && npm outdated && ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng && npm list --depth=0 && rm -r docs && mv dist docs"
   },
   "private": false,
   "dependencies": {

@@ -18,7 +18,7 @@
   on workload.</p>
 <p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>
 
-<!-- <input type="button" value="Execute all queries" (click)="executeAll()"> -->
+<!-- <input type="button" value="Execute all queries" (click)="executeAllGet()"> -->
 
 <div *ngFor="let example of examples">
   <h3>{{example.title}}</h3>
@@ -26,8 +26,8 @@
   <span>{{example.query}}</span>
   <h4>Code</h4>
   <pre class="code">{{example.code}}</pre>
-  <h4>Response <input type="button" value="Execute query" (click)="execute(example)"></h4>
-  <textarea class="response" readonly="true">{{example.response}}</textarea>
+  <h4 *ngIf="example.func">Response <input type="button" value="Execute query" (click)="execute(example)"></h4>
+  <textarea *ngIf="example.func" class="response" readonly="true">{{example.response}}</textarea>
   <hr/>
 </div>
 

@@ -53,7 +53,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAll()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4>Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"example.func\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"example.func\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -100,8 +100,11 @@ var Example = (function () {
     }
     return Example;
 }());
-var SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
-var CODE_EXECUTION = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
+var EXECUTE_GET = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var EXECUTE_CREATE_ENTITY = "example.subscr = example.odataQuery.post({\n  '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',\n  'UserName': 'teresa',\n  'FirstName': 'Teresa',\n  'LastName': 'Gilbert',\n  'Gender': 'Female',\n  'Emails': ['teresa@example.com', 'teresa@contoso.com'],\n  'AddressInfo': [\n    {\n      'Address': '1 Suffolk Ln.',\n      'City':\n      {\n        'CountryRegion': 'United States',\n        'Name': 'Boise',\n        'Region': 'ID'\n      }\n    }]\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
+var EXECUTE_DELETE_ENTITY = "example.subscr = example.odataQuery.delete().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var EXECUTE_UPDATE_ENTITY = "example.subscr = example.odataQuery.patch({\n  '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',\n  'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
 var AppComponent = (function () {
     function AppComponent(odataService) {
         this.odataService = odataService;
@@ -116,7 +119,8 @@ var AppComponent = (function () {
         example.title = 'Get service document';
         example.query = SERVICE_ROOT;
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // SERVICE METADATA
         example = new Example();
         this.examples.push(example);
@@ -124,7 +128,8 @@ var AppComponent = (function () {
         example.query = SERVICE_ROOT + '/$metadata';
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .metadata();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n    " + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // ENTITY SET
         example = new Example();
         this.examples.push(example);
@@ -132,7 +137,8 @@ var AppComponent = (function () {
         example.query = SERVICE_ROOT + '/People';
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // ENTITY
         example = new Example();
         this.examples.push(example);
@@ -141,7 +147,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .entityKey('\'russellwhyte\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // PROPERTY
         example = new Example();
         this.examples.push(example);
@@ -151,7 +158,8 @@ var AppComponent = (function () {
             .entitySet('Airports')
             .entityKey('\'KSFO\'')
             .property('Name');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // COMPLEX TYPE PROPERTY
         example = new Example();
         this.examples.push(example);
@@ -161,7 +169,8 @@ var AppComponent = (function () {
             .entitySet('Airports')
             .entityKey('\'KSFO\'')
             .property('Location/Address');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Location/Address');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Location/Address');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // PROPERTY RAW VALUE
         example = new Example();
         this.examples.push(example);
@@ -172,7 +181,8 @@ var AppComponent = (function () {
             .entityKey('\'KSFO\'')
             .property('Name')
             .value();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name')\n    .value();\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name')\n    .value();\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // FILTER ENTITIES
         example = new Example();
         this.examples.push(example);
@@ -181,7 +191,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .filter('FirstName eq \'Scott\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('FirstName eq \\'Scott\\'');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('FirstName eq \\'Scott\\'');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // FILTER COMPLEX TYPES
         example = new Example();
         this.examples.push(example);
@@ -190,7 +201,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('Airports')
             .filter('contains(Location/Address, \'San Francisco\')');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .filter('contains(Location/Address, \\'San Francisco\\')');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .filter('contains(Location/Address, \\'San Francisco\\')');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // FILTER ENUM PROPERTIES
         example = new Example();
         this.examples.push(example);
@@ -199,7 +211,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\\'Female\\'');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\\'Female\\'');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // EXPAND
         example = new Example();
         this.examples.push(example);
@@ -208,7 +221,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .expand('Trips');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // FILTERED EXPAND
         example = new Example();
         this.examples.push(example);
@@ -217,7 +231,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .expand('Trips($filter=Name eq \'Trip in US\')');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips($filter=Name eq \\'Trip in US\\')');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips($filter=Name eq \\'Trip in US\\')');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // ORDERBY
         example = new Example();
         this.examples.push(example);
@@ -228,7 +243,8 @@ var AppComponent = (function () {
             .entityKey('\'scottketchum\'')
             .navigationProperty('Trips')
             .orderby('EndsAt desc');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'scottketchum\\'')\n    .navigationProperty('Trips')\n    .orderby('EndsAt desc');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'scottketchum\\'')\n    .navigationProperty('Trips')\n    .orderby('EndsAt desc');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // TOP
         example = new Example();
         this.examples.push(example);
@@ -237,7 +253,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .top(2);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .top(2);\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .top(2);\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // SKIP
         example = new Example();
         this.examples.push(example);
@@ -246,7 +263,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .skip(18);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .skip(18);\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .skip(18);\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // COUNT
         example = new Example();
         this.examples.push(example);
@@ -255,7 +273,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .count();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .count();\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .count();\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // PROJECTED ENTITIES
         example = new Example();
         this.examples.push(example);
@@ -264,7 +283,8 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('Airports')
             .select('Name, IcaoCode');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .select('Name, IcaoCode');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .select('Name, IcaoCode');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // PROJECTED ENTITY
         example = new Example();
         this.examples.push(example);
@@ -274,7 +294,8 @@ var AppComponent = (function () {
             .entitySet('Airports')
             .entityKey('\'KSFO\'')
             .select('Name, IcaoCode');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .select('Name, IcaoCode');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .select('Name, IcaoCode');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // SEARCH
         example = new Example();
         this.examples.push(example);
@@ -283,7 +304,36 @@ var AppComponent = (function () {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .entitySet('People')
             .search('Boise');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .search('Boise');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .search('Boise');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // CREATE ENTITY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Create entity';
+        example.query = SERVICE_ROOT + '/People';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_CREATE_ENTITY;
+        // example.func = this.executeCreateEntity;
+        // DELETE ENTITY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Delete entity';
+        example.query = SERVICE_ROOT + '/People(\'vincentcalabrese\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People')
+            .entityKey('\'vincentcalabrese\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'vincentcalabrese\\'');\n" + EXECUTE_DELETE_ENTITY;
+        // example.func = this.executeDeleteEntity;
+        // UPDATE ENTITY
+        example = new Example();
+        this.examples.push(example);
+        example.title = 'Update entity';
+        example.query = SERVICE_ROOT + '/People';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+            .entitySet('People');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_UPDATE_ENTITY;
+        // example.func = this.executeUpdateEntity;
         // SINGLETON
         example = new Example();
         this.examples.push(example);
@@ -291,7 +341,8 @@ var AppComponent = (function () {
         example.query = SERVICE_ROOT + '/Me';
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
             .singleton('Me');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // DERIVED ENTITYSET
         example = new Example();
         this.examples.push(example);
@@ -304,7 +355,8 @@ var AppComponent = (function () {
             .entityKey(1003)
             .navigationProperty('PlanItems')
             .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
         // DERIVED ENTITY
         example = new Example();
         this.examples.push(example);
@@ -318,7 +370,8 @@ var AppComponent = (function () {
             .navigationProperty('PlanItems')
             .entityKey(21)
             .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .entityKey(21)\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + CODE_EXECUTION;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .entityKey(21)\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
     };
     AppComponent.prototype.ngOnDestroy = function () {
         if (this.examples) {
@@ -331,19 +384,65 @@ var AppComponent = (function () {
         }
     };
     AppComponent.prototype.execute = function (example) {
+        if (example.func) {
+            example.func(example);
+        }
+    };
+    AppComponent.prototype.executeGet = function (example) {
         example.subscr = example.odataQuery.get().subscribe(function (odataResponse) {
             example.response = odataResponse.toString();
         }, function (error) {
             example.response = error;
         });
     };
-    AppComponent.prototype.executeAll = function () {
+    AppComponent.prototype.executeAllGet = function () {
         if (this.examples) {
             for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
                 var example = _a[_i];
-                this.execute(example);
+                this.executeGet(example);
             }
         }
+    };
+    AppComponent.prototype.executeCreateEntity = function (example) {
+        example.subscr = example.odataQuery.post({
+            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
+            'UserName': 'teresa',
+            'FirstName': 'Teresa',
+            'LastName': 'Gilbert',
+            'Gender': 'Female',
+            'Emails': ['teresa@example.com', 'teresa@contoso.com'],
+            'AddressInfo': [
+                {
+                    'Address': '1 Suffolk Ln.',
+                    'City': {
+                        'CountryRegion': 'United States',
+                        'Name': 'Boise',
+                        'Region': 'ID'
+                    }
+                }
+            ]
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    AppComponent.prototype.executeDeleteEntity = function (example) {
+        example.subscr = example.odataQuery.delete().subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    AppComponent.prototype.executeUpdateEntity = function (example) {
+        example.subscr = example.odataQuery.patch({
+            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
+            'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
     };
     return AppComponent;
 }());
@@ -806,7 +905,7 @@ var ODataQuery = (function (_super) {
     ODataQuery.prototype.patch = function (body, requestOptionsArgs) {
         return this.odataService.patch(this, body, requestOptionsArgs);
     };
-    ODataQuery.prototype.delete = function (body, requestOptionsArgs) {
+    ODataQuery.prototype.delete = function (requestOptionsArgs) {
         return this.odataService.delete(this, requestOptionsArgs);
     };
     ODataQuery.prototype.toString = function () {
