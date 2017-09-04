@@ -40,9 +40,9 @@ var AppRoutingModule = (function () {
     return AppRoutingModule;
 }());
 AppRoutingModule = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["b" /* NgModule */])({
-        imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */].forRoot(routes)],
-        exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */]]
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["NgModule"])({
+        imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["RouterModule"].forRoot(routes)],
+        exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["RouterModule"]]
     })
 ], AppRoutingModule);
 
@@ -53,7 +53,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"example.func\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"example.func\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -65,7 +65,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".code {\n  margin: 0;\n}\n.response {\n  width: 50%;\n  height: 150px;\n}\n", ""]);
+exports.push([module.i, "", ""]);
 
 // exports
 
@@ -79,9 +79,8 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__docs_example_example_data__ = __webpack_require__("../../../../../src/app/docs/example/example-data.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -94,275 +93,180 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-
-var Example = (function () {
-    function Example() {
-    }
-    return Example;
-}());
-var SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
-var EXECUTE_GET = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
-var EXECUTE_CREATE_ENTITY = "example.subscr = example.odataQuery.post({\n  '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',\n  'UserName': 'teresa',\n  'FirstName': 'Teresa',\n  'LastName': 'Gilbert',\n  'Gender': 'Female',\n  'Emails': ['teresa@example.com', 'teresa@contoso.com'],\n  'AddressInfo': [\n    {\n      'Address': '1 Suffolk Ln.',\n      'City':\n      {\n        'CountryRegion': 'United States',\n        'Name': 'Boise',\n        'Region': 'ID'\n      }\n    }]\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
-var EXECUTE_DELETE_ENTITY = "example.subscr = example.odataQuery.delete().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
-var EXECUTE_UPDATE_ENTITY = "example.subscr = example.odataQuery.patch({\n  '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',\n  'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
 var AppComponent = (function () {
-    function AppComponent(odataService) {
-        this.odataService = odataService;
+    function AppComponent() {
         this.title = 'odata-v4-ng';
-        this.serviceRoot = SERVICE_ROOT;
+        this.serviceRoot = __WEBPACK_IMPORTED_MODULE_1__docs_example_example_data__["b" /* SERVICE_ROOT */];
     }
-    AppComponent.prototype.ngOnInit = function () {
+    AppComponent.prototype.ngOnInit = function () { };
+    return AppComponent;
+}());
+AppComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
+        selector: 'ov4-root',
+        template: __webpack_require__("../../../../../src/app/app.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/app.component.less")]
+    }),
+    __metadata("design:paramtypes", [])
+], AppComponent);
+
+//# sourceMappingURL=app.component.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/app.module.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__ = __webpack_require__("../../../../../src/app/odata/odata.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__docs_basic_read_basic_read_component__ = __webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__docs_basic_write_basic_write_component__ = __webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__docs_adv_read_adv_read_component__ = __webpack_require__("../../../../../src/app/docs/adv-read/adv-read.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__docs_adv_write_adv_write_component__ = __webpack_require__("../../../../../src/app/docs/adv-write/adv-write.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_primeng_primeng__ = __webpack_require__("../../../../primeng/primeng.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_primeng_primeng___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_primeng_primeng__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__docs_example_example_component__ = __webpack_require__("../../../../../src/app/docs/example/example.component.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+
+
+
+
+
+
+
+
+
+
+var AppModule = (function () {
+    function AppModule() {
+    }
+    return AppModule;
+}());
+AppModule = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["NgModule"])({
+        declarations: [
+            __WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */],
+            __WEBPACK_IMPORTED_MODULE_10__docs_example_example_component__["a" /* ExampleComponent */],
+            __WEBPACK_IMPORTED_MODULE_5__docs_basic_read_basic_read_component__["a" /* BasicReadComponent */],
+            __WEBPACK_IMPORTED_MODULE_6__docs_basic_write_basic_write_component__["a" /* BasicWriteComponent */],
+            __WEBPACK_IMPORTED_MODULE_7__docs_adv_read_adv_read_component__["a" /* AdvReadComponent */],
+            __WEBPACK_IMPORTED_MODULE_8__docs_adv_write_adv_write_component__["a" /* AdvWriteComponent */]
+        ],
+        imports: [
+            __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["BrowserModule"],
+            __WEBPACK_IMPORTED_MODULE_2__app_routing_module__["a" /* AppRoutingModule */],
+            __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__["a" /* ODataModule */],
+            __WEBPACK_IMPORTED_MODULE_9_primeng_primeng__["TabViewModule"]
+        ],
+        bootstrap: [__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */]]
+    })
+], AppModule);
+
+//# sourceMappingURL=app.module.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/adv-read/adv-read.component.less":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/adv-read/adv-read.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__ = __webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__example_example_data__ = __webpack_require__("../../../../../src/app/docs/example/example-data.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AdvReadComponent; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+var AdvReadComponent = (function (_super) {
+    __extends(AdvReadComponent, _super);
+    function AdvReadComponent(odataService) {
+        var _this = _super.call(this, odataService) || this;
+        _this.odataService = odataService;
+        return _this;
+    }
+    AdvReadComponent.prototype.ngOnInit = function () {
         this.examples = [];
-        // SERVICE DOCUMENT
-        var example = new Example();
-        this.examples.push(example);
-        example.title = 'Get service document';
-        example.query = SERVICE_ROOT;
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // SERVICE METADATA
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get service metadata';
-        example.query = SERVICE_ROOT + '/$metadata';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .metadata();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // ENTITY SET
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get entity set';
-        example.query = SERVICE_ROOT + '/People';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // ENTITY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get entity';
-        example.query = SERVICE_ROOT + '/People(\'russellwhyte\')';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .entityKey('\'russellwhyte\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // PROPERTY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get property';
-        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')/Name';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('Airports')
-            .entityKey('\'KSFO\'')
-            .property('Name');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // COMPLEX TYPE PROPERTY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get complex type property';
-        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')/Location/Address';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('Airports')
-            .entityKey('\'KSFO\'')
-            .property('Location/Address');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Location/Address');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // PROPERTY RAW VALUE
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get property raw value';
-        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')/Name/$value';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('Airports')
-            .entityKey('\'KSFO\'')
-            .property('Name')
-            .value();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name')\n    .value();\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // FILTER ENTITIES
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get filtered entities';
-        example.query = SERVICE_ROOT + '/People?$filter=FirstName eq \'Scott\'';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .filter('FirstName eq \'Scott\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('FirstName eq \\'Scott\\'');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // FILTER COMPLEX TYPES
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get filtered complex types';
-        example.query = SERVICE_ROOT + '/Airports?$filter=contains(Location/Address, \'San Francisco\')';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('Airports')
-            .filter('contains(Location/Address, \'San Francisco\')');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .filter('contains(Location/Address, \\'San Francisco\\')');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // FILTER ENUM PROPERTIES
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get filtered enum properties';
-        example.query = SERVICE_ROOT + '/People?$filter=Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\\'Female\\'');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // EXPAND
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get expanded entities';
-        example.query = SERVICE_ROOT + '/People?$expand=Trips';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .expand('Trips');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // FILTERED EXPAND
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get expanded entities with nested filter';
-        example.query = SERVICE_ROOT + '/People?$expand=Trips($filter=Name eq \'Trip in US\')';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .expand('Trips($filter=Name eq \'Trip in US\')');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips($filter=Name eq \\'Trip in US\\')');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // ORDERBY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get ordered entities';
-        example.query = SERVICE_ROOT + '/People(\'scottketchum\')/Trips?$orderby=EndsAt desc';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .entityKey('\'scottketchum\'')
-            .navigationProperty('Trips')
-            .orderby('EndsAt desc');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'scottketchum\\'')\n    .navigationProperty('Trips')\n    .orderby('EndsAt desc');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // TOP
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get entities using top';
-        example.query = SERVICE_ROOT + '/People?$top=2';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .top(2);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .top(2);\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // SKIP
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get entities using skip';
-        example.query = SERVICE_ROOT + '/People?$skip=18';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .skip(18);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .skip(18);\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // COUNT
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get entities count';
-        example.query = SERVICE_ROOT + '/People?$count';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .count();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .count();\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // PROJECTED ENTITIES
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get projected entities';
-        example.query = SERVICE_ROOT + '/Airports?$select=Name, IcaoCode';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('Airports')
-            .select('Name, IcaoCode');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .select('Name, IcaoCode');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // PROJECTED ENTITY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get projected entity';
-        example.query = SERVICE_ROOT + '/Airports(\'KSFO\')?$select=Name, IcaoCode';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('Airports')
-            .entityKey('\'KSFO\'')
-            .select('Name, IcaoCode');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .select('Name, IcaoCode');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // SEARCH
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Get entities matching search';
-        example.query = SERVICE_ROOT + '/People?$search=Boise';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .search('Boise');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .search('Boise');\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // CREATE ENTITY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Create entity';
-        example.query = SERVICE_ROOT + '/People';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_CREATE_ENTITY;
-        // example.func = this.executeCreateEntity;
-        // DELETE ENTITY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Delete entity';
-        example.query = SERVICE_ROOT + '/People(\'vincentcalabrese\')';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People')
-            .entityKey('\'vincentcalabrese\'');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'vincentcalabrese\\'');\n" + EXECUTE_DELETE_ENTITY;
-        // example.func = this.executeDeleteEntity;
-        // UPDATE ENTITY
-        example = new Example();
-        this.examples.push(example);
-        example.title = 'Update entity';
-        example.query = SERVICE_ROOT + '/People';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
-            .entitySet('People');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_UPDATE_ENTITY;
-        // example.func = this.executeUpdateEntity;
         // SINGLETON
-        example = new Example();
+        var example = new __WEBPACK_IMPORTED_MODULE_4__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
         example.title = 'Get singleton';
-        example.query = SERVICE_ROOT + '/Me';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+        example.query = __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */] + '/Me';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */])
             .singleton('Me');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me');\n" + EXECUTE_GET;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
         example.func = this.executeGet;
         // DERIVED ENTITYSET
-        example = new Example();
+        example = new __WEBPACK_IMPORTED_MODULE_4__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
         example.title = 'Get derived entity set';
-        example.query = SERVICE_ROOT + '/People(\'russellwhyte\')/Trips(1003)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+        example.query = __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')/Trips(1003)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */])
             .entitySet('People')
             .entityKey('\'russellwhyte\'')
             .navigationProperty('Trips')
             .entityKey(1003)
             .navigationProperty('PlanItems')
             .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + EXECUTE_GET;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
         example.func = this.executeGet;
         // DERIVED ENTITY
-        example = new Example();
+        example = new __WEBPACK_IMPORTED_MODULE_4__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
         example.title = 'Get derived entity';
-        example.query = SERVICE_ROOT + '/People(\'russellwhyte\')/Trips(1003)/PlanItems(21)/Microsoft.OData.SampleService.Models.TripPin.Flight';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_1__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, SERVICE_ROOT)
+        example.query = __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')/Trips(1003)/PlanItems(21)/Microsoft.OData.SampleService.Models.TripPin.Flight';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */])
             .entitySet('People')
             .entityKey('\'russellwhyte\'')
             .navigationProperty('Trips')
@@ -370,40 +274,385 @@ var AppComponent = (function () {
             .navigationProperty('PlanItems')
             .entityKey(21)
             .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .entityKey(21)\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + EXECUTE_GET;
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .entityKey(21)\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
         example.func = this.executeGet;
     };
-    AppComponent.prototype.ngOnDestroy = function () {
-        if (this.examples) {
-            for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
-                var example = _a[_i];
-                if (example.subscr) {
-                    example.subscr.unsubscribe();
-                }
-            }
-        }
+    return AdvReadComponent;
+}(__WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["a" /* BasicReadComponent */]));
+AdvReadComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["Component"])({
+        selector: 'ov4-adv-read',
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/docs/adv-read/adv-read.component.less")]
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+], AdvReadComponent);
+
+var _a;
+//# sourceMappingURL=adv-read.component.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/adv-write/adv-write.component.less":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/adv-write/adv-write.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_write_basic_write_component__ = __webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AdvWriteComponent; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    AppComponent.prototype.execute = function (example) {
+})();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+var AdvWriteComponent = (function (_super) {
+    __extends(AdvWriteComponent, _super);
+    function AdvWriteComponent(odataService) {
+        var _this = _super.call(this, odataService) || this;
+        _this.odataService = odataService;
+        _this.executeEnabled = false;
+        return _this;
+    }
+    AdvWriteComponent.prototype.ngOnInit = function () { };
+    return AdvWriteComponent;
+}(__WEBPACK_IMPORTED_MODULE_2__basic_write_basic_write_component__["a" /* BasicWriteComponent */]));
+AdvWriteComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Component"])({
+        selector: 'ov4-adv-write',
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/docs/adv-write/adv-write.component.less")]
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+], AdvWriteComponent);
+
+var _a;
+//# sourceMappingURL=adv-write.component.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/basic-read/basic-read.component.less":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/basic-read/basic-read.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__example_example_data__ = __webpack_require__("../../../../../src/app/docs/example/example-data.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__example_example_component__ = __webpack_require__("../../../../../src/app/docs/example/example.component.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return EXECUTE_GET; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return BasicReadComponent; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+var EXECUTE_GET = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var BasicReadComponent = (function (_super) {
+    __extends(BasicReadComponent, _super);
+    function BasicReadComponent(odataService) {
+        var _this = _super.call(this, odataService) || this;
+        _this.odataService = odataService;
+        return _this;
+    }
+    BasicReadComponent.prototype.ngOnInit = function () {
+        this.examples = [];
+        // SERVICE DOCUMENT
+        var example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get service document';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */];
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */]);
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // SERVICE METADATA
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get service metadata';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/$metadata';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .metadata();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // ENTITY SET
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get entity set';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // ENTITY
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get entity';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // PROPERTY
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get property';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/Airports(\'KSFO\')/Name';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('Airports')
+            .entityKey('\'KSFO\'')
+            .property('Name');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // COMPLEX TYPE PROPERTY
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get complex type property';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/Airports(\'KSFO\')/Location/Address';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('Airports')
+            .entityKey('\'KSFO\'')
+            .property('Location/Address');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Location/Address');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // PROPERTY RAW VALUE
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get property raw value';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/Airports(\'KSFO\')/Name/$value';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('Airports')
+            .entityKey('\'KSFO\'')
+            .property('Name')
+            .value();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .entityKey('\\'KSFO\\'')\n    .property('Name')\n    .value();\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // FILTER ENTITIES
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get filtered entities';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$filter=FirstName eq \'Scott\'';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .filter('FirstName eq \'Scott\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('FirstName eq \\'Scott\\'');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // FILTER COMPLEX TYPES
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get filtered complex types';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/Airports?$filter=contains(Location/Address, \'San Francisco\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('Airports')
+            .filter('contains(Location/Address, \'San Francisco\')');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .filter('contains(Location/Address, \\'San Francisco\\')');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // FILTER ENUM PROPERTIES
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get filtered enum properties';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$filter=Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\'Female\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .filter('Gender eq Microsoft.OData.SampleService.Models.TripPin.PersonGender\\'Female\\'');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // EXPAND
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get expanded entities';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$expand=Trips';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .expand('Trips');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // FILTERED EXPAND
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get expanded entities with nested filter';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$expand=Trips($filter=Name eq \'Trip in US\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .expand('Trips($filter=Name eq \'Trip in US\')');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .expand('Trips($filter=Name eq \\'Trip in US\\')');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // ORDERBY
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get ordered entities';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'scottketchum\')/Trips?$orderby=EndsAt desc';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'scottketchum\'')
+            .navigationProperty('Trips')
+            .orderby('EndsAt desc');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'scottketchum\\'')\n    .navigationProperty('Trips')\n    .orderby('EndsAt desc');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // TOP
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get entities using top';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$top=2';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .top(2);
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .top(2);\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // SKIP
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get entities using skip';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$skip=18';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .skip(18);
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .skip(18);\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // COUNT
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get entities count';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$count';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .count();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .count();\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // PROJECTED ENTITIES
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get projected entities';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/Airports?$select=Name, IcaoCode';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('Airports')
+            .select('Name, IcaoCode');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('Airports')\n    .select('Name, IcaoCode');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // SEARCH
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get entities matching search';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$search=Boise';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .search('Boise');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .search('Boise');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // UNBOUND FUNCTION
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Unbound function';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/GetNearestAirport(lat = 33, lon = -118)';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .functionCall('GetNearestAirport(lat = 33, lon = -118)');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .functionCall('GetNearestAirport(lat = 33, lon = -118)');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+        // BOUND FUNCTION
+        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Bound function';
+        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')/Microsoft.OData.SampleService.Models.TripPin.GetFavoriteAirline()';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'')
+            .functionCall('Microsoft.OData.SampleService.Models.TripPin.GetFavoriteAirline()');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .functionCall('Microsoft.OData.SampleService.Models.TripPin.GetFavoriteAirline()');\n" + EXECUTE_GET;
+        example.func = this.executeGet;
+    };
+    BasicReadComponent.prototype.execute = function (example) {
         if (example.func) {
-            example.func(example);
+            example.func(example, this.odataService);
         }
     };
-    AppComponent.prototype.executeGet = function (example) {
+    BasicReadComponent.prototype.executeGet = function (example, odataService) {
         example.subscr = example.odataQuery.get().subscribe(function (odataResponse) {
             example.response = odataResponse.toString();
         }, function (error) {
             example.response = error;
         });
     };
-    AppComponent.prototype.executeAllGet = function () {
+    BasicReadComponent.prototype.executeAllGet = function () {
         if (this.examples) {
             for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
                 var example = _a[_i];
-                this.executeGet(example);
+                this.executeGet(example, this.odataService);
             }
         }
     };
-    AppComponent.prototype.executeCreateEntity = function (example) {
+    BasicReadComponent.prototype.executeCreateEntity = function (example, odataService) {
         example.subscr = example.odataQuery.post({
             '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
             'UserName': 'teresa',
@@ -427,14 +676,21 @@ var AppComponent = (function () {
             example.response = error;
         });
     };
-    AppComponent.prototype.executeDeleteEntity = function (example) {
+    BasicReadComponent.prototype.executeDeleteEntity = function (example, odataService) {
         example.subscr = example.odataQuery.delete().subscribe(function (odataResponse) {
             example.response = odataResponse.toString();
         }, function (error) {
             example.response = error;
         });
     };
-    AppComponent.prototype.executeUpdateEntity = function (example) {
+    BasicReadComponent.prototype.executeDeleteEntityETag = function (example, odataService) {
+        example.subscr = example.odataQuery.delete('W/"08D15F3DD9A61539"').subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicReadComponent.prototype.executeUpdateEntity = function (example, odataService) {
         example.subscr = example.odataQuery.patch({
             '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
             'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
@@ -444,63 +700,432 @@ var AppComponent = (function () {
             example.response = error;
         });
     };
-    return AppComponent;
-}());
-AppComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["_11" /* Component */])({
-        selector: 'ov4-root',
-        template: __webpack_require__("../../../../../src/app/app.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/app.component.less")]
+    BasicReadComponent.prototype.executeUpdateEntityETag = function (example, odataService) {
+        example.subscr = example.odataQuery.patch({
+            '@odata.type': '#Microsoft.OData.SampleService.Models.TripPin.Person',
+            'FirstName': 'CLYDE'
+        }, 'W/"08D15F3DD9126D84"').subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicReadComponent.prototype.executeCreateRelationship = function (example, odataService) {
+        example.subscr = example.odataQuery.post({
+            '@odata.id': new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('People').entityKey('\'vincentcalabrese\'').toString()
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicReadComponent.prototype.executeChangeRelationship = function (example, odataService) {
+        example.subscr = example.odataQuery.put({
+            '@odata.id': new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('Airlines').entityKey('\'FM\'').toString()
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicReadComponent.prototype.executeBoundAction = function (example, odataService) {
+        example.subscr = example.odataQuery.post({
+            'userName': 'scottketchum',
+            'tripId': 1001
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    return BasicReadComponent;
+}(__WEBPACK_IMPORTED_MODULE_4__example_example_component__["a" /* ExampleComponent */]));
+BasicReadComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["Component"])({
+        selector: 'ov4-basic-read',
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.less")]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
-], AppComponent);
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+], BasicReadComponent);
 
 var _a;
-//# sourceMappingURL=app.component.js.map
+//# sourceMappingURL=basic-read.component.js.map
 
 /***/ }),
 
-/***/ "../../../../../src/app/app.module.ts":
+/***/ "../../../../../src/app/docs/basic-write/basic-write.component.less":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/basic-write/basic-write.component.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__ = __webpack_require__("../../../../../src/app/odata/odata.module.ts");
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__example_example_data__ = __webpack_require__("../../../../../src/app/docs/example/example-data.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__example_example_component__ = __webpack_require__("../../../../../src/app/docs/example/example.component.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return BasicWriteComponent; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 
 
 
 
 
-var AppModule = (function () {
-    function AppModule() {
+var EXECUTE_CREATE_ENTITY = "example.subscr = example.odataQuery.post({\n  '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',\n  'UserName': 'teresa',\n  'FirstName': 'Teresa',\n  'LastName': 'Gilbert',\n  'Gender': 'Female',\n  'Emails': ['teresa@example.com', 'teresa@contoso.com'],\n  'AddressInfo': [\n    {\n      'Address': '1 Suffolk Ln.',\n      'City':\n      {\n        'CountryRegion': 'United States',\n        'Name': 'Boise',\n        'Region': 'ID'\n      }\n    }]\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
+var EXECUTE_DELETE_ENTITY = "example.subscr = example.odataQuery.delete().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var EXECUTE_DELETE_ENTITY_ETAG = "example.subscr = example.odataQuery.delete('W/\"08D15F3DD9A61539\"').subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var EXECUTE_UPDATE_ENTITY = "example.subscr = example.odataQuery.patch({\n  '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',\n  'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
+var EXECUTE_UPDATE_ENTITY_ETAG = "example.subscr = example.odataQuery.patch({\n  '@odata.type': '#Microsoft.OData.SampleService.Models.TripPin.Person',\n  'FirstName' : 'CLYDE'\n}, 'W/\"08D15F3DD9126D84\"').subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
+var EXECUTE_CREATE_RELATIONSHIP = "example.subscr = example.odataQuery.post({\n  '@odata.id': new ODataQuery(odataService, SERVICE_ROOT).entitySet('People').entityKey('\\'vincentcalabrese\\'').toString()\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
+var EXECUTE_CHANGE_RELATIONSHIP = "example.subscr = example.odataQuery.put({\n  '@odata.id': new ODataQuery(odataService, SERVICE_ROOT).entitySet('Airlines').entityKey('\\'FM\\'').toString()\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
+var EXECUTE_BOUND_ACTION = "example.subscr = example.odataQuery.post({\n    'userName': 'scottketchum',\n    'tripId': 1001\n  }).subscribe(\n    (odataResponse: ODataResponse) => {\n      example.response = odataResponse.toString();\n    },\n    (error: string) => {\n      example.response = error;\n    }\n    );";
+var BasicWriteComponent = (function (_super) {
+    __extends(BasicWriteComponent, _super);
+    function BasicWriteComponent(odataService) {
+        var _this = _super.call(this, odataService) || this;
+        _this.odataService = odataService;
+        _this.executeEnabled = false;
+        return _this;
     }
-    return AppModule;
-}());
-AppModule = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["b" /* NgModule */])({
-        declarations: [
-            __WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */]
-        ],
-        imports: [
-            __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
-            __WEBPACK_IMPORTED_MODULE_2__app_routing_module__["a" /* AppRoutingModule */],
-            __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__["a" /* ODataModule */],
-        ],
-        bootstrap: [__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */]]
-    })
-], AppModule);
+    BasicWriteComponent.prototype.ngOnInit = function () {
+        this.examples = [];
+        // CREATE ENTITY
+        var example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Create entity';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People');\n  " + EXECUTE_CREATE_ENTITY;
+        // example.func = this.executeCreateEntity;
+        // DELETE ENTITY
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Delete entity';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'vincentcalabrese\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'vincentcalabrese\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'vincentcalabrese\\'');\n  " + EXECUTE_DELETE_ENTITY;
+        // example.func = this.executeDeleteEntity;
+        // UPDATE ENTITY
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Update entity';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People').
+            entityKey('\'russellwhyte\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People').\n      entityKey('\\'russellwhyte\\'');\n  " + EXECUTE_UPDATE_ENTITY;
+        // example.func = this.executeUpdateEntity;
+        // CREATE RELATIONSHIP
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Create a relationship between entities';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'scottketchum\')/Friends/$ref';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'scottketchum\'')
+            .navigationProperty('Friends')
+            .ref();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'scottketchum\\'')\n      .navigationProperty('Friends')\n      .ref();\n  " + EXECUTE_CREATE_RELATIONSHIP;
+        // example.func = this.executeCreateRelationship;
+        // CHANGE RELATIONSHIP
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Change relationship between entities';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')/Trips(1001)/PlanItems(11)/Microsoft.OData.SampleService.Models.TripPin.Flight/Airline/$ref';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'')
+            .navigationProperty('Trips')
+            .entityKey(1001)
+            .navigationProperty('PlanItems')
+            .entityKey(11)
+            .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')
+            .navigationProperty('Airline')
+            .ref();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'russellwhyte\\'')\n      .navigationProperty('Trips')\n      .entityKey(1001)\n      .navigationProperty('PlanItems')\n      .entityKey(11)\n      .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')\n      .navigationProperty('Airline')\n      .ref();\n  " + EXECUTE_CHANGE_RELATIONSHIP;
+        // example.func = this.executeChangeRelationship;
+        // BOUND ACTION
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Bound action';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')/Microsoft.OData.SampleService.Models.TripPin.ShareTrip';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'')
+            .actionCall('Microsoft.OData.SampleService.Models.TripPin.ShareTrip');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'russellwhyte\\'')\n      .actionCall('Microsoft.OData.SampleService.Models.TripPin.ShareTrip');\n  " + EXECUTE_BOUND_ACTION;
+        example.func = this.executeBoundAction;
+        // UPDATE ENTITY ETAG
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Update entity with ETag';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'clydeguess\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'clydeguess\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'clydeguess\\'');\n  " + EXECUTE_UPDATE_ENTITY_ETAG;
+        example.func = this.executeUpdateEntityETag;
+        // DELETE ENTITY ETAG
+        example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Delete entity with ETag';
+        example.query = __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'vincentcalabrese\')';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'vincentcalabrese\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'vincentcalabrese\\'');\n  " + EXECUTE_DELETE_ENTITY_ETAG;
+        example.func = this.executeDeleteEntityETag;
+    };
+    BasicWriteComponent.prototype.executeGet = function (example, odataService) {
+        example.subscr = example.odataQuery.get().subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeAllGet = function () {
+        if (this.examples) {
+            for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
+                var example = _a[_i];
+                this.executeGet(example, this.odataService);
+            }
+        }
+    };
+    BasicWriteComponent.prototype.executeCreateEntity = function (example, odataService) {
+        example.subscr = example.odataQuery.post({
+            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
+            'UserName': 'teresa',
+            'FirstName': 'Teresa',
+            'LastName': 'Gilbert',
+            'Gender': 'Female',
+            'Emails': ['teresa@example.com', 'teresa@contoso.com'],
+            'AddressInfo': [
+                {
+                    'Address': '1 Suffolk Ln.',
+                    'City': {
+                        'CountryRegion': 'United States',
+                        'Name': 'Boise',
+                        'Region': 'ID'
+                    }
+                }
+            ]
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeDeleteEntity = function (example, odataService) {
+        example.subscr = example.odataQuery.delete().subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeDeleteEntityETag = function (example, odataService) {
+        example.subscr = example.odataQuery.delete('W/"08D15F3DD9A61539"').subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeUpdateEntity = function (example, odataService) {
+        example.subscr = example.odataQuery.patch({
+            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
+            'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeUpdateEntityETag = function (example, odataService) {
+        example.subscr = example.odataQuery.patch({
+            '@odata.type': '#Microsoft.OData.SampleService.Models.TripPin.Person',
+            'FirstName': 'CLYDE'
+        }, 'W/"08D15F3DD9126D84"').subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeCreateRelationship = function (example, odataService) {
+        example.subscr = example.odataQuery.post({
+            '@odata.id': new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('People').entityKey('\'vincentcalabrese\'').toString()
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeChangeRelationship = function (example, odataService) {
+        example.subscr = example.odataQuery.put({
+            '@odata.id': new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('Airlines').entityKey('\'FM\'').toString()
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    BasicWriteComponent.prototype.executeBoundAction = function (example, odataService) {
+        example.subscr = example.odataQuery.post({
+            'userName': 'scottketchum',
+            'tripId': 1001
+        }).subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    return BasicWriteComponent;
+}(__WEBPACK_IMPORTED_MODULE_4__example_example_component__["a" /* ExampleComponent */]));
+BasicWriteComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
+        selector: 'ov4-basic-write',
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.less")]
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+], BasicWriteComponent);
 
-//# sourceMappingURL=app.module.js.map
+var _a;
+//# sourceMappingURL=basic-write.component.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/example/example-data.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SERVICE_ROOT; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ExampleData; });
+var SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
+var ExampleData = (function () {
+    function ExampleData() {
+    }
+    return ExampleData;
+}());
+
+//# sourceMappingURL=example-data.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/example/example.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>"
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/example/example.component.less":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/example/example.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ExampleComponent; });
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var ExampleComponent = (function () {
+    function ExampleComponent(odataService) {
+        this.odataService = odataService;
+        this.executeEnabled = true;
+    }
+    ExampleComponent.prototype.ngOnInit = function () {
+    };
+    ExampleComponent.prototype.ngOnDestroy = function () {
+        if (this.examples) {
+            for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
+                var example = _a[_i];
+                if (example.subscr) {
+                    example.subscr.unsubscribe();
+                }
+            }
+        }
+    };
+    ExampleComponent.prototype.execute = function (example) {
+        if (example.func) {
+            example.func(example, this.odataService);
+        }
+    };
+    return ExampleComponent;
+}());
+ExampleComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
+        selector: 'ov4-example',
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/docs/example/example.component.less")]
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+], ExampleComponent);
+
+var _a;
+//# sourceMappingURL=example.component.js.map
 
 /***/ }),
 
@@ -608,7 +1233,7 @@ var ODataQueryBatch = (function (_super) {
             requestOptionsArgs = {};
         }
         if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(requestOptionsArgs.headers)) {
-            requestOptionsArgs.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_http__["c" /* Headers */]({
+            requestOptionsArgs.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_http__["b" /* Headers */]({
                 ODATA_VERSION: ODataQueryBatch.ODATA_V4,
                 CONTENT_TYPE: ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary
             });
@@ -801,8 +1426,8 @@ var ODataQuery = (function (_super) {
         return this;
     };
     ODataQuery.prototype.navigationProperty = function (navigationProperty) {
-        if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
-            throw new Error('navigationProperty can only be appended to entityKey or singleton');
+        if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON && this.lastSegment !== ODataQuery.TYPE_NAME) {
+            throw new Error('navigationProperty can only be appended to entityKey, singleton or typeName');
         }
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(navigationProperty, 'navigationProperty');
@@ -899,14 +1524,14 @@ var ODataQuery = (function (_super) {
     ODataQuery.prototype.post = function (body, requestOptionsArgs) {
         return this.odataService.post(this, body, requestOptionsArgs);
     };
-    ODataQuery.prototype.put = function (body, requestOptionsArgs) {
-        return this.odataService.put(this, body, requestOptionsArgs);
+    ODataQuery.prototype.patch = function (body, etag, requestOptionsArgs) {
+        return this.odataService.patch(this, body, etag, requestOptionsArgs);
     };
-    ODataQuery.prototype.patch = function (body, requestOptionsArgs) {
-        return this.odataService.patch(this, body, requestOptionsArgs);
+    ODataQuery.prototype.put = function (body, etag, requestOptionsArgs) {
+        return this.odataService.put(this, body, etag, requestOptionsArgs);
     };
-    ODataQuery.prototype.delete = function (requestOptionsArgs) {
-        return this.odataService.delete(this, requestOptionsArgs);
+    ODataQuery.prototype.delete = function (etag, requestOptionsArgs) {
+        return this.odataService.delete(this, etag, requestOptionsArgs);
     };
     ODataQuery.prototype.toString = function () {
         var res = this.queryString;
@@ -1141,60 +1766,76 @@ var ODataService = ODataService_1 = (function () {
     }
     ODataService.prototype.get = function (odataQuery, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS, requestOptionsArgs);
-        return this.http.get(url, args)
+        return this.http.get(url, requestOptionsArgs)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
     };
     ODataService.prototype.post = function (odataQuery, body, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS, requestOptionsArgs);
+        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS_POST, requestOptionsArgs);
         return this.http.post(url, body, args)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
     };
-    ODataService.prototype.put = function (odataQuery, body, requestOptionsArgs) {
+    ODataService.prototype.patch = function (odataQuery, body, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS, requestOptionsArgs);
-        return this.http.put(url, body, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
-            .catch(this.handleError);
-    };
-    ODataService.prototype.patch = function (odataQuery, body, requestOptionsArgs) {
-        var url = odataQuery.toString();
-        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS, requestOptionsArgs);
+        var args = this.mergeETag(ODataService_1.REQUEST_OPTIONS_ARGS_POST, etag);
+        args = this.mergeOverride(args, requestOptionsArgs);
         return this.http.patch(url, body, args)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
     };
-    ODataService.prototype.delete = function (odataQuery, requestOptionsArgs) {
+    ODataService.prototype.put = function (odataQuery, body, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS, requestOptionsArgs);
+        var args = this.mergeETag(ODataService_1.REQUEST_OPTIONS_ARGS_POST, etag);
+        args = this.mergeOverride(args, requestOptionsArgs);
+        return this.http.put(url, body, args)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
+            .catch(this.handleError);
+    };
+    ODataService.prototype.delete = function (odataQuery, etag, requestOptionsArgs) {
+        var url = odataQuery.toString();
+        var args = this.mergeETag(requestOptionsArgs, etag);
         return this.http.delete(url, args)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
     };
-    ODataService.prototype.mergeOverride = function (args1, args2) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(args1, 'args1');
-        var args = args1;
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(args2)) {
-            // merge/override headers
-            var headers = args.headers;
-            var headers2 = args2.headers;
-            for (var _i = 0, _a = headers2.keys(); _i < _a.length; _i++) {
-                var key = _a[_i];
-                headers.set(key, headers2.get(key));
-            }
-            // override withCredentials
-            args.withCredentials = args2.withCredentials;
-            // override responseType
-            args.responseType = args2.responseType;
+    ODataService.prototype.mergeETag = function (args, etag) {
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(etag)) {
+            return args;
         }
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args)) {
+            args = {};
+        }
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args.headers)) {
+            args.headers = new __WEBPACK_IMPORTED_MODULE_4__angular_http__["b" /* Headers */]();
+        }
+        args.headers.set(ODataService_1.IF_MATCH_HEADER, etag);
+        return args;
+    };
+    ODataService.prototype.mergeOverride = function (args1, args2) {
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args1)) {
+            return args2;
+        }
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args2)) {
+            return args1;
+        }
+        var args = { headers: new __WEBPACK_IMPORTED_MODULE_4__angular_http__["b" /* Headers */](args1.headers) };
+        // merge/override headers
+        var headers2 = args2.headers;
+        for (var _i = 0, _a = headers2.keys(); _i < _a.length; _i++) {
+            var key = _a[_i];
+            args.headers.set(key, headers2.get(key));
+        }
+        // override withCredentials
+        args.withCredentials = args2.withCredentials;
+        // override responseType
+        args.responseType = args2.responseType;
         return args;
     };
     ODataService.prototype.handleError = function (error) {
         var errMsg;
-        if (error instanceof __WEBPACK_IMPORTED_MODULE_4__angular_http__["b" /* Response */]) {
+        if (error instanceof __WEBPACK_IMPORTED_MODULE_4__angular_http__["c" /* Response */]) {
             var body = error.json() || '';
             var err = body.error || JSON.stringify(body, null, 4);
             errMsg = error.status + " - " + (error.statusText || '') + " - " + JSON.stringify(err, null, 4);
@@ -1206,12 +1847,12 @@ var ODataService = ODataService_1 = (function () {
     };
     return ODataService;
 }());
-ODataService.REQUEST_OPTIONS_ARGS = {
-    headers: new __WEBPACK_IMPORTED_MODULE_4__angular_http__["c" /* Headers */]({ 'Content-Type': 'application/json' }),
-    withCredentials: false
+ODataService.REQUEST_OPTIONS_ARGS_POST = {
+    headers: new __WEBPACK_IMPORTED_MODULE_4__angular_http__["b" /* Headers */]({ 'Content-Type': 'application/json' }),
 };
+ODataService.IF_MATCH_HEADER = 'If-Match';
 ODataService = ODataService_1 = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__angular_core__["c" /* Injectable */])(),
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_5__angular_core__["Injectable"])(),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__angular_http__["d" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_http__["d" /* Http */]) === "function" && _a || Object])
 ], ODataService);
 
@@ -1245,9 +1886,9 @@ var ODataModule = (function () {
     return ODataModule;
 }());
 ODataModule = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["b" /* NgModule */])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["NgModule"])({
         imports: [
-            __WEBPACK_IMPORTED_MODULE_3__angular_common__["a" /* CommonModule */],
+            __WEBPACK_IMPORTED_MODULE_3__angular_common__["CommonModule"],
             __WEBPACK_IMPORTED_MODULE_0__angular_http__["a" /* HttpModule */]
         ],
         providers: [__WEBPACK_IMPORTED_MODULE_1__odata_service_odata_service__["a" /* ODataService */]]
@@ -1819,7 +2460,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 if (__WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment */].production) {
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["a" /* enableProdMode */])();
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["enableProdMode"])();
 }
 __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_2__app_app_module__["a" /* AppModule */]);
 //# sourceMappingURL=main.js.map

@@ -120,8 +120,8 @@ export class ODataQuery extends ODataQueryAbstract {
   }
 
   navigationProperty(navigationProperty: string): ODataQuery {
-    if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
-      throw new Error('navigationProperty can only be appended to entityKey or singleton');
+    if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON && this.lastSegment !== ODataQuery.TYPE_NAME) {
+      throw new Error('navigationProperty can only be appended to entityKey, singleton or typeName');
     }
     Utils.requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
     Utils.requireNotEmpty(navigationProperty, 'navigationProperty');
@@ -236,16 +236,16 @@ export class ODataQuery extends ODataQueryAbstract {
     return this.odataService.post(this, body, requestOptionsArgs);
   }
 
-  put(body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.put(this, body, requestOptionsArgs);
+  patch(body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+    return this.odataService.patch(this, body, etag, requestOptionsArgs);
   }
 
-  patch(body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.patch(this, body, requestOptionsArgs);
+  put(body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+    return this.odataService.put(this, body, etag, requestOptionsArgs);
   }
 
-  delete(requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.delete(this, requestOptionsArgs);
+  delete(etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+    return this.odataService.delete(this, etag, requestOptionsArgs);
   }
 
   toString(): string {

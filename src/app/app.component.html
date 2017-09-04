@@ -18,17 +18,19 @@
   on workload.</p>
 <p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>
 
-<!-- <input type="button" value="Execute all queries" (click)="executeAllGet()"> -->
-
-<div *ngFor="let example of examples">
-  <h3>{{example.title}}</h3>
-  <h4>Query</h4>
-  <span>{{example.query}}</span>
-  <h4>Code</h4>
-  <pre class="code">{{example.code}}</pre>
-  <h4 *ngIf="example.func">Response <input type="button" value="Execute query" (click)="execute(example)"></h4>
-  <textarea *ngIf="example.func" class="response" readonly="true">{{example.response}}</textarea>
-  <hr/>
-</div>
+<p-tabView>
+  <p-tabPanel header="Basic read">
+    <ov4-basic-read></ov4-basic-read>
+  </p-tabPanel>
+  <p-tabPanel header="Basic write">
+    <ov4-basic-write></ov4-basic-write>
+  </p-tabPanel>
+  <p-tabPanel header="Advanced read">
+    <ov4-adv-read></ov4-adv-read>
+  </p-tabPanel>
+  <p-tabPanel header="Advanced write">
+    <ov4-adv-write></ov4-adv-write>
+  </p-tabPanel>
+</p-tabView>
 
 <router-outlet></router-outlet>

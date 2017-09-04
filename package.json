@@ -1,6 +1,6 @@
 {
   "name": "odata-v4-ng",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "license": "MIT",
   "description": "Client side OData V4 typescript library for Angular2+",
   "repository": {
@@ -28,13 +28,11 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "testAndBuild": "npm install && npm prune && npm outdated && ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng && npm list --depth=0 && rm -r docs && mv dist docs"
+    "testAndBuild": "npm install && npm prune && npm outdated && ng lint && ng test --single-run --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng && npm list --depth=0 && rm -R -f docs && cp -R dist docs && ng-packagr -p ng-package.json",
+    "publishDist": "npm publish dist"
   },
   "private": false,
   "dependencies": {
-    "uuid": "^3.1.0"
-  },
-  "devDependencies": {
     "@angular/animations": "^4.0.0",
     "@angular/common": "^4.0.0",
     "@angular/compiler": "^4.0.0",
@@ -47,6 +45,11 @@
     "core-js": "^2.4.1",
     "rxjs": "^5.4.1",
     "zone.js": "^0.8.14",
+    "font-awesome": "^4.7.0",
+    "primeng": "^4.2.0-rc.1",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
     "@angular/cli": "1.2.7",
     "@angular/compiler-cli": "^4.0.0",
     "@angular/language-service": "^4.0.0",
@@ -62,6 +65,7 @@
     "karma-coverage-istanbul-reporter": "^1.2.1",
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
+    "ng-packagr": "^1.0.1",
     "protractor": "~5.1.2",
     "ts-node": "~3.0.4",
     "tslint": "~5.3.2",
