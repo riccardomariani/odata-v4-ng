@@ -1037,7 +1037,7 @@ var _a;
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SERVICE_ROOT; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ExampleData; });
-var SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
+var SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 var ExampleData = (function () {
     function ExampleData() {
     }

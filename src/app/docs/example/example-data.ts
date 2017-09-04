@@ -1,7 +1,7 @@
 import { ODataQuery } from '../../odata/odata-query/odata-query';
 import { Subscription } from 'rxjs/Subscription';
 
-export const SERVICE_ROOT = 'http://services.odata.org/v4/TripPinServiceRW';
+export const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 
 export class ExampleData {
     public title: string;
