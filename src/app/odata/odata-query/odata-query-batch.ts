@@ -5,7 +5,7 @@ import { Utils } from '../utils/utils';
 import { ODataService } from '../odata-service/odata.service';
 import { Observable } from 'rxjs/Observable';
 import { ODataQueryAbstract } from './odata-query-abstract';
-import * as uuid from 'uuid';
+declare var uuid;
 
 enum Method {
   GET, POST, PUT, PATCH, DELETE
@@ -134,7 +134,7 @@ export class ODataQueryBatch extends ODataQueryAbstract {
         }
 
         if (Utils.isNullOrUndefined(this.changesetBoundary)) {
-          this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + uuid.v4();
+          this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + uuid();
           res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
           res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
           res += ODataQueryBatch.NEWLINE;

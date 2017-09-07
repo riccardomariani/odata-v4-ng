@@ -3,7 +3,7 @@ import { Filter } from './filter';
 import { FilterHasProperty } from './filter-has-property';
 import { QuotedString } from '../../odata-query/quoted-string';
 
-class FilterFunction extends FilterHasProperty implements Filter {
+export class FilterFunction extends FilterHasProperty implements Filter {
     private functionName: string;
     private value: boolean | number | string | QuotedString;
 
