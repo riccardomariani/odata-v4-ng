@@ -247,6 +247,16 @@ var AdvReadComponent = (function (_super) {
             .singleton('Me');
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
         example.func = this.executeGet;
+        // SINGLETON PROPERTY
+        example = new __WEBPACK_IMPORTED_MODULE_4__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get singleton property';
+        example.query = __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */] + '/Me/AddressInfo';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */])
+            .singleton('Me')
+            .property('AddressInfo');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .singleton('Me')\n    .property('AddressInfo');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
+        example.func = this.executeGet;
         // DERIVED ENTITYSET
         example = new __WEBPACK_IMPORTED_MODULE_4__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
@@ -275,6 +285,21 @@ var AdvReadComponent = (function (_super) {
             .entityKey(21)
             .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .entityKey(21)\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
+        example.func = this.executeGet;
+        // FILTER DERIVED ENTITIES
+        example = new __WEBPACK_IMPORTED_MODULE_4__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get derived entities filtered';
+        example.query = __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */] + '/People(\'russellwhyte\')/Trips(1003)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight?$filter=FlightNumber eq \'FM1930\'';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_4__example_example_data__["b" /* SERVICE_ROOT */])
+            .entitySet('People')
+            .entityKey('\'russellwhyte\'')
+            .navigationProperty('Trips')
+            .entityKey(1003)
+            .navigationProperty('PlanItems')
+            .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')
+            .filter('FlightNumber eq \'FM1930\'');
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .entityKey('\\'russellwhyte\\'')\n    .navigationProperty('Trips')\n    .entityKey(1003)\n    .navigationProperty('PlanItems')\n    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')\n    .filter('FlightNumber eq \\'FM1930\\'');\n" + __WEBPACK_IMPORTED_MODULE_3__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
         example.func = this.executeGet;
     };
     return AdvReadComponent;
@@ -315,9 +340,11 @@ module.exports = module.exports.toString();
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_write_basic_write_component__ = __webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__example_example_data__ = __webpack_require__("../../../../../src/app/docs/example/example-data.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__basic_write_basic_write_component__ = __webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AdvWriteComponent; });
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -341,6 +368,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
+var EXECUTE_BATCH = "example.subscr = example.odataQuery.execute().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
 var AdvWriteComponent = (function (_super) {
     __extends(AdvWriteComponent, _super);
     function AdvWriteComponent(odataService) {
@@ -349,16 +379,41 @@ var AdvWriteComponent = (function (_super) {
         _this.executeEnabled = false;
         return _this;
     }
-    AdvWriteComponent.prototype.ngOnInit = function () { };
+    AdvWriteComponent.prototype.ngOnInit = function () {
+        this.examples = [];
+        // BATCH
+        var example = new __WEBPACK_IMPORTED_MODULE_1__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Batch';
+        example.query = __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */] + '/$batch';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */])
+            .batch()
+            .get(new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('Airlines'))
+            .post(new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('Airlines'), {
+            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Airline',
+            'AirlineCode': 'EK',
+            'Name': 'Emirates Airline'
+        })
+            .get(new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('Airlines'));
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .batch()\n    .get(new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines'))\n    .post(new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines'), {\n      '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Airline',\n      'AirlineCode': 'EK',\n      'Name': 'Emirates Airline'\n    })\n    .get(new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines'));\n" + EXECUTE_BATCH;
+        example.func = this.executeBatch;
+    };
+    AdvWriteComponent.prototype.executeBatch = function (example, odataService) {
+        example.subscr = example.odataQuery.execute().subscribe(function (odataResponse) {
+            example.response = odataResponse.toString();
+        }, function (error) {
+            example.response = error;
+        });
+    };
     return AdvWriteComponent;
-}(__WEBPACK_IMPORTED_MODULE_2__basic_write_basic_write_component__["a" /* BasicWriteComponent */]));
+}(__WEBPACK_IMPORTED_MODULE_3__basic_write_basic_write_component__["a" /* BasicWriteComponent */]));
 AdvWriteComponent = __decorate([
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Component"])({
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__angular_core__["Component"])({
         selector: 'ov4-adv-write',
         template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
         styles: [__webpack_require__("../../../../../src/app/docs/adv-write/adv-write.component.less")]
     }),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_0__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], AdvWriteComponent);
 
 var _a;
@@ -832,7 +887,7 @@ var BasicWriteComponent = (function (_super) {
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_3__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_2__example_example_data__["b" /* SERVICE_ROOT */])
             .entitySet('People');
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People');\n  " + EXECUTE_CREATE_ENTITY;
-        // example.func = this.executeCreateEntity;
+        example.func = this.executeCreateEntity;
         // DELETE ENTITY
         example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
@@ -842,7 +897,7 @@ var BasicWriteComponent = (function (_super) {
             .entitySet('People')
             .entityKey('\'vincentcalabrese\'');
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'vincentcalabrese\\'');\n  " + EXECUTE_DELETE_ENTITY;
-        // example.func = this.executeDeleteEntity;
+        example.func = this.executeDeleteEntity;
         // UPDATE ENTITY
         example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
@@ -852,7 +907,7 @@ var BasicWriteComponent = (function (_super) {
             .entitySet('People').
             entityKey('\'russellwhyte\'');
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People').\n      entityKey('\\'russellwhyte\\'');\n  " + EXECUTE_UPDATE_ENTITY;
-        // example.func = this.executeUpdateEntity;
+        example.func = this.executeUpdateEntity;
         // CREATE RELATIONSHIP
         example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
@@ -864,7 +919,7 @@ var BasicWriteComponent = (function (_super) {
             .navigationProperty('Friends')
             .ref();
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'scottketchum\\'')\n      .navigationProperty('Friends')\n      .ref();\n  " + EXECUTE_CREATE_RELATIONSHIP;
-        // example.func = this.executeCreateRelationship;
+        example.func = this.executeCreateRelationship;
         // CHANGE RELATIONSHIP
         example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
@@ -881,7 +936,7 @@ var BasicWriteComponent = (function (_super) {
             .navigationProperty('Airline')
             .ref();
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'russellwhyte\\'')\n      .navigationProperty('Trips')\n      .entityKey(1001)\n      .navigationProperty('PlanItems')\n      .entityKey(11)\n      .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')\n      .navigationProperty('Airline')\n      .ref();\n  " + EXECUTE_CHANGE_RELATIONSHIP;
-        // example.func = this.executeChangeRelationship;
+        example.func = this.executeChangeRelationship;
         // BOUND ACTION
         example = new __WEBPACK_IMPORTED_MODULE_2__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
@@ -1159,6 +1214,8 @@ var ODataQueryAbstract = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query-abstract.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_uuid__ = __webpack_require__("../../../../uuid/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_uuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_uuid__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataQueryBatch; });
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -1170,6 +1227,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+
 
 
 
@@ -1199,7 +1257,7 @@ var ODataQueryBatch = (function (_super) {
         __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
         _this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(serviceRoot, ODataQueryBatch.$BATCH);
         _this.requests = [];
-        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + uuid.v4();
+        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + __WEBPACK_IMPORTED_MODULE_3_uuid___default()();
         _this.changesetBoundary = null;
         _this.changesetID = 1;
         return _this;
@@ -1231,7 +1289,6 @@ var ODataQueryBatch = (function (_super) {
         }
         if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(requestOptionsArgs.headers)) {
             requestOptionsArgs.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_http__["b" /* Headers */]({
-                ODATA_VERSION: ODataQueryBatch.ODATA_V4,
                 CONTENT_TYPE: ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary
             });
         }
@@ -1259,7 +1316,6 @@ var ODataQueryBatch = (function (_super) {
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
                 res += Method[method] + ' ' + odataQuery + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.ODATA_VERSION + ': ' + ODataQueryBatch.ODATA_V4 + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
             }
@@ -1271,7 +1327,7 @@ var ODataQueryBatch = (function (_super) {
                     ifMatch = requestOptionsArgs.headers.get(ODataQueryBatch.IF_MATCH);
                 }
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
-                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + uuid();
+                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_3_uuid___default()();
                     res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.NEWLINE;
@@ -1283,7 +1339,6 @@ var ODataQueryBatch = (function (_super) {
                 res += ODataQueryBatch.CONTENT_ID + ': ' + this.changesetID++ + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
                 res += Method[method] + ' ' + odataQuery + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.ODATA_VERSION + ': ' + ODataQueryBatch.ODATA_V4 + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(ifMatch)) {
                     res += ODataQueryBatch.IF_MATCH + ': ' + ifMatch + ODataQueryBatch.NEWLINE;
@@ -1312,12 +1367,10 @@ ODataQueryBatch.NEWLINE = '\r\n';
 ODataQueryBatch.$BATCH = '$batch';
 // HEADERS
 ODataQueryBatch.HTTP11 = 'HTTP/1.1';
-ODataQueryBatch.ODATA_VERSION = 'OData-Version';
 ODataQueryBatch.CONTENT_TYPE = 'Content-Type';
 ODataQueryBatch.CONTENT_ID = 'Content-ID';
 ODataQueryBatch.IF_MATCH = 'If-Match';
 // HEADER VALUES
-ODataQueryBatch.ODATA_V4 = '4.0';
 ODataQueryBatch.MULTIPART_MIXED = 'multipart/mixed;boundary=';
 ODataQueryBatch.APPLICATION_HTTP = 'application/http';
 ODataQueryBatch.APPLICATION_JSON = 'application/json';
@@ -1364,7 +1417,7 @@ var ODataQuery = (function (_super) {
     ODataQuery.prototype.metadata = function () {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.METADATA), ODataQuery.METADATA);
         if (this.segments.length) {
-            throw new Error('$metadata segment cannot be appended to other segments');
+            throw new Error('metadata segment cannot be appended to other segments');
         }
         this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$METADATA);
         this.addSegment(ODataQuery.METADATA);
@@ -1395,6 +1448,9 @@ var ODataQuery = (function (_super) {
         return this;
     };
     ODataQuery.prototype.singleton = function (singleton) {
+        if (this.segments.length) {
+            throw new Error('singleton segment cannot be appended to other segments');
+        }
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(singleton, 'singleton');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(singleton, 'singleton');
         this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, singleton);

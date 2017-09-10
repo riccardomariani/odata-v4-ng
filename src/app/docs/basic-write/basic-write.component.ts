@@ -123,7 +123,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
       .entitySet('People');
   ${EXECUTE_CREATE_ENTITY}`;
-    // example.func = this.executeCreateEntity;
+    example.func = this.executeCreateEntity;
     // DELETE ENTITY
     example = new ExampleData();
     this.examples.push(example);
@@ -136,7 +136,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       .entitySet('People')
       .entityKey('\\\'vincentcalabrese\\\'');
   ${EXECUTE_DELETE_ENTITY}`;
-    // example.func = this.executeDeleteEntity;
+    example.func = this.executeDeleteEntity;
     // UPDATE ENTITY
     example = new ExampleData();
     this.examples.push(example);
@@ -149,7 +149,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       .entitySet('People').
       entityKey('\\\'russellwhyte\\\'');
   ${EXECUTE_UPDATE_ENTITY}`;
-    // example.func = this.executeUpdateEntity;
+    example.func = this.executeUpdateEntity;
     // CREATE RELATIONSHIP
     example = new ExampleData();
     this.examples.push(example);
@@ -166,7 +166,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       .navigationProperty('Friends')
       .ref();
   ${EXECUTE_CREATE_RELATIONSHIP}`;
-    // example.func = this.executeCreateRelationship;
+    example.func = this.executeCreateRelationship;
     // CHANGE RELATIONSHIP
     example = new ExampleData();
     this.examples.push(example);
@@ -193,7 +193,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       .navigationProperty('Airline')
       .ref();
   ${EXECUTE_CHANGE_RELATIONSHIP}`;
-    // example.func = this.executeChangeRelationship;
+    example.func = this.executeChangeRelationship;
     // BOUND ACTION
     example = new ExampleData();
     this.examples.push(example);

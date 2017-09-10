@@ -5,7 +5,7 @@ import { Utils } from '../utils/utils';
 import { ODataService } from '../odata-service/odata.service';
 import { Observable } from 'rxjs/Observable';
 import { ODataQueryAbstract } from './odata-query-abstract';
-declare var uuid;
+import uuid from 'uuid';
 
 enum Method {
   GET, POST, PUT, PATCH, DELETE
@@ -29,13 +29,11 @@ export class ODataQueryBatch extends ODataQueryAbstract {
 
   // HEADERS
   private static readonly HTTP11 = 'HTTP/1.1';
-  private static readonly ODATA_VERSION = 'OData-Version';
   private static readonly CONTENT_TYPE = 'Content-Type';
   private static readonly CONTENT_ID = 'Content-ID';
   private static readonly IF_MATCH = 'If-Match';
 
   // HEADER VALUES
-  private static readonly ODATA_V4 = '4.0';
   private static readonly MULTIPART_MIXED = 'multipart/mixed;boundary=';
   private static readonly APPLICATION_HTTP = 'application/http';
   private static readonly APPLICATION_JSON = 'application/json';
@@ -53,7 +51,7 @@ export class ODataQueryBatch extends ODataQueryAbstract {
     Utils.requireNotEmpty(serviceRoot, 'serviceRoot');
     this.queryString = Utils.appendSegment(serviceRoot, ODataQueryBatch.$BATCH);
     this.requests = [];
-    this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + uuid.v4();
+    this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + uuid();
     this.changesetBoundary = null;
     this.changesetID = 1;
   }
@@ -90,7 +88,6 @@ export class ODataQueryBatch extends ODataQueryAbstract {
     }
     if (Utils.isNullOrUndefined(requestOptionsArgs.headers)) {
       requestOptionsArgs.headers = new Headers({
-        ODATA_VERSION: ODataQueryBatch.ODATA_V4,
         CONTENT_TYPE: ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary
       });
     }
@@ -122,7 +119,6 @@ export class ODataQueryBatch extends ODataQueryAbstract {
         res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
         res += Method[method] + ' ' + odataQuery + ODataQueryBatch.NEWLINE;
-        res += ODataQueryBatch.ODATA_VERSION + ': ' + ODataQueryBatch.ODATA_V4 + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
       } else {
@@ -147,7 +143,6 @@ export class ODataQueryBatch extends ODataQueryAbstract {
         res += ODataQueryBatch.CONTENT_ID + ': ' + this.changesetID++ + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
         res += Method[method] + ' ' + odataQuery + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
-        res += ODataQueryBatch.ODATA_VERSION + ': ' + ODataQueryBatch.ODATA_V4 + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
         if (Utils.isNotNullNorUndefined(ifMatch)) {
           res += ODataQueryBatch.IF_MATCH + ': ' + ifMatch + ODataQueryBatch.NEWLINE;

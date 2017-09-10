@@ -26,6 +26,19 @@ export class AdvReadComponent extends BasicReadComponent implements OnInit {
     .singleton('Me');
 ${EXECUTE_GET}`;
     example.func = this.executeGet;
+    // SINGLETON PROPERTY
+    example = new ExampleData();
+    this.examples.push(example);
+    example.title = 'Get singleton property';
+    example.query = SERVICE_ROOT + '/Me/AddressInfo';
+    example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
+      .singleton('Me')
+      .property('AddressInfo');
+    example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
+    .singleton('Me')
+    .property('AddressInfo');
+${EXECUTE_GET}`;
+    example.func = this.executeGet;
     // DERIVED ENTITYSET
     example = new ExampleData();
     this.examples.push(example);
@@ -68,6 +81,29 @@ ${EXECUTE_GET}`;
     .navigationProperty('PlanItems')
     .entityKey(21)
     .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight');
+${EXECUTE_GET}`;
+    example.func = this.executeGet;
+    // FILTER DERIVED ENTITIES
+    example = new ExampleData();
+    this.examples.push(example);
+    example.title = 'Get derived entities filtered';
+    example.query = SERVICE_ROOT + '/People(\'russellwhyte\')/Trips(1003)/PlanItems/Microsoft.OData.SampleService.Models.TripPin.Flight?$filter=FlightNumber eq \'FM1930\'';
+    example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
+      .entitySet('People')
+      .entityKey('\'russellwhyte\'')
+      .navigationProperty('Trips')
+      .entityKey(1003)
+      .navigationProperty('PlanItems')
+      .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')
+      .filter('FlightNumber eq \'FM1930\'');
+    example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
+    .entitySet('People')
+    .entityKey('\\\'russellwhyte\\\'')
+    .navigationProperty('Trips')
+    .entityKey(1003)
+    .navigationProperty('PlanItems')
+    .typeName('Microsoft.OData.SampleService.Models.TripPin.Flight')
+    .filter('FlightNumber eq \\\'FM1930\\\'');
 ${EXECUTE_GET}`;
     example.func = this.executeGet;
   }

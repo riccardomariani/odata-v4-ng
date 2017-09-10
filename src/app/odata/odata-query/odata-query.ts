@@ -55,7 +55,7 @@ export class ODataQuery extends ODataQueryAbstract {
   metadata(): ODataQuery {
     Utils.requireNullOrUndefined(this.getSegment(ODataQuery.METADATA), ODataQuery.METADATA);
     if (this.segments.length) {
-      throw new Error('$metadata segment cannot be appended to other segments');
+      throw new Error('metadata segment cannot be appended to other segments');
     }
     this.queryString = Utils.appendSegment(this.queryString, ODataQuery.$METADATA);
     this.addSegment(ODataQuery.METADATA);
@@ -89,6 +89,9 @@ export class ODataQuery extends ODataQueryAbstract {
   }
 
   singleton(singleton: string) {
+    if (this.segments.length) {
+      throw new Error('singleton segment cannot be appended to other segments');
+    }
     Utils.requireNotNullNorUndefined(singleton, 'singleton');
     Utils.requireNotEmpty(singleton, 'singleton');
     this.queryString = Utils.appendSegment(this.queryString, singleton);
