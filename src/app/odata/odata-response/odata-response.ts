@@ -1,6 +1,7 @@
 import { Utils } from '../utils/utils';
 import { Response } from '@angular/http';
 import { EntitySet } from './entity-collection';
+import { Metadata } from './metadata';
 
 export class ODataResponse {
     static readonly VALUE = 'value';
@@ -26,6 +27,11 @@ export class ODataResponse {
 
     getBodyAsText(): string {
         return this.response.text();
+    }
+
+    toMetadata(): Metadata {
+        const xml: string = this.response.text();
+        return new Metadata(xml);
     }
 
     toEntitySet<T>(): EntitySet<T> {

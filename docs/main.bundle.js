@@ -53,7 +53,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Service Document and Metadata\">\n    <ov4-metadata></ov4-metadata>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -130,6 +130,7 @@ AppComponent = __decorate([
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_primeng_primeng__ = __webpack_require__("../../../../primeng/primeng.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_primeng_primeng___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_primeng_primeng__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__docs_example_example_component__ = __webpack_require__("../../../../../src/app/docs/example/example.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__docs_metadata_metadata_component__ = __webpack_require__("../../../../../src/app/docs/metadata/metadata.component.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -137,6 +138,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -161,7 +163,8 @@ AppModule = __decorate([
             __WEBPACK_IMPORTED_MODULE_5__docs_basic_read_basic_read_component__["a" /* BasicReadComponent */],
             __WEBPACK_IMPORTED_MODULE_6__docs_basic_write_basic_write_component__["a" /* BasicWriteComponent */],
             __WEBPACK_IMPORTED_MODULE_7__docs_adv_read_adv_read_component__["a" /* AdvReadComponent */],
-            __WEBPACK_IMPORTED_MODULE_8__docs_adv_write_adv_write_component__["a" /* AdvWriteComponent */]
+            __WEBPACK_IMPORTED_MODULE_8__docs_adv_write_adv_write_component__["a" /* AdvWriteComponent */],
+            __WEBPACK_IMPORTED_MODULE_11__docs_metadata_metadata_component__["a" /* MetadataComponent */]
         ],
         imports: [
             __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["BrowserModule"],
@@ -484,25 +487,8 @@ var BasicReadComponent = (function (_super) {
     }
     BasicReadComponent.prototype.ngOnInit = function () {
         this.examples = [];
-        // SERVICE DOCUMENT
-        var example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
-        this.examples.push(example);
-        example.title = 'Get service document';
-        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */];
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */]);
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + EXECUTE_GET;
-        example.func = this.executeGet;
-        // SERVICE METADATA
-        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
-        this.examples.push(example);
-        example.title = 'Get service metadata';
-        example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/$metadata';
-        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
-            .metadata();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n" + EXECUTE_GET;
-        example.func = this.executeGet;
         // ENTITY SET
-        example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
+        var example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
         this.examples.push(example);
         example.title = 'Get entity set';
         example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People';
@@ -1184,6 +1170,119 @@ var _a;
 
 /***/ }),
 
+/***/ "../../../../../src/app/docs/metadata/metadata.component.less":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/metadata/metadata.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__example_example_data__ = __webpack_require__("../../../../../src/app/docs/example/example-data.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__basic_read_basic_read_component__ = __webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* unused harmony export EXECUTE_GET_TO_METADATA */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return MetadataComponent; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+var EXECUTE_GET_TO_METADATA = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = JSON.stringify(odataResponse.toMetadata(), null, 4);\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
+var MetadataComponent = (function (_super) {
+    __extends(MetadataComponent, _super);
+    function MetadataComponent(odataService) {
+        var _this = _super.call(this, odataService) || this;
+        _this.odataService = odataService;
+        return _this;
+    }
+    MetadataComponent.prototype.ngOnInit = function () {
+        this.examples = [];
+        // SERVICE DOCUMENT
+        var example = new __WEBPACK_IMPORTED_MODULE_1__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get service document';
+        example.query = __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */];
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */]);
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT);\n" + __WEBPACK_IMPORTED_MODULE_2__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
+        example.func = this.executeGet;
+        // SERVICE METADATA
+        example = new __WEBPACK_IMPORTED_MODULE_1__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get service metadata';
+        example.query = __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */] + '/$metadata';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */])
+            .metadata();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n" + __WEBPACK_IMPORTED_MODULE_2__basic_read_basic_read_component__["b" /* EXECUTE_GET */];
+        example.func = this.executeGet;
+        // SERVICE METADATA TO JSON
+        example = new __WEBPACK_IMPORTED_MODULE_1__example_example_data__["a" /* ExampleData */]();
+        this.examples.push(example);
+        example.title = 'Get service metadata as a json object';
+        example.query = __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */] + '/$metadata';
+        example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_1__example_example_data__["b" /* SERVICE_ROOT */])
+            .metadata();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .metadata();\n" + EXECUTE_GET_TO_METADATA;
+        example.func = this.executeGetToMetadata;
+    };
+    MetadataComponent.prototype.executeGetToMetadata = function (example, odataService) {
+        example.subscr = example.odataQuery.get().subscribe(function (odataResponse) {
+            example.response = JSON.stringify(odataResponse.toMetadata(), null, 4);
+        }, function (error) {
+            example.response = error;
+        });
+    };
+    return MetadataComponent;
+}(__WEBPACK_IMPORTED_MODULE_2__basic_read_basic_read_component__["a" /* BasicReadComponent */]));
+MetadataComponent = __decorate([
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_4__angular_core__["Component"])({
+        selector: 'ov4-metadata',
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
+        styles: [__webpack_require__("../../../../../src/app/docs/metadata/metadata.component.less")]
+    }),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
+], MetadataComponent);
+
+var _a;
+//# sourceMappingURL=metadata.component.js.map
+
+/***/ }),
+
 /***/ "../../../../../src/app/odata/odata-query/odata-query-abstract.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1654,6 +1753,323 @@ var QuotedString = (function () {
 
 /***/ }),
 
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-complex-type.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlComplexType; });
+var CsdlComplexType = (function () {
+    function CsdlComplexType(name, properties, baseType, openType, hasStream) {
+        this.name = name;
+        this.properties = properties;
+        this.baseType = baseType;
+        this.openType = openType;
+        this.hasStream = hasStream;
+    }
+    return CsdlComplexType;
+}());
+
+//# sourceMappingURL=csdl-complex-type.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-entity-container.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEntityContainer; });
+var CsdlEntityContainer = (function () {
+    function CsdlEntityContainer(name, entitySets, singleton, functionImports, actionImports) {
+        this.name = name;
+        this.entitySets = entitySets;
+        this.singleton = singleton;
+        this.functionImports = functionImports;
+        this.actionImports = actionImports;
+    }
+    return CsdlEntityContainer;
+}());
+
+//# sourceMappingURL=csdl-entity-container.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-entity-set.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEntitySet; });
+var CsdlEntitySet = (function () {
+    function CsdlEntitySet(name, entityType, navigationPropertyBinding) {
+        this.name = name;
+        this.entityType = entityType;
+        this.navigationPropertyBinding = navigationPropertyBinding;
+    }
+    return CsdlEntitySet;
+}());
+
+//# sourceMappingURL=csdl-entity-set.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-entity-type.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__csdl_complex_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-complex-type.ts");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlPropertyRef; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return CsdlKey; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEntityType; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+var CsdlPropertyRef = (function () {
+    function CsdlPropertyRef(name) {
+        this.name = name;
+    }
+    return CsdlPropertyRef;
+}());
+
+var CsdlKey = (function () {
+    function CsdlKey(propertyRefs) {
+        this.propertyRefs = propertyRefs;
+    }
+    return CsdlKey;
+}());
+
+var CsdlEntityType = (function (_super) {
+    __extends(CsdlEntityType, _super);
+    function CsdlEntityType(name, key, properties, navigationProperties, baseType, openType, hasStream) {
+        var _this = _super.call(this, name, properties, baseType, openType, hasStream) || this;
+        _this.name = name;
+        _this.key = key;
+        _this.properties = properties;
+        _this.navigationProperties = navigationProperties;
+        _this.baseType = baseType;
+        _this.openType = openType;
+        _this.hasStream = hasStream;
+        return _this;
+    }
+    return CsdlEntityType;
+}(__WEBPACK_IMPORTED_MODULE_0__csdl_complex_type__["a" /* CsdlComplexType */]));
+
+//# sourceMappingURL=csdl-entity-type.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-enum-type.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlEnumMember; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEnumType; });
+var CsdlEnumMember = (function () {
+    function CsdlEnumMember(name, value) {
+        this.name = name;
+        this.value = value;
+    }
+    return CsdlEnumMember;
+}());
+
+var CsdlEnumType = (function () {
+    function CsdlEnumType(name, members) {
+        this.name = name;
+        this.members = members;
+    }
+    return CsdlEnumType;
+}());
+
+//# sourceMappingURL=csdl-enum-type.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-function.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlParameter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return CsdlReturnType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlFunction; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return CsdlAction; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return CsdlFunctionImport; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return CsdlActionImport; });
+var CsdlParameter = (function () {
+    function CsdlParameter(name, type, nullable) {
+        this.name = name;
+        this.type = type;
+        this.nullable = nullable;
+    }
+    return CsdlParameter;
+}());
+
+var CsdlReturnType = (function () {
+    function CsdlReturnType(type, nullable) {
+        this.type = type;
+        this.nullable = nullable;
+    }
+    return CsdlReturnType;
+}());
+
+var CsdlFunction = (function () {
+    function CsdlFunction(name, returnType, isBound, entitySetPath, isComposable, parameters) {
+        this.name = name;
+        this.returnType = returnType;
+        this.isBound = isBound;
+        this.entitySetPath = entitySetPath;
+        this.isComposable = isComposable;
+        this.parameters = parameters;
+    }
+    return CsdlFunction;
+}());
+
+var CsdlAction = (function () {
+    function CsdlAction(name, returnType, isBound, entitySetPath, isComposable, parameters) {
+        this.name = name;
+        this.returnType = returnType;
+        this.isBound = isBound;
+        this.entitySetPath = entitySetPath;
+        this.isComposable = isComposable;
+        this.parameters = parameters;
+    }
+    return CsdlAction;
+}());
+
+var CsdlFunctionImport = (function () {
+    function CsdlFunctionImport(name, functionName, entitySet, IncludeInServiceDocument) {
+        this.name = name;
+        this.functionName = functionName;
+        this.entitySet = entitySet;
+        this.IncludeInServiceDocument = IncludeInServiceDocument;
+    }
+    return CsdlFunctionImport;
+}());
+
+var CsdlActionImport = (function () {
+    function CsdlActionImport(name, action, entitySet, IncludeInServiceDocument) {
+        this.name = name;
+        this.action = action;
+        this.entitySet = entitySet;
+        this.IncludeInServiceDocument = IncludeInServiceDocument;
+    }
+    return CsdlActionImport;
+}());
+
+//# sourceMappingURL=csdl-function.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-property.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export CsdlPropertyAbstract */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlProperty; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlNavigationProperty; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return CsdlNavigationPropertyBinding; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var CsdlPropertyAbstract = (function () {
+    function CsdlPropertyAbstract(name, type, nullable) {
+        this.name = name;
+        this.type = type;
+        this.nullable = nullable;
+    }
+    return CsdlPropertyAbstract;
+}());
+
+var CsdlProperty = (function (_super) {
+    __extends(CsdlProperty, _super);
+    function CsdlProperty(name, type, nullable, srid) {
+        var _this = _super.call(this, name, type, nullable) || this;
+        _this.name = name;
+        _this.type = type;
+        _this.nullable = nullable;
+        _this.srid = srid;
+        return _this;
+    }
+    return CsdlProperty;
+}(CsdlPropertyAbstract));
+
+var CsdlNavigationProperty = (function (_super) {
+    __extends(CsdlNavigationProperty, _super);
+    function CsdlNavigationProperty(name, type, nullable, containsTarget) {
+        var _this = _super.call(this, name, type, nullable) || this;
+        _this.name = name;
+        _this.type = type;
+        _this.nullable = nullable;
+        _this.containsTarget = containsTarget;
+        return _this;
+    }
+    return CsdlNavigationProperty;
+}(CsdlPropertyAbstract));
+
+var CsdlNavigationPropertyBinding = (function () {
+    function CsdlNavigationPropertyBinding(path, target) {
+        this.path = path;
+        this.target = target;
+    }
+    return CsdlNavigationPropertyBinding;
+}());
+
+//# sourceMappingURL=csdl-property.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-schema.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlSchema; });
+var CsdlSchema = (function () {
+    function CsdlSchema(namespace, enumTypes, complexTypes, entityTypes, functions, actions, entityContainer) {
+        this.namespace = namespace;
+        this.enumTypes = enumTypes;
+        this.complexTypes = complexTypes;
+        this.entityTypes = entityTypes;
+        this.functions = functions;
+        this.actions = actions;
+        this.entityContainer = entityContainer;
+    }
+    return CsdlSchema;
+}());
+
+//# sourceMappingURL=csdl-schema.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-singleton.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlSingleton; });
+var CsdlSingleton = (function () {
+    function CsdlSingleton(name, type, navigationPropertyBindings) {
+        this.name = name;
+        this.type = type;
+        this.navigationPropertyBindings = navigationPropertyBindings;
+    }
+    return CsdlSingleton;
+}());
+
+//# sourceMappingURL=csdl-singleton.js.map
+
+/***/ }),
+
 /***/ "../../../../../src/app/odata/odata-response/entity-collection.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1680,13 +2096,406 @@ var EntitySet = (function () {
 
 /***/ }),
 
+/***/ "../../../../../src/app/odata/odata-response/metadata.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__csdl_csdl_schema__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-schema.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-enum-type.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_complex_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-complex-type.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-type.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-function.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_property__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-property.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__csdl_csdl_entity_set__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-set.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__csdl_csdl_singleton__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-singleton.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_entity_container__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-container.ts");
+/* unused harmony export FieldType */
+/* unused harmony export Field */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Metadata; });
+
+
+
+
+
+
+
+
+
+
+var FieldType;
+(function (FieldType) {
+    FieldType[FieldType["ATTRIBUTE"] = 0] = "ATTRIBUTE";
+    FieldType[FieldType["TAG"] = 1] = "TAG";
+})(FieldType || (FieldType = {}));
+var Field = (function () {
+    function Field(name, fieldType) {
+        this.name = name;
+        this.fieldType = fieldType;
+    }
+    return Field;
+}());
+
+var Metadata = (function () {
+    function Metadata(xml) {
+        try {
+            var parser = new DOMParser();
+            var document = parser.parseFromString(xml, 'text/xml');
+            this.checkODataVersion(document);
+            this.schemas = this.getObjects(document.documentElement, Metadata.TAG_SCHEMA, [
+                new Field(Metadata.ATTRIBUTE_NAMESPACE, FieldType.ATTRIBUTE),
+                new Field(Metadata.TAG_ENUM_TYPE, FieldType.TAG),
+                new Field(Metadata.TAG_COMPLEX_TYPE, FieldType.TAG),
+                new Field(Metadata.TAG_ENTITY_TYPE, FieldType.TAG),
+                new Field(Metadata.TAG_FUNCTION, FieldType.TAG),
+                new Field(Metadata.TAG_ACTION, FieldType.TAG),
+                new Field(Metadata.TAG_ENTITY_CONTAINER, FieldType.TAG)
+            ]);
+        }
+        catch (error) {
+            throw new Error('Unable to parse metadata, ' + error);
+        }
+    }
+    Metadata.prototype.getSchemas = function () {
+        return this.schemas;
+    };
+    Metadata.prototype.checkODataVersion = function (document) {
+        var attributes = document.documentElement.attributes;
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(attributes)) {
+            throw new Error('OData version is not specified in the metadata');
+        }
+        var attr = attributes.getNamedItem('Version');
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(attr)) {
+            throw new Error('OData version is not specified in the metadata');
+        }
+        var odataVersion = attr.nodeValue;
+        if (odataVersion !== '4.0') {
+            throw new Error('OData version ' + odataVersion + ' is not supported');
+        }
+    };
+    Metadata.prototype.getObjects = function (parentElement, tag, fieldNames) {
+        var objects;
+        var elements = parentElement.getElementsByTagName(tag);
+        for (var index = 0; index < elements.length; index++) {
+            var element = elements.item(index);
+            var attributes = element.attributes;
+            var fieldValues = this.getFieldValues(fieldNames, attributes, element);
+            if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(objects)) {
+                objects = [];
+            }
+            switch (tag) {
+                case Metadata.TAG_SCHEMA:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_0__csdl_csdl_schema__["a" /* CsdlSchema */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6]));
+                    break;
+                case Metadata.TAG_ENUM_TYPE:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__["a" /* CsdlEnumType */](fieldValues[0], fieldValues[1]));
+                    break;
+                case Metadata.TAG_COMPLEX_TYPE:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_complex_type__["a" /* CsdlComplexType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4]));
+                    break;
+                case Metadata.TAG_ENTITY_TYPE:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__["a" /* CsdlEntityType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6]));
+                    break;
+                case Metadata.TAG_FUNCTION:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["a" /* CsdlFunction */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
+                    break;
+                case Metadata.TAG_MEMBER:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__["b" /* CsdlEnumMember */](fieldValues[0], fieldValues[1]));
+                    break;
+                case Metadata.TAG_PROPERTY:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_property__["a" /* CsdlProperty */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    break;
+                case Metadata.TAG_PROPERTY_REF:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__["b" /* CsdlPropertyRef */](fieldValues[0]));
+                    break;
+                case Metadata.TAG_NAVIGATION_PROPERTY:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_property__["b" /* CsdlNavigationProperty */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    break;
+                case Metadata.TAG_PARAMETER:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["b" /* CsdlParameter */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    break;
+                case Metadata.TAG_ACTION:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["c" /* CsdlAction */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
+                    break;
+                case Metadata.TAG_ENTITY_SET:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_7__csdl_csdl_entity_set__["a" /* CsdlEntitySet */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    break;
+                case Metadata.TAG_SINGLETON:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_8__csdl_csdl_singleton__["a" /* CsdlSingleton */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    break;
+                case Metadata.TAG_FUNCTION_IMPORT:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["d" /* CsdlFunctionImport */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    break;
+                case Metadata.TAG_ACTION_IMPORT:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["e" /* CsdlActionImport */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    break;
+                case Metadata.TAG_NAVIGATION_PROPERTY_BINDING:
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_property__["c" /* CsdlNavigationPropertyBinding */](fieldValues[0], fieldValues[1]));
+                    break;
+                default: throw new Error('Unknwon tag:' + tag);
+            }
+        }
+        return objects;
+    };
+    Metadata.prototype.getObject = function (parentElement, tag, fieldNames) {
+        var object;
+        var elements = parentElement.getElementsByTagName(tag);
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(elements) && elements.length > 1) {
+            throw new Error('Expected one ' + tag);
+        }
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(elements) && elements.length === 1) {
+            var element = elements.item(0);
+            var attributes = element.attributes;
+            var fieldValues = this.getFieldValues(fieldNames, attributes, element);
+            switch (tag) {
+                case Metadata.TAG_KEY:
+                    object = new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__["c" /* CsdlKey */](fieldValues[0]);
+                    break;
+                case Metadata.TAG_RETURN_TYPE:
+                    object = new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["f" /* CsdlReturnType */](fieldValues[0], fieldValues[1]);
+                    break;
+                case Metadata.TAG_ENTITY_CONTAINER:
+                    object = new __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_entity_container__["a" /* CsdlEntityContainer */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4]);
+                    break;
+                default: throw new Error('Unknwon tag:' + tag);
+            }
+        }
+        return object;
+    };
+    Metadata.prototype.getFieldValues = function (fields, attributes, element) {
+        var fieldValues = [];
+        for (var _i = 0, fields_1 = fields; _i < fields_1.length; _i++) {
+            var field = fields_1[_i];
+            if (field.fieldType === FieldType.ATTRIBUTE) {
+                fieldValues.push(this.getFieldValueByAttribute(field, attributes));
+            }
+            else {
+                fieldValues.push(this.getFieldValueByTag(field, element));
+            }
+        }
+        return fieldValues;
+    };
+    Metadata.prototype.getFieldValueByAttribute = function (field, attributes) {
+        switch (field.name) {
+            case Metadata.ATTRIBUTE_NAMESPACE:
+            case Metadata.ATTRIBUTE_NAME:
+            case Metadata.ATTRIBUTE_TYPE:
+            case Metadata.ATTRIBUTE_BASE_TYPE:
+            case Metadata.ATTRIBUTE_ENTITY_SET_PATH:
+            case Metadata.ATTRIBUTE_ENTITY_TYPE:
+            case Metadata.ATTRIBUTE_PATH:
+            case Metadata.ATTRIBUTE_TARGET:
+            case Metadata.ATTRIBUTE_FUNCTION:
+            case Metadata.ATTRIBUTE_ACTION:
+            case Metadata.ATTRIBUTE_ENTITY_SET:
+                return this.getAttributeValue(attributes, field.name);
+            case Metadata.ATTRIBUTE_NULLABLE:
+            case Metadata.ATTRIBUTE_OPEN_TYPE:
+            case Metadata.ATTRIBUTE_HAS_STREAM:
+            case Metadata.ATTRIBUTE_IS_BOUND:
+            case Metadata.ATTRIBUTE_IS_COMPOSABLE:
+            case Metadata.ATTRIBUTE_CONTAINS_TARGET:
+            case Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT:
+                return this.propertyValueToBoolean(this.getAttributeValue(attributes, field.name));
+            case Metadata.ATTRIBUTE_VALUE:
+            case Metadata.ATTRIBUTE_SRID:
+                return this.propertyValueToNumber(this.getAttributeValue(attributes, field.name));
+            default: throw new Error('Unknwon field name:' + field.name);
+        }
+    };
+    Metadata.prototype.getFieldValueByTag = function (field, element) {
+        switch (field.name) {
+            case Metadata.TAG_ENUM_TYPE:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_MEMBER, FieldType.TAG)
+                ]);
+            case Metadata.TAG_COMPLEX_TYPE:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_PROPERTY, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_BASE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_OPEN_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_ENTITY_TYPE:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_KEY, FieldType.TAG),
+                    new Field(Metadata.TAG_PROPERTY, FieldType.TAG),
+                    new Field(Metadata.TAG_NAVIGATION_PROPERTY, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_BASE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_OPEN_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_FUNCTION:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_RETURN_TYPE, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_IS_BOUND, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ENTITY_SET_PATH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_IS_COMPOSABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_PARAMETER, FieldType.TAG)
+                ]);
+            case Metadata.TAG_MEMBER:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_VALUE, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_PROPERTY:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_KEY:
+                return this.getObject(element, field.name, [
+                    new Field(Metadata.TAG_PROPERTY_REF, FieldType.TAG)
+                ]);
+            case Metadata.TAG_PROPERTY_REF:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_NAVIGATION_PROPERTY:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_CONTAINS_TARGET, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_PARAMETER:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_RETURN_TYPE:
+                return this.getObject(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_ACTION:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_RETURN_TYPE, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_IS_BOUND, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ENTITY_SET_PATH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_IS_COMPOSABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_PARAMETER, FieldType.TAG)
+                ]);
+            case Metadata.TAG_ENTITY_CONTAINER:
+                return this.getObject(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_ENTITY_SET, FieldType.TAG),
+                    new Field(Metadata.TAG_SINGLETON, FieldType.TAG),
+                    new Field(Metadata.TAG_FUNCTION_IMPORT, FieldType.TAG),
+                    new Field(Metadata.TAG_ACTION_IMPORT, FieldType.TAG)
+                ]);
+            case Metadata.TAG_ENTITY_SET:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ENTITY_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_NAVIGATION_PROPERTY_BINDING, FieldType.TAG)
+                ]);
+            case Metadata.TAG_SINGLETON:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_NAVIGATION_PROPERTY_BINDING, FieldType.TAG)
+                ]);
+            case Metadata.TAG_FUNCTION_IMPORT:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_FUNCTION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ENTITY_SET, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_ACTION_IMPORT:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ACTION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ENTITY_SET, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_NAVIGATION_PROPERTY_BINDING:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_PATH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TARGET, FieldType.ATTRIBUTE)
+                ]);
+            default: throw new Error('Unknwon field name:' + field.name);
+        }
+    };
+    Metadata.prototype.getAttributeValue = function (attributes, attributeName) {
+        var attribute = attributes.getNamedItem(attributeName);
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(attribute)) {
+            return attribute.nodeValue;
+        }
+        return undefined;
+    };
+    Metadata.prototype.propertyValueToNumber = function (attributeValue) {
+        return __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(attributeValue) ? Number(attributeValue) : undefined;
+    };
+    Metadata.prototype.propertyValueToBoolean = function (attributeValue) {
+        return __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(attributeValue) ? attributeValue === 'true' : undefined;
+    };
+    return Metadata;
+}());
+
+// TAGS
+Metadata.TAG_SCHEMA = 'Schema';
+Metadata.TAG_ENUM_TYPE = 'EnumType';
+Metadata.TAG_MEMBER = 'Member';
+Metadata.TAG_COMPLEX_TYPE = 'ComplexType';
+Metadata.TAG_ENTITY_TYPE = 'EntityType';
+Metadata.TAG_PROPERTY = 'Property';
+Metadata.TAG_KEY = 'Key';
+Metadata.TAG_PROPERTY_REF = 'PropertyRef';
+Metadata.TAG_NAVIGATION_PROPERTY = 'NavigationProperty';
+Metadata.TAG_FUNCTION = 'Function';
+Metadata.TAG_RETURN_TYPE = 'ReturnType';
+Metadata.TAG_PARAMETER = 'Parameter';
+Metadata.TAG_ACTION = 'Action';
+Metadata.TAG_ENTITY_CONTAINER = 'EntityContainer';
+Metadata.TAG_ENTITY_SET = 'EntitySet';
+Metadata.TAG_SINGLETON = 'Singleton';
+Metadata.TAG_FUNCTION_IMPORT = 'FunctionImport';
+Metadata.TAG_ACTION_IMPORT = 'ActionImport';
+Metadata.TAG_NAVIGATION_PROPERTY_BINDING = 'NavigationPropertyBinding';
+// ATTRIBUTES
+Metadata.ATTRIBUTE_NAMESPACE = 'Namespace';
+Metadata.ATTRIBUTE_NAME = 'Name';
+Metadata.ATTRIBUTE_VALUE = 'Value';
+Metadata.ATTRIBUTE_BASE_TYPE = 'BaseType';
+Metadata.ATTRIBUTE_OPEN_TYPE = 'OpenType';
+Metadata.ATTRIBUTE_TYPE = 'Type';
+Metadata.ATTRIBUTE_NULLABLE = 'Nullable';
+Metadata.ATTRIBUTE_SRID = 'SRID';
+Metadata.ATTRIBUTE_HAS_STREAM = 'HasStream';
+Metadata.ATTRIBUTE_CONTAINS_TARGET = 'ContainsTarget';
+Metadata.ATTRIBUTE_IS_BOUND = 'IsBound';
+Metadata.ATTRIBUTE_ENTITY_SET_PATH = 'EntitySetPath';
+Metadata.ATTRIBUTE_IS_COMPOSABLE = 'IsComposable';
+Metadata.ATTRIBUTE_ENTITY_TYPE = 'EntityType';
+Metadata.ATTRIBUTE_PATH = 'Path';
+Metadata.ATTRIBUTE_TARGET = 'Target';
+Metadata.ATTRIBUTE_FUNCTION = 'Function';
+Metadata.ATTRIBUTE_ACTION = 'Action';
+Metadata.ATTRIBUTE_ENTITY_SET = 'EntitySet';
+Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT = 'IncludeInServiceDocument';
+//# sourceMappingURL=metadata.js.map
+
+/***/ }),
+
 /***/ "../../../../../src/app/odata/odata-response/odata-response.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__entity_collection__ = __webpack_require__("../../../../../src/app/odata/odata-response/entity-collection.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__metadata__ = __webpack_require__("../../../../../src/app/odata/odata-response/metadata.ts");
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataResponse; });
+
 
 
 var ODataResponse = (function () {
@@ -1705,6 +2514,10 @@ var ODataResponse = (function () {
     };
     ODataResponse.prototype.getBodyAsText = function () {
         return this.response.text();
+    };
+    ODataResponse.prototype.toMetadata = function () {
+        var xml = this.response.text();
+        return new __WEBPACK_IMPORTED_MODULE_2__metadata__["a" /* Metadata */](xml);
     };
     ODataResponse.prototype.toEntitySet = function () {
         var json = this.getBodyAsJson();

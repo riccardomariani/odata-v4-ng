@@ -12,6 +12,7 @@ import { AdvReadComponent } from './docs/adv-read/adv-read.component';
 import { AdvWriteComponent } from './docs/adv-write/adv-write.component';
 import { TabViewModule } from 'primeng/primeng';
 import { ExampleComponent } from './docs/example/example.component';
+import { MetadataComponent } from './docs/metadata/metadata.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { ExampleComponent } from './docs/example/example.component';
     BasicReadComponent,
     BasicWriteComponent,
     AdvReadComponent,
-    AdvWriteComponent
+    AdvWriteComponent,
+    MetadataComponent
   ],
   imports: [
     BrowserModule,
