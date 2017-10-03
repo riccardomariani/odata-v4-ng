@@ -13,7 +13,7 @@ See [here](https://riccardomariani.github.io/odata-v4-ng).
 
 ## Development
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.2.7.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.4.4.
 
 ### Development server
 
