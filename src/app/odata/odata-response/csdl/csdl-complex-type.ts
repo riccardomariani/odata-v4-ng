@@ -1,4 +1,4 @@
-import { CsdlProperty } from './csdl-property';
+import { CsdlProperty } from './csdl-structural-property';
 
 export class CsdlComplexType {
     constructor(

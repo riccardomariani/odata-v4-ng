@@ -1,4 +1,4 @@
-import { CsdlNavigationPropertyBinding } from './csdl-property';
+import { CsdlNavigationPropertyBinding } from './csdl-navigation-property-binding';
 
 export class CsdlSingleton {
     constructor(

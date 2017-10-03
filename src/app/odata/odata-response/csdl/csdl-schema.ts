@@ -7,6 +7,7 @@ import { CsdlEntityContainer } from './csdl-entity-container';
 export class CsdlSchema {
     constructor(
         public namespace: string,
+        public alias?: string,
         public enumTypes?: CsdlEnumType[],
         public complexTypes?: CsdlComplexType[],
         public entityTypes?: CsdlEntityType[],

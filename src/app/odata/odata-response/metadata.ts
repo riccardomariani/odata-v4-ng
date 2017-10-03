@@ -4,10 +4,13 @@ import { CsdlEnumType, CsdlEnumMember } from './csdl/csdl-enum-type';
 import { CsdlComplexType } from './csdl/csdl-complex-type';
 import { CsdlEntityType, CsdlPropertyRef, CsdlKey } from './csdl/csdl-entity-type';
 import { CsdlFunction, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlReturnType, CsdlAction } from './csdl/csdl-function';
-import { CsdlProperty, CsdlNavigationProperty, CsdlNavigationPropertyBinding } from './csdl/csdl-property';
+import { CsdlProperty, CsdlNavigationProperty, CsdlReferentialConstraint, CsdlOnDelete } from './csdl/csdl-structural-property';
 import { CsdlEntitySet } from './csdl/csdl-entity-set';
 import { CsdlSingleton } from './csdl/csdl-singleton';
 import { CsdlEntityContainer } from './csdl/csdl-entity-container';
+import { CsdlReference, CsdlInclude, CsdlIncludeAnnotations } from './csdl/csdl-reference';
+import { CsdlAnnotation } from './csdl/csdl-annotation';
+import { CsdlNavigationPropertyBinding } from './csdl/csdl-navigation-property-binding';
 
 export enum FieldType {
     ATTRIBUTE, TAG
@@ -18,6 +21,12 @@ export class Field {
 
 export class Metadata {
     // TAGS
+    private static readonly TAG_EDMX = 'edmx:Edmx';
+    private static readonly TAG_DATA_SERVICES = 'edmx:DataServices';
+    private static readonly TAG_REFERENCE = 'edmx:Reference';
+    private static readonly TAG_INCLUDE = 'edmx:Include';
+    private static readonly TAG_INCLUDE_ANNOTATIONS = 'edmx:IncludeAnnotations';
+    private static readonly TAG_ANNOTATION = 'Annotation';
     private static readonly TAG_SCHEMA = 'Schema';
     private static readonly TAG_ENUM_TYPE = 'EnumType';
     private static readonly TAG_MEMBER = 'Member';
@@ -27,6 +36,8 @@ export class Metadata {
     private static readonly TAG_KEY = 'Key';
     private static readonly TAG_PROPERTY_REF = 'PropertyRef';
     private static readonly TAG_NAVIGATION_PROPERTY = 'NavigationProperty';
+    private static readonly TAG_REFERENTIAL_CONSTRAINT = 'ReferentialConstraint';
+    private static readonly TAG_ON_DELETE = 'OnDelete';
     private static readonly TAG_FUNCTION = 'Function';
     private static readonly TAG_RETURN_TYPE = 'ReturnType';
     private static readonly TAG_PARAMETER = 'Parameter';
@@ -39,14 +50,29 @@ export class Metadata {
     private static readonly TAG_NAVIGATION_PROPERTY_BINDING = 'NavigationPropertyBinding';
 
     // ATTRIBUTES
+    private static readonly ATTRIBUTE_VERSION = 'Version';
+    private static readonly ATTRIBUTE_URI = 'Uri';
+    private static readonly ATTRIBUTE_ALIAS = 'Alias';
     private static readonly ATTRIBUTE_NAMESPACE = 'Namespace';
+    private static readonly ATTRIBUTE_TERM_NAMESPACE = 'TermNamespace';
+    private static readonly ATTRIBUTE_QUALIFIER = 'Qualifier';
+    private static readonly ATTRIBUTE_TARGET_NAMESPACE = 'TargetNamespace';
+    private static readonly ATTRIBUTE_TERM = 'Term';
     private static readonly ATTRIBUTE_NAME = 'Name';
     private static readonly ATTRIBUTE_VALUE = 'Value';
     private static readonly ATTRIBUTE_BASE_TYPE = 'BaseType';
     private static readonly ATTRIBUTE_OPEN_TYPE = 'OpenType';
     private static readonly ATTRIBUTE_TYPE = 'Type';
     private static readonly ATTRIBUTE_NULLABLE = 'Nullable';
+    private static readonly ATTRIBUTE_MAX_LENGTH = 'MaxLength';
+    private static readonly ATTRIBUTE_PRECISION = 'Precision';
+    private static readonly ATTRIBUTE_SCALE = 'Scale';
+    private static readonly ATTRIBUTE_UNICODE = 'Unicode';
     private static readonly ATTRIBUTE_SRID = 'SRID';
+    private static readonly ATTRIBUTE_DEFAULT_VALUE = 'DefaultValue';
+    private static readonly ATTRIBUTE_PARTNER = 'Partner';
+    private static readonly ATTRIBUTE_PROPERTY = 'Property';
+    private static readonly ATTRIBUTE_REFERENCED_PROPERTY = 'ReferencedProperty';
     private static readonly ATTRIBUTE_HAS_STREAM = 'HasStream';
     private static readonly ATTRIBUTE_CONTAINS_TARGET = 'ContainsTarget';
     private static readonly ATTRIBUTE_IS_BOUND = 'IsBound';
@@ -60,17 +86,31 @@ export class Metadata {
     private static readonly ATTRIBUTE_ENTITY_SET = 'EntitySet';
     private static readonly ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT = 'IncludeInServiceDocument';
 
-    private schemas: CsdlSchema[];
+    public readonly version: string;
+    public readonly references: CsdlReference[];
+    public readonly schemas: CsdlSchema[];
 
     constructor(xml: string) {
         try {
             const parser: DOMParser = new DOMParser();
             const document: Document = parser.parseFromString(xml, 'text/xml');
 
-            this.checkODataVersion(document);
+            this.checkVersion(document);
+
+            this.version = this.getFieldValueByAttribute(
+                new Field(Metadata.ATTRIBUTE_VERSION, FieldType.ATTRIBUTE),
+                document.documentElement.attributes);
+
+            this.references = this.getObjects(document.documentElement, Metadata.TAG_REFERENCE, [
+                new Field(Metadata.ATTRIBUTE_URI, FieldType.ATTRIBUTE),
+                new Field(Metadata.TAG_INCLUDE, FieldType.TAG),
+                new Field(Metadata.TAG_INCLUDE_ANNOTATIONS, FieldType.TAG),
+                new Field(Metadata.TAG_ANNOTATION, FieldType.TAG)
+            ]);
 
             this.schemas = this.getObjects(document.documentElement, Metadata.TAG_SCHEMA, [
                 new Field(Metadata.ATTRIBUTE_NAMESPACE, FieldType.ATTRIBUTE),
+                new Field(Metadata.ATTRIBUTE_ALIAS, FieldType.ATTRIBUTE),
                 new Field(Metadata.TAG_ENUM_TYPE, FieldType.TAG),
                 new Field(Metadata.TAG_COMPLEX_TYPE, FieldType.TAG),
                 new Field(Metadata.TAG_ENTITY_TYPE, FieldType.TAG),
@@ -83,24 +123,19 @@ export class Metadata {
         }
     }
 
-    getSchemas(): CsdlSchema[] {
-        return this.schemas;
-    }
-
-    protected checkODataVersion(document: Document) {
+    protected checkVersion(document: Document) {
+        // check version
         const attributes: NamedNodeMap = document.documentElement.attributes;
         if (Utils.isNullOrUndefined(attributes)) {
             throw new Error('OData version is not specified in the metadata');
         }
-
         const attr: Attr = attributes.getNamedItem('Version');
         if (Utils.isNullOrUndefined(attr)) {
             throw new Error('OData version is not specified in the metadata');
         }
-
         const odataVersion: string = attr.nodeValue;
         if (odataVersion !== '4.0') {
-            throw new Error('OData version ' + odataVersion + ' is not supported');
+            throw new Error('OData version "' + odataVersion + '" is not supported');
         }
     }
 
@@ -116,6 +151,30 @@ export class Metadata {
                 objects = [];
             }
             switch (tag) {
+                case Metadata.TAG_REFERENCE:
+                    objects.push(new CsdlReference(
+                        fieldValues[0],
+                        fieldValues[1],
+                        fieldValues[2],
+                        fieldValues[3]));
+                    break;
+                case Metadata.TAG_INCLUDE:
+                    objects.push(new CsdlInclude(
+                        fieldValues[0],
+                        fieldValues[1]));
+                    break;
+                case Metadata.TAG_INCLUDE_ANNOTATIONS:
+                    objects.push(new CsdlIncludeAnnotations(
+                        fieldValues[0],
+                        fieldValues[1],
+                        fieldValues[2]));
+                    break;
+                case Metadata.TAG_ANNOTATION:
+                    objects.push(new CsdlAnnotation(
+                        fieldValues[0],
+                        fieldValues[1]
+                    ));
+                    break;
                 case Metadata.TAG_SCHEMA:
                     objects.push(new CsdlSchema(
                         fieldValues[0],
@@ -124,7 +183,8 @@ export class Metadata {
                         fieldValues[3],
                         fieldValues[4],
                         fieldValues[5],
-                        fieldValues[6]));
+                        fieldValues[6],
+                        fieldValues[7]));
                     break;
                 case Metadata.TAG_ENUM_TYPE:
                     objects.push(new CsdlEnumType(
@@ -168,7 +228,12 @@ export class Metadata {
                         fieldValues[0],
                         fieldValues[1],
                         fieldValues[2],
-                        fieldValues[3]));
+                        fieldValues[3],
+                        fieldValues[4],
+                        fieldValues[5],
+                        fieldValues[6],
+                        fieldValues[7],
+                        fieldValues[8]));
                     break;
                 case Metadata.TAG_PROPERTY_REF:
                     objects.push(new CsdlPropertyRef(
@@ -179,7 +244,15 @@ export class Metadata {
                         fieldValues[0],
                         fieldValues[1],
                         fieldValues[2],
-                        fieldValues[3]));
+                        fieldValues[3],
+                        fieldValues[4],
+                        fieldValues[5],
+                        fieldValues[6]));
+                    break;
+                case Metadata.TAG_REFERENTIAL_CONSTRAINT:
+                    objects.push(new CsdlReferentialConstraint(
+                        fieldValues[0],
+                        fieldValues[1]));
                     break;
                 case Metadata.TAG_PARAMETER:
                     objects.push(new CsdlParameter(
@@ -264,6 +337,10 @@ export class Metadata {
                         fieldValues[3],
                         fieldValues[4]);
                     break;
+                case Metadata.TAG_ON_DELETE:
+                    object = new CsdlOnDelete(
+                        fieldValues[0]);
+                    break;
                 default: throw new Error('Unknwon tag:' + tag);
             }
         }
@@ -275,10 +352,12 @@ export class Metadata {
         const fieldValues: any[] = [];
 
         for (const field of fields) {
-            if (field.fieldType === FieldType.ATTRIBUTE) {
+            if (field.fieldType === FieldType.TAG) {
+                fieldValues.push(this.getFieldValueByTag(field, element));
+            } else if (field.fieldType === FieldType.ATTRIBUTE) {
                 fieldValues.push(this.getFieldValueByAttribute(field, attributes));
             } else {
-                fieldValues.push(this.getFieldValueByTag(field, element));
+                throw new Error('Unknown field type: ' + field.fieldType);
             }
         }
 
@@ -287,9 +366,21 @@ export class Metadata {
 
     protected getFieldValueByAttribute(field: Field, attributes: NamedNodeMap): any {
         switch (field.name) {
+            case Metadata.ATTRIBUTE_VERSION:
+            case Metadata.ATTRIBUTE_URI:
             case Metadata.ATTRIBUTE_NAMESPACE:
+            case Metadata.ATTRIBUTE_ALIAS:
+            case Metadata.ATTRIBUTE_TERM_NAMESPACE:
+            case Metadata.ATTRIBUTE_TERM:
+            case Metadata.ATTRIBUTE_QUALIFIER:
+            case Metadata.ATTRIBUTE_TARGET_NAMESPACE:
             case Metadata.ATTRIBUTE_NAME:
             case Metadata.ATTRIBUTE_TYPE:
+            case Metadata.ATTRIBUTE_SRID:
+            case Metadata.ATTRIBUTE_DEFAULT_VALUE:
+            case Metadata.ATTRIBUTE_PARTNER:
+            case Metadata.ATTRIBUTE_PROPERTY:
+            case Metadata.ATTRIBUTE_REFERENCED_PROPERTY:
             case Metadata.ATTRIBUTE_BASE_TYPE:
             case Metadata.ATTRIBUTE_ENTITY_SET_PATH:
             case Metadata.ATTRIBUTE_ENTITY_TYPE:
@@ -300,6 +391,7 @@ export class Metadata {
             case Metadata.ATTRIBUTE_ENTITY_SET:
                 return this.getAttributeValue(attributes, field.name);
             case Metadata.ATTRIBUTE_NULLABLE:
+            case Metadata.ATTRIBUTE_UNICODE:
             case Metadata.ATTRIBUTE_OPEN_TYPE:
             case Metadata.ATTRIBUTE_HAS_STREAM:
             case Metadata.ATTRIBUTE_IS_BOUND:
@@ -308,14 +400,32 @@ export class Metadata {
             case Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT:
                 return this.propertyValueToBoolean(this.getAttributeValue(attributes, field.name));
             case Metadata.ATTRIBUTE_VALUE:
-            case Metadata.ATTRIBUTE_SRID:
+            case Metadata.ATTRIBUTE_MAX_LENGTH:
+            case Metadata.ATTRIBUTE_PRECISION:
+            case Metadata.ATTRIBUTE_SCALE:
                 return this.propertyValueToNumber(this.getAttributeValue(attributes, field.name));
-            default: throw new Error('Unknwon field name:' + field.name);
+            default: throw new Error('Unknwon attribute:' + field.name);
         }
     }
 
     protected getFieldValueByTag(field: Field, element: Element): any[] {
         switch (field.name) {
+            case Metadata.TAG_INCLUDE:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAMESPACE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ALIAS, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_INCLUDE_ANNOTATIONS:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_TERM_NAMESPACE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_QUALIFIER, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TARGET_NAMESPACE, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_ANNOTATION:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_TERM, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_QUALIFIER, FieldType.ATTRIBUTE)
+                ]);
             case Metadata.TAG_ENUM_TYPE:
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
@@ -358,7 +468,12 @@ export class Metadata {
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_MAX_LENGTH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_PRECISION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SCALE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_UNICODE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_DEFAULT_VALUE, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_KEY:
                 return this.getObject(element, field.name, [
@@ -373,7 +488,19 @@ export class Metadata {
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_CONTAINS_TARGET, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_PARTNER, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_CONTAINS_TARGET, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_REFERENTIAL_CONSTRAINT, FieldType.TAG),
+                    new Field(Metadata.TAG_ON_DELETE, FieldType.TAG)
+                ]);
+            case Metadata.TAG_REFERENTIAL_CONSTRAINT:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_PROPERTY, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_REFERENCED_PROPERTY, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_ON_DELETE:
+                return this.getObject(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_ACTION, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_PARAMETER:
                 return this.getObjects(element, field.name, [
@@ -434,7 +561,7 @@ export class Metadata {
                     new Field(Metadata.ATTRIBUTE_PATH, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_TARGET, FieldType.ATTRIBUTE)
                 ]);
-            default: throw new Error('Unknwon field name:' + field.name);
+            default: throw new Error('Unknwon tag:' + field.name);
         }
     }
 

@@ -1,5 +1,5 @@
 import { CsdlComplexType } from './csdl-complex-type';
-import { CsdlProperty, CsdlNavigationProperty } from './csdl-property';
+import { CsdlProperty, CsdlNavigationProperty } from './csdl-structural-property';
 
 export class CsdlPropertyRef {
     constructor(
