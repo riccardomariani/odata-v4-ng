@@ -4,10 +4,8 @@ export * from './src/app/odata/odata-query/odata-query';
 export * from './src/app/odata/odata-query/quoted-string';
 
 export * from './src/app/odata/odata-response/csdl/csdl-annotation';
-export * from './src/app/odata/odata-response/csdl/csdl-complex-type';
 export * from './src/app/odata/odata-response/csdl/csdl-entity-container';
 export * from './src/app/odata/odata-response/csdl/csdl-entity-set';
-export * from './src/app/odata/odata-response/csdl/csdl-entity-type';
 export * from './src/app/odata/odata-response/csdl/csdl-enum-type';
 export * from './src/app/odata/odata-response/csdl/csdl-function';
 export * from './src/app/odata/odata-response/csdl/csdl-navigation-property-binding';
@@ -15,6 +13,7 @@ export * from './src/app/odata/odata-response/csdl/csdl-reference';
 export * from './src/app/odata/odata-response/csdl/csdl-schema';
 export * from './src/app/odata/odata-response/csdl/csdl-singleton';
 export * from './src/app/odata/odata-response/csdl/csdl-structural-property';
+export * from './src/app/odata/odata-response/csdl/csdl-structured-type';
 
 export * from './src/app/odata/odata-response/entity-collection';
 export * from './src/app/odata/odata-response/metadata';

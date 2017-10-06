@@ -11,7 +11,7 @@ export class ExampleComponent implements OnInit, OnDestroy {
   executeEnabled = true;
   examples: ExampleData[];
 
-  constructor(public odataService: ODataService) { }
+  constructor(protected odataService: ODataService) { }
 
   ngOnInit() {
   }

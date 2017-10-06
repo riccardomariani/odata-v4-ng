@@ -20,7 +20,7 @@ export const EXECUTE_GET = `example.odataQuery.get().subscribe(
   styleUrls: ['./basic-read.component.less']
 })
 export class BasicReadComponent extends ExampleComponent implements OnInit {
-  constructor(public odataService: ODataService) { super(odataService); }
+  constructor(protected odataService: ODataService) { super(odataService); }
 
   ngOnInit() {
     this.examples = [];

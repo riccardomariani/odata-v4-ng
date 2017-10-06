@@ -20,7 +20,7 @@ const EXECUTE_BATCH = `example.subscr = example.odataQuery.execute().subscribe(
   styleUrls: ['./adv-write.component.less']
 })
 export class AdvWriteComponent extends BasicWriteComponent implements OnInit {
-  constructor(public odataService: ODataService) {
+  constructor(protected odataService: ODataService) {
     super(odataService);
     this.executeEnabled = false;
   }

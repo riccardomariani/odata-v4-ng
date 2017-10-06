@@ -1,8 +1,7 @@
 import { CsdlSchema } from './csdl/csdl-schema';
 import { Utils } from '../utils/utils';
 import { CsdlEnumType, CsdlEnumMember } from './csdl/csdl-enum-type';
-import { CsdlComplexType } from './csdl/csdl-complex-type';
-import { CsdlEntityType, CsdlPropertyRef, CsdlKey } from './csdl/csdl-entity-type';
+import { CsdlEntityType, CsdlPropertyRef, CsdlKey, CsdlComplexType } from './csdl/csdl-structured-type';
 import { CsdlFunction, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlReturnType, CsdlAction } from './csdl/csdl-function';
 import { CsdlProperty, CsdlNavigationProperty, CsdlReferentialConstraint, CsdlOnDelete } from './csdl/csdl-structural-property';
 import { CsdlEntitySet } from './csdl/csdl-entity-set';
@@ -85,6 +84,9 @@ export class Metadata {
     private static readonly ATTRIBUTE_ACTION = 'Action';
     private static readonly ATTRIBUTE_ENTITY_SET = 'EntitySet';
     private static readonly ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT = 'IncludeInServiceDocument';
+    private static readonly ATTRIBUTE_ABSTRACT = 'Abstract';
+    private static readonly ATTRIBUTE_UNDERLYING_TYPE = 'UnderlyingType';
+    private static readonly ATTRIBUTE_IS_FLAGS = 'IsFlags';
 
     public readonly version: string;
     public readonly references: CsdlReference[];
@@ -189,7 +191,9 @@ export class Metadata {
                 case Metadata.TAG_ENUM_TYPE:
                     objects.push(new CsdlEnumType(
                         fieldValues[0],
-                        fieldValues[1]));
+                        fieldValues[1],
+                        fieldValues[2],
+                        fieldValues[3]));
                     break;
                 case Metadata.TAG_COMPLEX_TYPE:
                     objects.push(new CsdlComplexType(
@@ -197,7 +201,8 @@ export class Metadata {
                         fieldValues[1],
                         fieldValues[2],
                         fieldValues[3],
-                        fieldValues[4]));
+                        fieldValues[4],
+                        fieldValues[5]));
                     break;
                 case Metadata.TAG_ENTITY_TYPE:
                     objects.push(new CsdlEntityType(
@@ -207,7 +212,8 @@ export class Metadata {
                         fieldValues[3],
                         fieldValues[4],
                         fieldValues[5],
-                        fieldValues[6]));
+                        fieldValues[6],
+                        fieldValues[7]));
                     break;
                 case Metadata.TAG_FUNCTION:
                     objects.push(new CsdlFunction(
@@ -237,7 +243,8 @@ export class Metadata {
                     break;
                 case Metadata.TAG_PROPERTY_REF:
                     objects.push(new CsdlPropertyRef(
-                        fieldValues[0]));
+                        fieldValues[0],
+                        fieldValues[1]));
                     break;
                 case Metadata.TAG_NAVIGATION_PROPERTY:
                     objects.push(new CsdlNavigationProperty(
@@ -389,6 +396,7 @@ export class Metadata {
             case Metadata.ATTRIBUTE_FUNCTION:
             case Metadata.ATTRIBUTE_ACTION:
             case Metadata.ATTRIBUTE_ENTITY_SET:
+            case Metadata.ATTRIBUTE_UNDERLYING_TYPE:
                 return this.getAttributeValue(attributes, field.name);
             case Metadata.ATTRIBUTE_NULLABLE:
             case Metadata.ATTRIBUTE_UNICODE:
@@ -398,6 +406,8 @@ export class Metadata {
             case Metadata.ATTRIBUTE_IS_COMPOSABLE:
             case Metadata.ATTRIBUTE_CONTAINS_TARGET:
             case Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT:
+            case Metadata.ATTRIBUTE_ABSTRACT:
+            case Metadata.ATTRIBUTE_IS_FLAGS:
                 return this.propertyValueToBoolean(this.getAttributeValue(attributes, field.name));
             case Metadata.ATTRIBUTE_VALUE:
             case Metadata.ATTRIBUTE_MAX_LENGTH:
@@ -429,15 +439,18 @@ export class Metadata {
             case Metadata.TAG_ENUM_TYPE:
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
-                    new Field(Metadata.TAG_MEMBER, FieldType.TAG)
+                    new Field(Metadata.TAG_MEMBER, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_UNDERLYING_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_IS_FLAGS, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_COMPLEX_TYPE:
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.TAG_PROPERTY, FieldType.TAG),
+                    new Field(Metadata.TAG_NAVIGATION_PROPERTY, FieldType.TAG),
                     new Field(Metadata.ATTRIBUTE_BASE_TYPE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_OPEN_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_ABSTRACT, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_ENTITY_TYPE:
                 return this.getObjects(element, field.name, [
@@ -447,7 +460,8 @@ export class Metadata {
                     new Field(Metadata.TAG_NAVIGATION_PROPERTY, FieldType.TAG),
                     new Field(Metadata.ATTRIBUTE_BASE_TYPE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_OPEN_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ABSTRACT, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_FUNCTION:
                 return this.getObjects(element, field.name, [
@@ -481,7 +495,8 @@ export class Metadata {
                 ]);
             case Metadata.TAG_PROPERTY_REF:
                 return this.getObjects(element, field.name, [
-                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ALIAS, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_NAVIGATION_PROPERTY:
                 return this.getObjects(element, field.name, [

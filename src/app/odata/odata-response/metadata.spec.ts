@@ -1,9 +1,8 @@
 import { Metadata } from './metadata';
 import { CsdlSchema } from './csdl/csdl-schema';
 import { CsdlEnumType, CsdlEnumMember } from './csdl/csdl-enum-type';
-import { CsdlComplexType } from './csdl/csdl-complex-type';
+import { CsdlEntityType, CsdlKey, CsdlPropertyRef, CsdlComplexType } from './csdl/csdl-structured-type';
 import { CsdlProperty, CsdlNavigationProperty, CsdlReferentialConstraint, CsdlOnDelete } from './csdl/csdl-structural-property';
-import { CsdlEntityType, CsdlKey, CsdlPropertyRef } from './csdl/csdl-entity-type';
 import { CsdlFunction, CsdlReturnType, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlAction } from './csdl/csdl-function';
 import { CsdlEntityContainer } from './csdl/csdl-entity-container';
 import { CsdlEntitySet } from './csdl/csdl-entity-set';
@@ -175,6 +174,77 @@ describe('Metadata', () => {
         expect(schema.alias).toEqual('alias');
     });
 
+    it('test entity types', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <EntityType Name="name"></EntityType>
+                <EntityType Name="name" BaseType="baseType" OpenType="true" HasStream="false" Abstract="true"></EntityType>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.entityTypes).toEqual([
+            new CsdlEntityType('name'),
+            new CsdlEntityType('name', undefined, undefined, undefined, 'baseType', true, false, true)
+        ]);
+    });
+
+    it('test key', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <EntityType Name="name">
+                    <Key>
+                        <PropertyRef Name="name"/>
+                        <PropertyRef Name="name" Alias="alias"/>
+                    </Key>
+                </EntityType>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.entityTypes).toEqual([
+            new CsdlEntityType('name', new CsdlKey([
+                new CsdlPropertyRef('name'),
+                new CsdlPropertyRef('name', 'alias')
+            ]))
+        ]);
+    });
+
+    it('test enum types', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <EnumType Name="name">
+                    <Member Name="name"/>
+                </EnumType>
+                <EnumType Name="name" UnderlyingType="Edm.Int32" IsFlags="true">
+                    <Member Name="name" Value="1"/>
+                </EnumType>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.enumTypes).toEqual([
+            new CsdlEnumType('name', [
+                new CsdlEnumMember('name'),
+            ]),
+            new CsdlEnumType('name', [
+                new CsdlEnumMember('name', 1),
+            ], 'Edm.Int32', true)
+        ]);
+    });
+
     const metadata: Metadata = new Metadata(XML_EXAMPLE);
     const schemas: CsdlSchema[] = metadata.schemas;
 
@@ -200,13 +270,13 @@ describe('Metadata', () => {
             new CsdlComplexType('Location', [
                 new CsdlProperty('Address', 'Edm.String', false),
                 new CsdlProperty('City', 'Microsoft.OData.SampleService.Models.TripPin.City', false),
-            ], undefined, true),
+            ], undefined, undefined, true),
             new CsdlComplexType('EventLocation', [
                 new CsdlProperty('BuildingInfo', 'Edm.String')
-            ], 'Microsoft.OData.SampleService.Models.TripPin.Location', true),
+            ], undefined, 'Microsoft.OData.SampleService.Models.TripPin.Location', true),
             new CsdlComplexType('AirportLocation', [
                 new CsdlProperty('Loc', 'Edm.GeographyPoint', false, undefined, undefined, undefined, undefined, '4326')
-            ], 'Microsoft.OData.SampleService.Models.TripPin.Location', true)
+            ], undefined, 'Microsoft.OData.SampleService.Models.TripPin.Location', true)
         ]);
     });
 

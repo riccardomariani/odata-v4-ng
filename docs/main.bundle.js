@@ -1782,26 +1782,6 @@ var CsdlAnnotation = (function () {
 
 /***/ }),
 
-/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-complex-type.ts":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlComplexType; });
-var CsdlComplexType = (function () {
-    function CsdlComplexType(name, properties, baseType, openType, hasStream) {
-        this.name = name;
-        this.properties = properties;
-        this.baseType = baseType;
-        this.openType = openType;
-        this.hasStream = hasStream;
-    }
-    return CsdlComplexType;
-}());
-
-//# sourceMappingURL=csdl-complex-type.js.map
-
-/***/ }),
-
 /***/ "../../../../../src/app/odata/odata-response/csdl/csdl-entity-container.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1840,79 +1820,28 @@ var CsdlEntitySet = (function () {
 
 /***/ }),
 
-/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-entity-type.ts":
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return CsdlPropertyRef; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlKey; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEntityType; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__csdl_complex_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-complex-type.ts");
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-
-var CsdlPropertyRef = (function () {
-    function CsdlPropertyRef(name) {
-        this.name = name;
-    }
-    return CsdlPropertyRef;
-}());
-
-var CsdlKey = (function () {
-    function CsdlKey(propertyRefs) {
-        this.propertyRefs = propertyRefs;
-    }
-    return CsdlKey;
-}());
-
-var CsdlEntityType = (function (_super) {
-    __extends(CsdlEntityType, _super);
-    function CsdlEntityType(name, key, properties, navigationProperties, baseType, openType, hasStream) {
-        var _this = _super.call(this, name, properties, baseType, openType, hasStream) || this;
-        _this.name = name;
-        _this.key = key;
-        _this.properties = properties;
-        _this.navigationProperties = navigationProperties;
-        _this.baseType = baseType;
-        _this.openType = openType;
-        _this.hasStream = hasStream;
-        return _this;
-    }
-    return CsdlEntityType;
-}(__WEBPACK_IMPORTED_MODULE_0__csdl_complex_type__["a" /* CsdlComplexType */]));
-
-//# sourceMappingURL=csdl-entity-type.js.map
-
-/***/ }),
-
 /***/ "../../../../../src/app/odata/odata-response/csdl/csdl-enum-type.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEnumMember; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlEnumType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEnumMember; });
+var CsdlEnumType = (function () {
+    function CsdlEnumType(name, members, underlyingType, isFlags) {
+        this.name = name;
+        this.members = members;
+        this.underlyingType = underlyingType;
+        this.isFlags = isFlags;
+    }
+    return CsdlEnumType;
+}());
+
 var CsdlEnumMember = (function () {
     function CsdlEnumMember(name, value) {
         this.name = name;
         this.value = value;
     }
     return CsdlEnumMember;
-}());
-
-var CsdlEnumType = (function () {
-    function CsdlEnumType(name, members) {
-        this.name = name;
-        this.members = members;
-    }
-    return CsdlEnumType;
 }());
 
 //# sourceMappingURL=csdl-enum-type.js.map
@@ -2054,7 +1983,6 @@ var CsdlReference = (function (_super) {
         _this.uri = uri;
         _this.includes = includes;
         _this.includeAnnotations = includeAnnotations;
-        _this.annotations = annotations;
         return _this;
     }
     return CsdlReference;
@@ -2152,9 +2080,6 @@ var CsdlProperty = (function (_super) {
     __extends(CsdlProperty, _super);
     function CsdlProperty(name, type, nullable, maxLength, precision, scale, unicode, srid, defaultValue) {
         var _this = _super.call(this, name, type, nullable) || this;
-        _this.name = name;
-        _this.type = type;
-        _this.nullable = nullable;
         _this.maxLength = maxLength;
         _this.precision = precision;
         _this.scale = scale;
@@ -2170,9 +2095,6 @@ var CsdlNavigationProperty = (function (_super) {
     __extends(CsdlNavigationProperty, _super);
     function CsdlNavigationProperty(name, type, nullable, partner, containsTarget, referentialConstraints, onDelete) {
         var _this = _super.call(this, name, type, nullable) || this;
-        _this.name = name;
-        _this.type = type;
-        _this.nullable = nullable;
         _this.partner = partner;
         _this.containsTarget = containsTarget;
         _this.referentialConstraints = referentialConstraints;
@@ -2183,6 +2105,75 @@ var CsdlNavigationProperty = (function (_super) {
 }(CsdlStructuralProperty));
 
 //# sourceMappingURL=csdl-structural-property.js.map
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/csdl/csdl-structured-type.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export CsdlStructuredType */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlComplexType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlEntityType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return CsdlKey; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return CsdlPropertyRef; });
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var CsdlStructuredType = (function () {
+    function CsdlStructuredType(name, properties, navigationProperties, baseType, openType, abstract) {
+        this.name = name;
+        this.properties = properties;
+        this.navigationProperties = navigationProperties;
+        this.baseType = baseType;
+        this.openType = openType;
+        this.abstract = abstract;
+    }
+    return CsdlStructuredType;
+}());
+
+var CsdlComplexType = (function (_super) {
+    __extends(CsdlComplexType, _super);
+    function CsdlComplexType(name, properties, navigationProperties, baseType, openType, abstract) {
+        return _super.call(this, name, properties, navigationProperties, baseType, openType, abstract) || this;
+    }
+    return CsdlComplexType;
+}(CsdlStructuredType));
+
+var CsdlEntityType = (function (_super) {
+    __extends(CsdlEntityType, _super);
+    function CsdlEntityType(name, key, properties, navigationProperties, baseType, openType, abstract, hasStream) {
+        var _this = _super.call(this, name, properties, navigationProperties, baseType, openType, abstract) || this;
+        _this.key = key;
+        _this.hasStream = hasStream;
+        return _this;
+    }
+    return CsdlEntityType;
+}(CsdlStructuredType));
+
+var CsdlKey = (function () {
+    function CsdlKey(propertyRefs) {
+        this.propertyRefs = propertyRefs;
+    }
+    return CsdlKey;
+}());
+
+var CsdlPropertyRef = (function () {
+    function CsdlPropertyRef(name, alias) {
+        this.name = name;
+        this.alias = alias;
+    }
+    return CsdlPropertyRef;
+}());
+
+//# sourceMappingURL=csdl-structured-type.js.map
 
 /***/ }),
 
@@ -2222,17 +2213,15 @@ var EntitySet = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__csdl_csdl_schema__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-schema.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-enum-type.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_complex_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-complex-type.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-type.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-function.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_structural_property__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-structural-property.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__csdl_csdl_entity_set__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-set.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__csdl_csdl_singleton__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-singleton.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_entity_container__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-container.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__csdl_csdl_reference__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-reference.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__csdl_csdl_annotation__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-annotation.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__csdl_csdl_navigation_property_binding__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-navigation-property-binding.ts");
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_structured_type__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-structured-type.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-function.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_structural_property__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-structural-property.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_entity_set__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-set.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__csdl_csdl_singleton__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-singleton.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__csdl_csdl_entity_container__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-entity-container.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_reference__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-reference.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__csdl_csdl_annotation__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-annotation.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__csdl_csdl_navigation_property_binding__ = __webpack_require__("../../../../../src/app/odata/odata-response/csdl/csdl-navigation-property-binding.ts");
 
 
 
@@ -2313,67 +2302,67 @@ var Metadata = (function () {
             }
             switch (tag) {
                 case Metadata.TAG_REFERENCE:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_10__csdl_csdl_reference__["c" /* CsdlReference */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_reference__["c" /* CsdlReference */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
                     break;
                 case Metadata.TAG_INCLUDE:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_10__csdl_csdl_reference__["a" /* CsdlInclude */](fieldValues[0], fieldValues[1]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_reference__["a" /* CsdlInclude */](fieldValues[0], fieldValues[1]));
                     break;
                 case Metadata.TAG_INCLUDE_ANNOTATIONS:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_10__csdl_csdl_reference__["b" /* CsdlIncludeAnnotations */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_reference__["b" /* CsdlIncludeAnnotations */](fieldValues[0], fieldValues[1], fieldValues[2]));
                     break;
                 case Metadata.TAG_ANNOTATION:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_11__csdl_csdl_annotation__["b" /* CsdlAnnotation */](fieldValues[0], fieldValues[1]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_10__csdl_csdl_annotation__["b" /* CsdlAnnotation */](fieldValues[0], fieldValues[1]));
                     break;
                 case Metadata.TAG_SCHEMA:
                     objects.push(new __WEBPACK_IMPORTED_MODULE_0__csdl_csdl_schema__["a" /* CsdlSchema */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6], fieldValues[7]));
                     break;
                 case Metadata.TAG_ENUM_TYPE:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__["b" /* CsdlEnumType */](fieldValues[0], fieldValues[1]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__["b" /* CsdlEnumType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
                     break;
                 case Metadata.TAG_COMPLEX_TYPE:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_complex_type__["a" /* CsdlComplexType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_structured_type__["a" /* CsdlComplexType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
                     break;
                 case Metadata.TAG_ENTITY_TYPE:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__["a" /* CsdlEntityType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_structured_type__["b" /* CsdlEntityType */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6], fieldValues[7]));
                     break;
                 case Metadata.TAG_FUNCTION:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["c" /* CsdlFunction */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__["c" /* CsdlFunction */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
                     break;
                 case Metadata.TAG_MEMBER:
                     objects.push(new __WEBPACK_IMPORTED_MODULE_2__csdl_csdl_enum_type__["a" /* CsdlEnumMember */](fieldValues[0], fieldValues[1]));
                     break;
                 case Metadata.TAG_PROPERTY:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_structural_property__["c" /* CsdlProperty */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6], fieldValues[7], fieldValues[8]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_structural_property__["c" /* CsdlProperty */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6], fieldValues[7], fieldValues[8]));
                     break;
                 case Metadata.TAG_PROPERTY_REF:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__["c" /* CsdlPropertyRef */](fieldValues[0]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_structured_type__["d" /* CsdlPropertyRef */](fieldValues[0], fieldValues[1]));
                     break;
                 case Metadata.TAG_NAVIGATION_PROPERTY:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_structural_property__["a" /* CsdlNavigationProperty */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_structural_property__["a" /* CsdlNavigationProperty */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5], fieldValues[6]));
                     break;
                 case Metadata.TAG_REFERENTIAL_CONSTRAINT:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_structural_property__["d" /* CsdlReferentialConstraint */](fieldValues[0], fieldValues[1]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_structural_property__["d" /* CsdlReferentialConstraint */](fieldValues[0], fieldValues[1]));
                     break;
                 case Metadata.TAG_PARAMETER:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["e" /* CsdlParameter */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__["e" /* CsdlParameter */](fieldValues[0], fieldValues[1], fieldValues[2]));
                     break;
                 case Metadata.TAG_ACTION:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["a" /* CsdlAction */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__["a" /* CsdlAction */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4], fieldValues[5]));
                     break;
                 case Metadata.TAG_ENTITY_SET:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_7__csdl_csdl_entity_set__["a" /* CsdlEntitySet */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_entity_set__["a" /* CsdlEntitySet */](fieldValues[0], fieldValues[1], fieldValues[2]));
                     break;
                 case Metadata.TAG_SINGLETON:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_8__csdl_csdl_singleton__["a" /* CsdlSingleton */](fieldValues[0], fieldValues[1], fieldValues[2]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_7__csdl_csdl_singleton__["a" /* CsdlSingleton */](fieldValues[0], fieldValues[1], fieldValues[2]));
                     break;
                 case Metadata.TAG_FUNCTION_IMPORT:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["d" /* CsdlFunctionImport */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__["d" /* CsdlFunctionImport */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
                     break;
                 case Metadata.TAG_ACTION_IMPORT:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["b" /* CsdlActionImport */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__["b" /* CsdlActionImport */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3]));
                     break;
                 case Metadata.TAG_NAVIGATION_PROPERTY_BINDING:
-                    objects.push(new __WEBPACK_IMPORTED_MODULE_12__csdl_csdl_navigation_property_binding__["a" /* CsdlNavigationPropertyBinding */](fieldValues[0], fieldValues[1]));
+                    objects.push(new __WEBPACK_IMPORTED_MODULE_11__csdl_csdl_navigation_property_binding__["a" /* CsdlNavigationPropertyBinding */](fieldValues[0], fieldValues[1]));
                     break;
                 default: throw new Error('Unknwon tag:' + tag);
             }
@@ -2392,16 +2381,16 @@ var Metadata = (function () {
             var fieldValues = this.getFieldValues(fieldNames, attributes, element);
             switch (tag) {
                 case Metadata.TAG_KEY:
-                    object = new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_entity_type__["b" /* CsdlKey */](fieldValues[0]);
+                    object = new __WEBPACK_IMPORTED_MODULE_3__csdl_csdl_structured_type__["c" /* CsdlKey */](fieldValues[0]);
                     break;
                 case Metadata.TAG_RETURN_TYPE:
-                    object = new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_function__["f" /* CsdlReturnType */](fieldValues[0], fieldValues[1]);
+                    object = new __WEBPACK_IMPORTED_MODULE_4__csdl_csdl_function__["f" /* CsdlReturnType */](fieldValues[0], fieldValues[1]);
                     break;
                 case Metadata.TAG_ENTITY_CONTAINER:
-                    object = new __WEBPACK_IMPORTED_MODULE_9__csdl_csdl_entity_container__["a" /* CsdlEntityContainer */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4]);
+                    object = new __WEBPACK_IMPORTED_MODULE_8__csdl_csdl_entity_container__["a" /* CsdlEntityContainer */](fieldValues[0], fieldValues[1], fieldValues[2], fieldValues[3], fieldValues[4]);
                     break;
                 case Metadata.TAG_ON_DELETE:
-                    object = new __WEBPACK_IMPORTED_MODULE_6__csdl_csdl_structural_property__["b" /* CsdlOnDelete */](fieldValues[0]);
+                    object = new __WEBPACK_IMPORTED_MODULE_5__csdl_csdl_structural_property__["b" /* CsdlOnDelete */](fieldValues[0]);
                     break;
                 default: throw new Error('Unknwon tag:' + tag);
             }
@@ -2449,6 +2438,7 @@ var Metadata = (function () {
             case Metadata.ATTRIBUTE_FUNCTION:
             case Metadata.ATTRIBUTE_ACTION:
             case Metadata.ATTRIBUTE_ENTITY_SET:
+            case Metadata.ATTRIBUTE_UNDERLYING_TYPE:
                 return this.getAttributeValue(attributes, field.name);
             case Metadata.ATTRIBUTE_NULLABLE:
             case Metadata.ATTRIBUTE_UNICODE:
@@ -2458,6 +2448,8 @@ var Metadata = (function () {
             case Metadata.ATTRIBUTE_IS_COMPOSABLE:
             case Metadata.ATTRIBUTE_CONTAINS_TARGET:
             case Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT:
+            case Metadata.ATTRIBUTE_ABSTRACT:
+            case Metadata.ATTRIBUTE_IS_FLAGS:
                 return this.propertyValueToBoolean(this.getAttributeValue(attributes, field.name));
             case Metadata.ATTRIBUTE_VALUE:
             case Metadata.ATTRIBUTE_MAX_LENGTH:
@@ -2488,15 +2480,18 @@ var Metadata = (function () {
             case Metadata.TAG_ENUM_TYPE:
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
-                    new Field(Metadata.TAG_MEMBER, FieldType.TAG)
+                    new Field(Metadata.TAG_MEMBER, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_UNDERLYING_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_IS_FLAGS, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_COMPLEX_TYPE:
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.TAG_PROPERTY, FieldType.TAG),
+                    new Field(Metadata.TAG_NAVIGATION_PROPERTY, FieldType.TAG),
                     new Field(Metadata.ATTRIBUTE_BASE_TYPE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_OPEN_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_ABSTRACT, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_ENTITY_TYPE:
                 return this.getObjects(element, field.name, [
@@ -2506,7 +2501,8 @@ var Metadata = (function () {
                     new Field(Metadata.TAG_NAVIGATION_PROPERTY, FieldType.TAG),
                     new Field(Metadata.ATTRIBUTE_BASE_TYPE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_OPEN_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_HAS_STREAM, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ABSTRACT, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_FUNCTION:
                 return this.getObjects(element, field.name, [
@@ -2540,7 +2536,8 @@ var Metadata = (function () {
                 ]);
             case Metadata.TAG_PROPERTY_REF:
                 return this.getObjects(element, field.name, [
-                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_ALIAS, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_NAVIGATION_PROPERTY:
                 return this.getObjects(element, field.name, [
@@ -2703,6 +2700,9 @@ Metadata.ATTRIBUTE_FUNCTION = 'Function';
 Metadata.ATTRIBUTE_ACTION = 'Action';
 Metadata.ATTRIBUTE_ENTITY_SET = 'EntitySet';
 Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT = 'IncludeInServiceDocument';
+Metadata.ATTRIBUTE_ABSTRACT = 'Abstract';
+Metadata.ATTRIBUTE_UNDERLYING_TYPE = 'UnderlyingType';
+Metadata.ATTRIBUTE_IS_FLAGS = 'IsFlags';
 //# sourceMappingURL=metadata.js.map
 
 /***/ }),
@@ -2769,7 +2769,7 @@ var ODataResponse = (function () {
         return this.toObject();
     };
     ODataResponse.prototype.toCount = function () {
-        return Number(this.response.text);
+        return Number(this.getBodyAsText());
     };
     ODataResponse.prototype.toString = function () {
         var res = this.response.status + " " + this.response.statusText + "\n";

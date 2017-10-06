@@ -10,8 +10,7 @@ import { ExampleData, SERVICE_ROOT } from '../example/example-data';
   styleUrls: ['./adv-read.component.less']
 })
 export class AdvReadComponent extends BasicReadComponent implements OnInit {
-
-  constructor(public odataService: ODataService) { super(odataService); }
+  constructor(protected odataService: ODataService) { super(odataService); }
 
   ngOnInit() {
     this.examples = [];

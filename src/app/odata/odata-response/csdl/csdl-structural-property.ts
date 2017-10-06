@@ -21,9 +21,9 @@ export abstract class CsdlStructuralProperty {
 
 export class CsdlProperty extends CsdlStructuralProperty {
     constructor(
-        public name: string,
-        public type: string,
-        public nullable?: boolean,
+        name: string,
+        type: string,
+        nullable?: boolean,
         public maxLength?: number,
         public precision?: number,
         public scale?: number,
@@ -37,9 +37,9 @@ export class CsdlProperty extends CsdlStructuralProperty {
 
 export class CsdlNavigationProperty extends CsdlStructuralProperty {
     constructor(
-        public name: string,
-        public type: string,
-        public nullable?: boolean,
+        name: string,
+        type: string,
+        nullable?: boolean,
         public partner?: string,
         public containsTarget?: boolean,
         public referentialConstraints?: CsdlReferentialConstraint[],

@@ -20,8 +20,7 @@ export const EXECUTE_GET_TO_METADATA = `example.odataQuery.get().subscribe(
   styleUrls: ['./metadata.component.less']
 })
 export class MetadataComponent extends BasicReadComponent implements OnInit {
-
-  constructor(public odataService: ODataService) { super(odataService); }
+  constructor(protected odataService: ODataService) { super(odataService); }
 
   ngOnInit() {
     this.examples = [];

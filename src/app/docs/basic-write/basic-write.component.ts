@@ -106,7 +106,7 @@ const EXECUTE_BOUND_ACTION = `example.subscr = example.odataQuery.post({
   styleUrls: ['./basic-write.component.less']
 })
 export class BasicWriteComponent extends ExampleComponent implements OnInit {
-  constructor(public odataService: ODataService) {
+  constructor(protected odataService: ODataService) {
     super(odataService);
     this.executeEnabled = false;
   }

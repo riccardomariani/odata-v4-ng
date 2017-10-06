@@ -67,7 +67,7 @@ export class ODataResponse {
     }
 
     toCount(): number {
-        return Number(this.response.text);
+        return Number(this.getBodyAsText());
     }
 
     toString(): string {
