@@ -4,8 +4,7 @@ import { ODataService } from '../../odata/odata-service/odata.service';
 
 @Component({
   selector: 'ov4-example',
-  templateUrl: './example.component.html',
-  styleUrls: ['./example.component.less']
+  templateUrl: './example.component.html'
 })
 export class ExampleComponent implements OnInit, OnDestroy {
   executeEnabled = true;

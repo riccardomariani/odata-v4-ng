@@ -102,8 +102,7 @@ const EXECUTE_BOUND_ACTION = `example.subscr = example.odataQuery.post({
 
 @Component({
   selector: 'ov4-basic-write',
-  templateUrl: '../example/example.component.html',
-  styleUrls: ['./basic-write.component.less']
+  templateUrl: '../example/example.component.html'
 })
 export class BasicWriteComponent extends ExampleComponent implements OnInit {
   constructor(protected odataService: ODataService) {

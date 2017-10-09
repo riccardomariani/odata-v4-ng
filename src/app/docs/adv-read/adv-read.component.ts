@@ -6,8 +6,7 @@ import { ExampleData, SERVICE_ROOT } from '../example/example-data';
 
 @Component({
   selector: 'ov4-adv-read',
-  templateUrl: '../example/example.component.html',
-  styleUrls: ['./adv-read.component.less']
+  templateUrl: '../example/example.component.html'
 })
 export class AdvReadComponent extends BasicReadComponent implements OnInit {
   constructor(protected odataService: ODataService) { super(odataService); }

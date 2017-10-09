@@ -4,8 +4,7 @@ import { SERVICE_ROOT } from './docs/example/example-data';
 
 @Component({
   selector: 'ov4-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.less']
+  templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
   title = 'odata-v4-ng';

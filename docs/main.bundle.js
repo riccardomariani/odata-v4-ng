@@ -61,24 +61,6 @@ module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{ti
 
 /***/ }),
 
-/***/ "../../../../../src/app/app.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
-
-/***/ }),
-
 /***/ "../../../../../src/app/app.component.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -108,8 +90,7 @@ var AppComponent = (function () {
 AppComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'ov4-root',
-        template: __webpack_require__("../../../../../src/app/app.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/app.component.less")]
+        template: __webpack_require__("../../../../../src/app/app.component.html")
     }),
     __metadata("design:paramtypes", [])
 ], AppComponent);
@@ -181,24 +162,6 @@ AppModule = __decorate([
 ], AppModule);
 
 //# sourceMappingURL=app.module.js.map
-
-/***/ }),
-
-/***/ "../../../../../src/app/docs/adv-read/adv-read.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
 
 /***/ }),
 
@@ -314,32 +277,13 @@ var AdvReadComponent = (function (_super) {
 AdvReadComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_2__angular_core__["Component"])({
         selector: 'ov4-adv-read',
-        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/docs/adv-read/adv-read.component.less")]
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html")
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], AdvReadComponent);
 
 var _a;
 //# sourceMappingURL=adv-read.component.js.map
-
-/***/ }),
-
-/***/ "../../../../../src/app/docs/adv-write/adv-write.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
 
 /***/ }),
 
@@ -417,32 +361,13 @@ var AdvWriteComponent = (function (_super) {
 AdvWriteComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_4__angular_core__["Component"])({
         selector: 'ov4-adv-write',
-        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/docs/adv-write/adv-write.component.less")]
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html")
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_2__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_2__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], AdvWriteComponent);
 
 var _a;
 //# sourceMappingURL=adv-write.component.js.map
-
-/***/ }),
-
-/***/ "../../../../../src/app/docs/basic-read/basic-read.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
 
 /***/ }),
 
@@ -788,32 +713,13 @@ var BasicReadComponent = (function (_super) {
 BasicReadComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_2__angular_core__["Component"])({
         selector: 'ov4-basic-read',
-        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.less")]
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html")
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], BasicReadComponent);
 
 var _a;
 //# sourceMappingURL=basic-read.component.js.map
-
-/***/ }),
-
-/***/ "../../../../../src/app/docs/basic-write/basic-write.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
 
 /***/ }),
 
@@ -1065,8 +971,7 @@ var BasicWriteComponent = (function (_super) {
 BasicWriteComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'ov4-basic-write',
-        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.less")]
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html")
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], BasicWriteComponent);
@@ -1097,24 +1002,6 @@ var ExampleData = (function () {
 /***/ (function(module, exports) {
 
 module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>"
-
-/***/ }),
-
-/***/ "../../../../../src/app/docs/example/example.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
 
 /***/ }),
 
@@ -1163,32 +1050,13 @@ var ExampleComponent = (function () {
 ExampleComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["Component"])({
         selector: 'ov4-example',
-        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/docs/example/example.component.less")]
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html")
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_1__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], ExampleComponent);
 
 var _a;
 //# sourceMappingURL=example.component.js.map
-
-/***/ }),
-
-/***/ "../../../../../src/app/docs/metadata/metadata.component.less":
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
 
 /***/ }),
 
@@ -1276,8 +1144,7 @@ var MetadataComponent = (function (_super) {
 MetadataComponent = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_4__angular_core__["Component"])({
         selector: 'ov4-metadata',
-        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html"),
-        styles: [__webpack_require__("../../../../../src/app/docs/metadata/metadata.component.less")]
+        template: __webpack_require__("../../../../../src/app/docs/example/example.component.html")
     }),
     __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__["a" /* ODataService */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__["a" /* ODataService */]) === "function" && _a || Object])
 ], MetadataComponent);

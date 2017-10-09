@@ -16,8 +16,7 @@ export const EXECUTE_GET_TO_METADATA = `example.odataQuery.get().subscribe(
 
 @Component({
   selector: 'ov4-metadata',
-  templateUrl: '../example/example.component.html',
-  styleUrls: ['./metadata.component.less']
+  templateUrl: '../example/example.component.html'
 })
 export class MetadataComponent extends BasicReadComponent implements OnInit {
   constructor(protected odataService: ODataService) { super(odataService); }
