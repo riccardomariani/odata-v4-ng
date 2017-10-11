@@ -97,7 +97,6 @@ export class ODataQueryBatch extends ODataQueryAbstract {
   }
 
   toString(): string {
-    console.log(this.queryString);
     return this.queryString;
   }
 

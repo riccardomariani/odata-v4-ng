@@ -622,92 +622,6 @@ var BasicReadComponent = (function (_super) {
             }
         }
     };
-    BasicReadComponent.prototype.executeCreateEntity = function (example, odataService) {
-        example.subscr = example.odataQuery.post({
-            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
-            'UserName': 'teresa',
-            'FirstName': 'Teresa',
-            'LastName': 'Gilbert',
-            'Gender': 'Female',
-            'Emails': ['teresa@example.com', 'teresa@contoso.com'],
-            'AddressInfo': [
-                {
-                    'Address': '1 Suffolk Ln.',
-                    'City': {
-                        'CountryRegion': 'United States',
-                        'Name': 'Boise',
-                        'Region': 'ID'
-                    }
-                }
-            ]
-        }).subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeDeleteEntity = function (example, odataService) {
-        example.subscr = example.odataQuery.delete().subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeDeleteEntityETag = function (example, odataService) {
-        example.subscr = example.odataQuery.delete('W/"08D15F3DD9A61539"').subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeUpdateEntity = function (example, odataService) {
-        example.subscr = example.odataQuery.patch({
-            '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
-            'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
-        }).subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeUpdateEntityETag = function (example, odataService) {
-        example.subscr = example.odataQuery.patch({
-            '@odata.type': '#Microsoft.OData.SampleService.Models.TripPin.Person',
-            'FirstName': 'CLYDE'
-        }, 'W/"08D15F3DD9126D84"').subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeCreateRelationship = function (example, odataService) {
-        example.subscr = example.odataQuery.post({
-            '@odata.id': new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('People').entityKey('\'vincentcalabrese\'').toString()
-        }).subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeChangeRelationship = function (example, odataService) {
-        example.subscr = example.odataQuery.put({
-            '@odata.id': new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */]).entitySet('Airlines').entityKey('\'FM\'').toString()
-        }).subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicReadComponent.prototype.executeBoundAction = function (example, odataService) {
-        example.subscr = example.odataQuery.post({
-            'userName': 'scottketchum',
-            'tripId': 1001
-        }).subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
     return BasicReadComponent;
 }(__WEBPACK_IMPORTED_MODULE_4__example_example_component__["a" /* ExampleComponent */]));
 BasicReadComponent = __decorate([
@@ -864,21 +778,6 @@ var BasicWriteComponent = (function (_super) {
             .entityKey('\'vincentcalabrese\'');
         example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n      .entitySet('People')\n      .entityKey('\\'vincentcalabrese\\'');\n  " + EXECUTE_DELETE_ENTITY_ETAG;
         example.func = this.executeDeleteEntityETag;
-    };
-    BasicWriteComponent.prototype.executeGet = function (example, odataService) {
-        example.subscr = example.odataQuery.get().subscribe(function (odataResponse) {
-            example.response = odataResponse.toString();
-        }, function (error) {
-            example.response = error;
-        });
-    };
-    BasicWriteComponent.prototype.executeAllGet = function () {
-        if (this.examples) {
-            for (var _i = 0, _a = this.examples; _i < _a.length; _i++) {
-                var example = _a[_i];
-                this.executeGet(example, this.odataService);
-            }
-        }
     };
     BasicWriteComponent.prototype.executeCreateEntity = function (example, odataService) {
         example.subscr = example.odataQuery.post({
@@ -1266,7 +1165,6 @@ var ODataQueryBatch = (function (_super) {
         return this.odataService.post(this, this.getBody(), requestOptionsArgs);
     };
     ODataQueryBatch.prototype.toString = function () {
-        console.log(this.queryString);
         return this.queryString;
     };
     ODataQueryBatch.prototype.getBody = function () {
@@ -1540,6 +1438,10 @@ var ODataQuery = (function (_super) {
         this.queryOptions.customOption(key, value);
         return this;
     };
+    ODataQuery.prototype.format = function (format) {
+        this.queryOptions.format(format);
+        return this;
+    };
     // QUERY EXECUTION
     ODataQuery.prototype.get = function (requestOptionsArgs) {
         return this.odataService.get(this, requestOptionsArgs);
@@ -1561,7 +1463,6 @@ var ODataQuery = (function (_super) {
         if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.queryOptions) && !this.queryOptions.isEmpty()) {
             res += '?' + this.queryOptions.toString();
         }
-        console.log(res);
         return res;
     };
     ODataQuery.prototype.getSegment = function (segment) {
@@ -2725,23 +2626,20 @@ var ODataService = ODataService_1 = (function () {
     };
     ODataService.prototype.post = function (odataQuery, body, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeOverride(ODataService_1.REQUEST_OPTIONS_ARGS_POST, requestOptionsArgs);
-        return this.http.post(url, body, args)
+        return this.http.post(url, body, requestOptionsArgs)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
     };
     ODataService.prototype.patch = function (odataQuery, body, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeETag(ODataService_1.REQUEST_OPTIONS_ARGS_POST, etag);
-        args = this.mergeOverride(args, requestOptionsArgs);
+        var args = this.mergeETag(requestOptionsArgs, etag);
         return this.http.patch(url, body, args)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
     };
     ODataService.prototype.put = function (odataQuery, body, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
-        var args = this.mergeETag(ODataService_1.REQUEST_OPTIONS_ARGS_POST, etag);
-        args = this.mergeOverride(args, requestOptionsArgs);
+        var args = this.mergeETag(requestOptionsArgs, etag);
         return this.http.put(url, body, args)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
             .catch(this.handleError);
@@ -2800,9 +2698,6 @@ var ODataService = ODataService_1 = (function () {
     };
     return ODataService;
 }());
-ODataService.REQUEST_OPTIONS_ARGS_POST = {
-    headers: new __WEBPACK_IMPORTED_MODULE_4__angular_http__["a" /* Headers */]({ 'Content-Type': 'application/json' }),
-};
 ODataService.IF_MATCH_HEADER = 'If-Match';
 ODataService = ODataService_1 = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_5__angular_core__["Injectable"])(),
@@ -3029,6 +2924,7 @@ var Orderby = (function () {
 var QueryOptions = (function () {
     function QueryOptions(separator) {
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(separator, 'separator');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(separator, 'separator');
         this._separator = separator;
         this._select = null;
         this._filter = null;
@@ -3039,67 +2935,68 @@ var QueryOptions = (function () {
         this._top = null;
         this._count = null;
         this._customOptions = null;
+        this._format = null;
     }
     QueryOptions.prototype.select = function (select) {
-        this.checkFieldAlreadySet(this._select, 'select');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(select, 'select');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(select, 'select');
-        this._select = typeof (select) === 'string' ? [select] : select;
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(select) || __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(select)) {
+            this._select = null;
+        }
+        else {
+            this._select = typeof (select) === 'string' ? [select] : select;
+        }
         return this;
     };
     QueryOptions.prototype.filter = function (filter) {
-        this.checkFieldAlreadySet(this._filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
-        this._filter = typeof (filter) === 'string' ? new __WEBPACK_IMPORTED_MODULE_0__filter_filter_string__["a" /* FilterString */](filter) : filter;
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(filter) || __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(filter)) {
+            this._filter = null;
+        }
+        else {
+            this._filter = typeof (filter) === 'string' ? new __WEBPACK_IMPORTED_MODULE_0__filter_filter_string__["a" /* FilterString */](filter) : filter;
+        }
         return this;
     };
     QueryOptions.prototype.expand = function (expand) {
-        this.checkFieldAlreadySet(this._expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(expand, 'expand');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(expand, 'expand');
-        this._expand = typeof (expand) === 'string' ? [new __WEBPACK_IMPORTED_MODULE_1__expand__["a" /* Expand */](expand)] : expand instanceof __WEBPACK_IMPORTED_MODULE_1__expand__["a" /* Expand */] ? [expand] : expand;
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(expand) || __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(expand)) {
+            this._expand = null;
+        }
+        else {
+            this._expand = typeof (expand) === 'string' ? [new __WEBPACK_IMPORTED_MODULE_1__expand__["a" /* Expand */](expand)] : expand instanceof __WEBPACK_IMPORTED_MODULE_1__expand__["a" /* Expand */] ? [expand] : expand;
+        }
         return this;
     };
     QueryOptions.prototype.orderby = function (orderby) {
-        this.checkFieldAlreadySet(this._orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(orderby, 'orderby');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(orderby, 'orderby');
-        this._orderby = typeof (orderby) === 'string' ? [new __WEBPACK_IMPORTED_MODULE_3__orderby__["a" /* Orderby */](orderby)] : orderby;
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(orderby) || __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(orderby)) {
+            this._orderby = null;
+        }
+        else {
+            this._orderby = typeof (orderby) === 'string' ? [new __WEBPACK_IMPORTED_MODULE_3__orderby__["a" /* Orderby */](orderby)] : orderby;
+        }
         return this;
     };
     QueryOptions.prototype.search = function (search) {
-        this.checkFieldAlreadySet(this._search, 'search');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotUndefined(search, 'search');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(search, 'search');
         this._search = search;
         return this;
     };
     QueryOptions.prototype.skip = function (skip) {
-        this.checkFieldAlreadySet(this._skip, 'skip');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(skip, 'skip');
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNegative(skip, 'skip');
         this._skip = skip;
         return this;
     };
     QueryOptions.prototype.top = function (top) {
-        this.checkFieldAlreadySet(this._top, 'top');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(top, 'top');
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNegative(top, 'top');
         this._top = top;
         return this;
     };
     QueryOptions.prototype.count = function (count) {
-        this.checkFieldAlreadySet(this._count, 'count');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(count, 'count');
         this._count = count;
+        return this;
+    };
+    QueryOptions.prototype.format = function (format) {
+        this._format = format;
         return this;
     };
     QueryOptions.prototype.customOption = function (key, value) {
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(key, 'key');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(key, 'key');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(value, 'value');
-        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(value, 'value');
         if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._customOptions)) {
             this._customOptions = new Map();
         }
@@ -3111,7 +3008,7 @@ var QueryOptions = (function () {
         // query options
         var queryOptions = '';
         // add select
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._select) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._select)) {
             queryOptions += '$select=';
             if (typeof (this._select) === 'string') {
                 queryOptions += this._select;
@@ -3121,14 +3018,14 @@ var QueryOptions = (function () {
             }
         }
         // add filter
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._filter) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._filter)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$filter=' + encodeURIComponent(this._filter.toString());
         }
         // add expand
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._expand) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._expand)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
@@ -3141,7 +3038,7 @@ var QueryOptions = (function () {
             }
         }
         // add orderby
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._orderby) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._orderby)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
@@ -3154,28 +3051,28 @@ var QueryOptions = (function () {
             }
         }
         // add search
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._search) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._search)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$search=' + encodeURIComponent(this._search.toString());
         }
         // add skip
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._skip) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._skip)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$skip=' + this._skip;
         }
         // add top
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._top) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._top)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
             queryOptions += '$top=' + this._top;
         }
         // add count
-        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count)) {
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._count) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._count)) {
             if (queryOptions.length) {
                 queryOptions += this._separator;
             }
@@ -3184,11 +3081,21 @@ var QueryOptions = (function () {
         // add custom query options
         if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this._customOptions) && this._customOptions.size > 0) {
             this._customOptions.forEach(function (value, key, map) {
-                if (queryOptions.length) {
-                    queryOptions += _this._separator;
+                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(key) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(key)
+                    && __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(value) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(value)) {
+                    if (queryOptions.length) {
+                        queryOptions += _this._separator;
+                    }
+                    queryOptions += key + '=' + encodeURIComponent(value);
                 }
-                queryOptions += key + '=' + encodeURIComponent(value);
             });
+        }
+        // add format
+        if (!__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this._format) && !__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isEmpty(this._format)) {
+            if (queryOptions.length) {
+                queryOptions += this._separator;
+            }
+            queryOptions += '$format=' + this._format;
         }
         return queryOptions;
     };
@@ -3202,14 +3109,6 @@ var QueryOptions = (function () {
             }
         }
         return true;
-    };
-    QueryOptions.prototype.checkFieldAlreadySet = function (fieldValue, fieldName) {
-        try {
-            __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNullOrUndefined(fieldValue, fieldName);
-        }
-        catch (error) {
-            throw new Error(fieldName + ' is already set');
-        }
     };
     return QueryOptions;
 }());

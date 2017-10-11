@@ -105,5 +105,4 @@ ${EXECUTE_GET}`;
 ${EXECUTE_GET}`;
     example.func = this.executeGet;
   }
-
 }

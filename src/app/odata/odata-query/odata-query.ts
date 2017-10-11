@@ -229,6 +229,11 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
+  format(format: string): ODataQuery {
+    this.queryOptions.format(format);
+    return this;
+  }
+
   // QUERY EXECUTION
 
   get(requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
@@ -256,7 +261,6 @@ export class ODataQuery extends ODataQueryAbstract {
     if (Utils.isNotNullNorUndefined(this.queryOptions) && !this.queryOptions.isEmpty()) {
       res += '?' + this.queryOptions.toString();
     }
-    console.log(res);
     return res;
   }
 

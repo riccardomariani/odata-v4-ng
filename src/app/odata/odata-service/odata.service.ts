@@ -12,10 +12,6 @@ import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
 
 @Injectable()
 export class ODataService {
-  private static readonly REQUEST_OPTIONS_ARGS_POST: RequestOptionsArgs = {
-    headers: new Headers({ 'Content-Type': 'application/json' }),
-  };
-
   private static readonly IF_MATCH_HEADER = 'If-Match';
 
   constructor(private http: Http) { }
@@ -29,16 +25,14 @@ export class ODataService {
 
   post(odataQuery: ODataQueryAbstract, body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const args: RequestOptionsArgs = this.mergeOverride(ODataService.REQUEST_OPTIONS_ARGS_POST, requestOptionsArgs);
-    return this.http.post(url, body, args)
+    return this.http.post(url, body, requestOptionsArgs)
       .map(response => new ODataResponse(response))
       .catch(this.handleError);
   }
 
   patch(odataQuery: ODataQuery, body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    let args: RequestOptionsArgs = this.mergeETag(ODataService.REQUEST_OPTIONS_ARGS_POST, etag);
-    args = this.mergeOverride(args, requestOptionsArgs);
+    const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
     return this.http.patch(url, body, args)
       .map(response => new ODataResponse(response))
       .catch(this.handleError);
@@ -46,8 +40,7 @@ export class ODataService {
 
   put(odataQuery: ODataQuery, body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    let args: RequestOptionsArgs = this.mergeETag(ODataService.REQUEST_OPTIONS_ARGS_POST, etag);
-    args = this.mergeOverride(args, requestOptionsArgs);
+    const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
     return this.http.put(url, body, args)
       .map(response => new ODataResponse(response))
       .catch(this.handleError);

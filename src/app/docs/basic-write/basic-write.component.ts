@@ -236,25 +236,6 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     example.func = this.executeDeleteEntityETag;
   }
 
-  executeGet(example: ExampleData, odataService: ODataService): void {
-    example.subscr = example.odataQuery.get().subscribe(
-      (odataResponse: ODataResponse) => {
-        example.response = odataResponse.toString();
-      },
-      (error: string) => {
-        example.response = error;
-      }
-    );
-  }
-
-  executeAllGet(): void {
-    if (this.examples) {
-      for (const example of this.examples) {
-        this.executeGet(example, this.odataService);
-      }
-    }
-  }
-
   executeCreateEntity(example: ExampleData, odataService: ODataService): void {
     example.subscr = example.odataQuery.post({
       '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',

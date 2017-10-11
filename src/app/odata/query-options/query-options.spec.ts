@@ -10,196 +10,177 @@ import { ODataQuery } from '../odata-query/odata-query';
 
 describe('QueryOptions', () => {
   it('test select', () => {
-    let queryOptions: QueryOptions;
-    let select: string | string[];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.select(select)).toThrowError('select cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.select(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    select = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.select(select)).toThrowError('select cannot be null');
+    queryOptions.select(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).select('value');
+    queryOptions.select([]);
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.select('value');
     expect(queryOptions.toString()).toEqual('$select=value');
     //
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).select(['value']);
+    queryOptions.select(['value']);
     expect(queryOptions.toString()).toEqual('$select=value');
-    expect(() => queryOptions.select(select)).toThrowError('select is already set');
-    //
-    select = [];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.select(select)).toThrowError('select cannot be empty');
   });
 
   it('test filter', () => {
-    let queryOptions: QueryOptions;
-    let filter: string | Filter;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.filter(filter)).toThrowError('filter cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.filter(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    filter = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.filter(filter)).toThrowError('filter cannot be null');
+    queryOptions.filter(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    filter = 'property eq value';
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).filter(filter);
+    queryOptions.filter('');
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.filter('property eq value');
     expect(queryOptions.toString()).toEqual('$filter=' + encodeURIComponent('property eq value'));
     //
-    filter = new FilterComparison('property', OperatorComparison.EQ, 'value');
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).filter(filter);
+    queryOptions.filter(new FilterComparison('property', OperatorComparison.EQ, 'value'));
     expect(queryOptions.toString()).toEqual('$filter=' + encodeURIComponent('property eq value'));
-    expect(() => queryOptions.filter(filter)).toThrowError('filter is already set');
-    //
-    filter = '';
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.filter(filter)).toThrowError('filter cannot be empty');
   });
 
   it('test expand', () => {
-    let queryOptions: QueryOptions;
-    let expand: string | Expand[];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.expand(expand)).toThrowError('expand cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.expand(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    expand = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.expand(expand)).toThrowError('expand cannot be null');
+    queryOptions.expand(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    expand = 'value';
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).expand(expand);
+    queryOptions.expand('');
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.expand([]);
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.expand('value');
     expect(queryOptions.toString()).toEqual('$expand=value');
     //
-    expand = [new Expand('value')];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).expand(expand);
+    queryOptions.expand([new Expand('value')]);
     expect(queryOptions.toString()).toEqual('$expand=value');
-    expect(() => queryOptions.expand(expand)).toThrowError('expand is already set');
-    //
-    expand = [];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.expand(expand)).toThrowError('expand cannot be empty');
   });
 
   it('test orderby', () => {
-    let queryOptions: QueryOptions;
-    let orderby: string | Orderby[];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.orderby(orderby)).toThrowError('orderby cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.orderby(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    orderby = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.orderby(orderby)).toThrowError('orderby cannot be null');
+    queryOptions.orderby(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    orderby = 'value';
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).orderby(orderby);
+    queryOptions.orderby('');
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.orderby([]);
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.orderby('value');
     expect(queryOptions.toString()).toEqual('$orderby=value');
     //
-    orderby = [new Orderby('value')];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).orderby(orderby);
+    queryOptions.orderby([new Orderby('value')]);
     expect(queryOptions.toString()).toEqual('$orderby=value');
-    expect(() => queryOptions.orderby(orderby)).toThrowError('orderby is already set');
-    //
-    orderby = [];
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.orderby(orderby)).toThrowError('orderby cannot be empty');
   });
 
   it('test search', () => {
-    let queryOptions: QueryOptions;
-    let search: string | Search;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.search(search)).toThrowError('search cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.search(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    search = 'value';
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).search(search);
+    queryOptions.search(null);
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.search('');
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.search('value');
     expect(queryOptions.toString()).toEqual('$search=' + encodeURIComponent('value'));
     //
-    search = new SearchSimple('value');
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).search(search);
+    queryOptions.search(new SearchSimple('value'));
     expect(queryOptions.toString()).toEqual('$search=' + encodeURIComponent('value'));
-    expect(() => queryOptions.search(search)).toThrowError('search is already set');
     //
-    search = new SearchSimple('null');
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).search(search);
+    queryOptions.search(new SearchSimple('null'));
     expect(queryOptions.toString()).toEqual('$search=' + encodeURIComponent('null'));
   });
 
   it('test skip', () => {
-    let queryOptions: QueryOptions;
-    let skip: number;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.skip(skip)).toThrowError('skip cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.skip(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    skip = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.skip(skip)).toThrowError('skip cannot be null');
+    queryOptions.skip(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    skip = 0;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).skip(skip);
+    queryOptions.skip(0);
     expect(queryOptions.toString()).toEqual('$skip=0');
-    expect(() => queryOptions.skip(skip)).toThrowError('skip is already set');
     //
-    skip = -1;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.skip(skip)).toThrowError('skip cannot be negative');
+    expect(() => queryOptions.skip(-1)).toThrowError('skip cannot be negative');
   });
 
   it('test top', () => {
-    let queryOptions: QueryOptions;
-    let top: number;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.top(top)).toThrowError('top cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.top(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    top = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.top(top)).toThrowError('top cannot be null');
+    queryOptions.top(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    top = 0;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).top(top);
+    queryOptions.top(0);
     expect(queryOptions.toString()).toEqual('$top=0');
-    expect(() => queryOptions.top(top)).toThrowError('top is already set');
     //
-    top = -1;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.top(top)).toThrowError('top cannot be negative');
+    expect(() => queryOptions.top(-1)).toThrowError('top cannot be negative');
   });
 
   it('test count', () => {
-    let queryOptions: QueryOptions;
-    let count: boolean;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.count(count)).toThrowError('count cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.count(undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    count = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.count(count)).toThrowError('count cannot be null');
+    queryOptions.count(null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    count = true;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).count(count);
+    queryOptions.count(true);
     expect(queryOptions.toString()).toEqual('$count=true');
-    expect(() => queryOptions.count(count)).toThrowError('count is already set');
+    //
+    queryOptions.count(false);
+    expect(queryOptions.toString()).toEqual('$count=false');
+  });
+
+  it('test format', () => {
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    queryOptions.format(undefined);
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.format(null);
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.format('');
+    expect(queryOptions.toString()).toEqual('');
+    //
+    queryOptions.format('json');
+    expect(queryOptions.toString()).toEqual('$format=json');
   });
 
   it('test customOption', () => {
-    let queryOptions: QueryOptions;
-    let key: string;
-    let value: string;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.customOption(key, value)).toThrowError('key cannot be undefined');
+    const queryOptions: QueryOptions = new QueryOptions(ODataQuery.SEPARATOR);
+    expect(() => queryOptions.customOption(undefined, undefined)).toThrowError('key cannot be undefined');
     //
-    key = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.customOption(key, value)).toThrowError('key cannot be null');
+    expect(() => queryOptions.customOption(null, null)).toThrowError('key cannot be null');
     //
-    key = 'key';
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.customOption(key, value)).toThrowError('value cannot be undefined');
+    queryOptions.customOption('key', undefined);
+    expect(queryOptions.toString()).toEqual('');
     //
-    value = null;
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR);
-    expect(() => queryOptions.customOption(key, value)).toThrowError('value cannot be null');
+    queryOptions.customOption('key', null);
+    expect(queryOptions.toString()).toEqual('');
     //
-    queryOptions = new QueryOptions(ODataQuery.SEPARATOR).customOption('key', 'value');
+    queryOptions.customOption('key', 'value');
     expect(queryOptions.toString()).toEqual('key=' + encodeURIComponent('value'));
+    //
     queryOptions.customOption('key2', 'value2');
     expect(queryOptions.toString()).toEqual('key=' + encodeURIComponent('value') + '&key2=' + encodeURIComponent('value2'));
   });
