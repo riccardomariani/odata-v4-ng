@@ -1,9 +1,10 @@
+import { CsdlTypeDefinition } from './csdl/csdl-type-definition';
 import { Metadata } from './metadata';
 import { CsdlSchema } from './csdl/csdl-schema';
 import { CsdlEnumType, CsdlEnumMember } from './csdl/csdl-enum-type';
 import { CsdlEntityType, CsdlKey, CsdlPropertyRef, CsdlComplexType } from './csdl/csdl-structured-type';
 import { CsdlProperty, CsdlNavigationProperty, CsdlReferentialConstraint, CsdlOnDelete } from './csdl/csdl-structural-property';
-import { CsdlFunction, CsdlReturnType, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlAction } from './csdl/csdl-function';
+import { CsdlFunction, CsdlReturnType, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlAction } from './csdl/csdl-function-action';
 import { CsdlEntityContainer } from './csdl/csdl-entity-container';
 import { CsdlEntitySet } from './csdl/csdl-entity-set';
 import { CsdlSingleton } from './csdl/csdl-singleton';
@@ -245,6 +246,161 @@ describe('Metadata', () => {
         ]);
     });
 
+    it('test type definitions', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <TypeDefinition Name="name" UnderlyingType="Edm.Int32"/>
+                <TypeDefinition Name="name" UnderlyingType="Edm.Int32" MaxLength="1" Precision="2" Scale="3" Unicode="false" SRID="4">
+                    <Annotation Term="term" Qualifier="qualifier"/>
+                </TypeDefinition>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.typeDefinitions).toEqual([
+            new CsdlTypeDefinition('name', 'Edm.Int32'),
+            new CsdlTypeDefinition('name', 'Edm.Int32', 1, 2, 3, false, '4', [
+                new CsdlAnnotation('term', 'qualifier')
+            ])
+        ]);
+    });
+
+    it('test actions', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <Action Name="name" />
+                <Action Name="name" IsBound="true" EntitySetPath="entitySetPath">
+                    <Parameter Name="name" Type="Edm.String" />
+                    <ReturnType Type="Edm.String" />
+                </Action>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.actions).toEqual([
+            new CsdlAction('name'),
+            new CsdlAction('name', new CsdlReturnType('Edm.String'), true, 'entitySetPath', [
+                new CsdlParameter('name', 'Edm.String')
+            ])
+        ]);
+    });
+
+    it('test functions', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <Function Name="name">
+                    <ReturnType Type="Edm.String" />
+                </Function>
+                <Function Name="name" IsBound="true" EntitySetPath="entitySetPath" IsComposable="false">
+                    <Parameter Name="name" Type="Edm.String" />
+                    <ReturnType Type="Edm.String" />
+                </Function>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.functions).toEqual([
+            new CsdlFunction('name', new CsdlReturnType('Edm.String')),
+            new CsdlFunction('name', new CsdlReturnType('Edm.String'), true, 'entitySetPath', false, [
+                new CsdlParameter('name', 'Edm.String')
+            ])
+        ]);
+    });
+
+    it('test return types', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <Function Name="name">
+                    <ReturnType Type="Edm.String" />
+                </Function>
+                <Function Name="name">
+                    <ReturnType Type="Edm.String" Nullable="true" MaxLength="1" Precision="2" Scale="3" SRID="4" />
+                </Function>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.functions).toEqual([
+            new CsdlFunction('name', new CsdlReturnType('Edm.String')),
+            new CsdlFunction('name', new CsdlReturnType('Edm.String', true, 1, 2, 3, '4'))
+        ]);
+    });
+
+    it('test parameters', () => {
+        const xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <Function Name="name">
+                    <ReturnType Type="Edm.String" />
+                    <Parameter Name="name" Type="Edm.String" />
+                </Function>
+                <Function Name="name">
+                    <ReturnType Type="Edm.String" />
+                    <Parameter Name="name" Type="Edm.String" Nullable="true" MaxLength="1" Precision="2" Scale="3" SRID="4" />
+                </Function>
+                <EntityContainer></EntityContainer>
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        const m: Metadata = new Metadata(xml);
+        const schema: CsdlSchema = m.schemas[0];
+        expect(schema.functions).toEqual([
+            new CsdlFunction('name', new CsdlReturnType('Edm.String'), undefined, undefined, undefined, [
+                new CsdlParameter('name', 'Edm.String')
+            ]),
+            new CsdlFunction('name', new CsdlReturnType('Edm.String'), undefined, undefined, undefined, [
+                new CsdlParameter('name', 'Edm.String', true, 1, 2, 3, '4')
+            ]),
+        ]);
+    });
+
+    it('test entity container', () => {
+        let xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <EntityContainer Name="name" />
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        let m: Metadata = new Metadata(xml);
+        let schema: CsdlSchema = m.schemas[0];
+        expect(schema.entityContainer).toEqual(
+            new CsdlEntityContainer('name')
+        );
+
+        xml = `<?xml version="1.0" encoding="utf-8"?>
+        <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+          <edmx:DataServices>
+            <Schema Namespace="namespace">
+                <EntityContainer Name="name" Extends="extends" />
+            </Schema>
+          </edmx:DataServices>
+        </edmx:Edmx>`;
+        m = new Metadata(xml);
+        schema = m.schemas[0];
+        expect(schema.entityContainer).toEqual(
+            new CsdlEntityContainer('name', 'extends')
+        );
+    });
+
     const metadata: Metadata = new Metadata(XML_EXAMPLE);
     const schemas: CsdlSchema[] = metadata.schemas;
 
@@ -371,7 +527,7 @@ describe('Metadata', () => {
         const schema: CsdlSchema = schemas[0];
         expect(schema.actions).toEqual([
             new CsdlAction('ResetDataSource'),
-            new CsdlAction('ShareTrip', undefined, true, undefined, undefined, [
+            new CsdlAction('ShareTrip', undefined, true, undefined, [
                 new CsdlParameter('person', 'Microsoft.OData.SampleService.Models.TripPin.Person', false),
                 new CsdlParameter('userName', 'Edm.String', false),
                 new CsdlParameter('tripId', 'Edm.Int32', false)
@@ -382,7 +538,7 @@ describe('Metadata', () => {
     it('test entity container', () => {
         const schema: CsdlSchema = schemas[0];
         expect(schema.entityContainer).toEqual(new CsdlEntityContainer(
-            'DefaultContainer',
+            'DefaultContainer', undefined,
             [
                 new CsdlEntitySet('Photos', 'Microsoft.OData.SampleService.Models.TripPin.Photo'),
                 new CsdlEntitySet('People', 'Microsoft.OData.SampleService.Models.TripPin.Person', [

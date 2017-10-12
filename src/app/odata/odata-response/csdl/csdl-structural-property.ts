@@ -1,16 +1,3 @@
-export class CsdlReferentialConstraint {
-    constructor(
-        public property: string,
-        public referencedProperty: string
-    ) { }
-}
-
-export class CsdlOnDelete {
-    constructor(
-        public action: string
-    ) { }
-}
-
 export abstract class CsdlStructuralProperty {
     constructor(
         public name: string,
@@ -47,4 +34,17 @@ export class CsdlNavigationProperty extends CsdlStructuralProperty {
     ) {
         super(name, type, nullable);
     }
+}
+
+export class CsdlReferentialConstraint {
+    constructor(
+        public property: string,
+        public referencedProperty: string
+    ) { }
+}
+
+export class CsdlOnDelete {
+    constructor(
+        public action: string
+    ) { }
 }

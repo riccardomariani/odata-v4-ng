@@ -1,6 +1,7 @@
+import { CsdlTypeDefinition } from './csdl-type-definition';
 import { CsdlEnumType } from './csdl-enum-type';
 import { CsdlEntityType, CsdlComplexType } from './csdl-structured-type';
-import { CsdlFunction, CsdlAction } from './csdl-function';
+import { CsdlFunction, CsdlAction } from './csdl-function-action';
 import { CsdlEntityContainer } from './csdl-entity-container';
 
 export class CsdlSchema {
@@ -13,5 +14,6 @@ export class CsdlSchema {
         public functions?: CsdlFunction[],
         public actions?: CsdlAction[],
         public entityContainer?: CsdlEntityContainer,
+        public typeDefinitions?: CsdlTypeDefinition[]
     ) { }
 }

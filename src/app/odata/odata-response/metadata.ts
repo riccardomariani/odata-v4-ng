@@ -1,8 +1,9 @@
+import { CsdlTypeDefinition } from './csdl/csdl-type-definition';
 import { CsdlSchema } from './csdl/csdl-schema';
 import { Utils } from '../utils/utils';
 import { CsdlEnumType, CsdlEnumMember } from './csdl/csdl-enum-type';
 import { CsdlEntityType, CsdlPropertyRef, CsdlKey, CsdlComplexType } from './csdl/csdl-structured-type';
-import { CsdlFunction, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlReturnType, CsdlAction } from './csdl/csdl-function';
+import { CsdlFunction, CsdlParameter, CsdlFunctionImport, CsdlActionImport, CsdlReturnType, CsdlAction } from './csdl/csdl-function-action';
 import { CsdlProperty, CsdlNavigationProperty, CsdlReferentialConstraint, CsdlOnDelete } from './csdl/csdl-structural-property';
 import { CsdlEntitySet } from './csdl/csdl-entity-set';
 import { CsdlSingleton } from './csdl/csdl-singleton';
@@ -47,6 +48,7 @@ export class Metadata {
     private static readonly TAG_FUNCTION_IMPORT = 'FunctionImport';
     private static readonly TAG_ACTION_IMPORT = 'ActionImport';
     private static readonly TAG_NAVIGATION_PROPERTY_BINDING = 'NavigationPropertyBinding';
+    private static readonly TAG_TYPE_DEFINITION = 'TypeDefinition';
 
     // ATTRIBUTES
     private static readonly ATTRIBUTE_VERSION = 'Version';
@@ -87,6 +89,7 @@ export class Metadata {
     private static readonly ATTRIBUTE_ABSTRACT = 'Abstract';
     private static readonly ATTRIBUTE_UNDERLYING_TYPE = 'UnderlyingType';
     private static readonly ATTRIBUTE_IS_FLAGS = 'IsFlags';
+    private static readonly ATTRIBUTE_EXTENDS = 'Extends';
 
     public readonly version: string;
     public readonly references: CsdlReference[];
@@ -118,7 +121,8 @@ export class Metadata {
                 new Field(Metadata.TAG_ENTITY_TYPE, FieldType.TAG),
                 new Field(Metadata.TAG_FUNCTION, FieldType.TAG),
                 new Field(Metadata.TAG_ACTION, FieldType.TAG),
-                new Field(Metadata.TAG_ENTITY_CONTAINER, FieldType.TAG)
+                new Field(Metadata.TAG_ENTITY_CONTAINER, FieldType.TAG),
+                new Field(Metadata.TAG_TYPE_DEFINITION, FieldType.TAG)
             ]);
         } catch (error) {
             throw new Error('Unable to parse metadata, ' + error);
@@ -186,7 +190,8 @@ export class Metadata {
                         fieldValues[4],
                         fieldValues[5],
                         fieldValues[6],
-                        fieldValues[7]));
+                        fieldValues[7],
+                        fieldValues[8]));
                     break;
                 case Metadata.TAG_ENUM_TYPE:
                     objects.push(new CsdlEnumType(
@@ -265,7 +270,11 @@ export class Metadata {
                     objects.push(new CsdlParameter(
                         fieldValues[0],
                         fieldValues[1],
-                        fieldValues[2]));
+                        fieldValues[2],
+                        fieldValues[3],
+                        fieldValues[4],
+                        fieldValues[5],
+                        fieldValues[6]));
                     break;
                 case Metadata.TAG_ACTION:
                     objects.push(new CsdlAction(
@@ -273,8 +282,7 @@ export class Metadata {
                         fieldValues[1],
                         fieldValues[2],
                         fieldValues[3],
-                        fieldValues[4],
-                        fieldValues[5]));
+                        fieldValues[4]));
                     break;
                 case Metadata.TAG_ENTITY_SET:
                     objects.push(new CsdlEntitySet(
@@ -307,6 +315,17 @@ export class Metadata {
                         fieldValues[0],
                         fieldValues[1]));
                     break;
+                case Metadata.TAG_TYPE_DEFINITION:
+                    objects.push(new CsdlTypeDefinition(
+                        fieldValues[0],
+                        fieldValues[1],
+                        fieldValues[2],
+                        fieldValues[3],
+                        fieldValues[4],
+                        fieldValues[5],
+                        fieldValues[6],
+                        fieldValues[7]));
+                    break;
                 default: throw new Error('Unknwon tag:' + tag);
             }
         }
@@ -334,7 +353,11 @@ export class Metadata {
                 case Metadata.TAG_RETURN_TYPE:
                     object = new CsdlReturnType(
                         fieldValues[0],
-                        fieldValues[1]);
+                        fieldValues[1],
+                        fieldValues[2],
+                        fieldValues[3],
+                        fieldValues[4],
+                        fieldValues[5]);
                     break;
                 case Metadata.TAG_ENTITY_CONTAINER:
                     object = new CsdlEntityContainer(
@@ -342,7 +365,8 @@ export class Metadata {
                         fieldValues[1],
                         fieldValues[2],
                         fieldValues[3],
-                        fieldValues[4]);
+                        fieldValues[4],
+                        fieldValues[5]);
                     break;
                 case Metadata.TAG_ON_DELETE:
                     object = new CsdlOnDelete(
@@ -397,6 +421,7 @@ export class Metadata {
             case Metadata.ATTRIBUTE_ACTION:
             case Metadata.ATTRIBUTE_ENTITY_SET:
             case Metadata.ATTRIBUTE_UNDERLYING_TYPE:
+            case Metadata.ATTRIBUTE_EXTENDS:
                 return this.getAttributeValue(attributes, field.name);
             case Metadata.ATTRIBUTE_NULLABLE:
             case Metadata.ATTRIBUTE_UNICODE:
@@ -521,12 +546,20 @@ export class Metadata {
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_MAX_LENGTH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_PRECISION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SCALE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_RETURN_TYPE:
                 return this.getObject(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_MAX_LENGTH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_PRECISION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SCALE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_ACTION:
                 return this.getObjects(element, field.name, [
@@ -534,12 +567,12 @@ export class Metadata {
                     new Field(Metadata.TAG_RETURN_TYPE, FieldType.TAG),
                     new Field(Metadata.ATTRIBUTE_IS_BOUND, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_ENTITY_SET_PATH, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_IS_COMPOSABLE, FieldType.ATTRIBUTE),
                     new Field(Metadata.TAG_PARAMETER, FieldType.TAG)
                 ]);
             case Metadata.TAG_ENTITY_CONTAINER:
                 return this.getObject(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_EXTENDS, FieldType.ATTRIBUTE),
                     new Field(Metadata.TAG_ENTITY_SET, FieldType.TAG),
                     new Field(Metadata.TAG_SINGLETON, FieldType.TAG),
                     new Field(Metadata.TAG_FUNCTION_IMPORT, FieldType.TAG),
@@ -575,6 +608,17 @@ export class Metadata {
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_PATH, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_TARGET, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_TYPE_DEFINITION:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_UNDERLYING_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_MAX_LENGTH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_PRECISION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SCALE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_UNICODE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_ANNOTATION, FieldType.TAG)
                 ]);
             default: throw new Error('Unknwon tag:' + field.name);
         }

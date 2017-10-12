@@ -1,5 +1,16 @@
 import { CsdlAnnotable, CsdlAnnotation } from './csdl-annotation';
 
+export class CsdlReference extends CsdlAnnotable {
+    constructor(
+        public uri: string,
+        public includes?: CsdlInclude[],
+        public includeAnnotations?: CsdlIncludeAnnotations[],
+        annotations?: CsdlAnnotation[]
+    ) {
+        super(annotations);
+    }
+}
+
 export class CsdlInclude {
     constructor(
         public namespace: string,
@@ -13,15 +24,4 @@ export class CsdlIncludeAnnotations {
         public qualifier?: string,
         public targetNamespace?: string
     ) { }
-}
-
-export class CsdlReference extends CsdlAnnotable {
-    constructor(
-        public uri: string,
-        public includes?: CsdlInclude[],
-        public includeAnnotations?: CsdlIncludeAnnotations[],
-        annotations?: CsdlAnnotation[]
-    ) {
-        super(annotations);
-    }
 }
