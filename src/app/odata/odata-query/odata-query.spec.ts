@@ -167,7 +167,7 @@ describe('OdataQuery', () => {
   it('should create count request', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
-      .count();
+      .countSegment();
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People/$count');
   });
@@ -175,7 +175,7 @@ describe('OdataQuery', () => {
   it('should create count=true request', () => {
     const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT)
       .entitySet(ENTITY_SET)
-      .count(true);
+      .countOption(true);
     expect(odataQuery.toString()).toEqual(
       SERVICE_ROOT + '/People?$count=true');
   });

@@ -153,17 +153,13 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  count(count?: boolean): ODataQuery {
-    if (Utils.isNullOrUndefined(count)) {
-      Utils.requireNullOrUndefined(this.getSegment(ODataQuery.COUNT), ODataQuery.COUNT);
-      if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
-        throw new Error('count can only be appended to entitySet or navigationProperty');
-      }
-      this.queryString = Utils.appendSegment(this.queryString, ODataQuery.$COUNT);
-      this.addSegment(ODataQuery.COUNT);
-    } else {
-      this.queryOptions.count(count);
+  countSegment(): ODataQuery {
+    Utils.requireNullOrUndefined(this.getSegment(ODataQuery.COUNT), ODataQuery.COUNT);
+    if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
+      throw new Error('count can only be appended to entitySet or navigationProperty');
     }
+    this.queryString = Utils.appendSegment(this.queryString, ODataQuery.$COUNT);
+    this.addSegment(ODataQuery.COUNT);
     return this;
   }
 
@@ -221,6 +217,11 @@ export class ODataQuery extends ODataQueryAbstract {
 
   top(top: number): ODataQuery {
     this.queryOptions.top(top);
+    return this;
+  }
+
+  countOption(count: boolean): ODataQuery {
+    this.queryOptions.count(count);
     return this;
   }
 

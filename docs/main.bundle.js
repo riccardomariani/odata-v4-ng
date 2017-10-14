@@ -558,8 +558,8 @@ var BasicReadComponent = (function (_super) {
         example.query = __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */] + '/People?$count';
         example.odataQuery = new __WEBPACK_IMPORTED_MODULE_0__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, __WEBPACK_IMPORTED_MODULE_3__example_example_data__["b" /* SERVICE_ROOT */])
             .entitySet('People')
-            .count();
-        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .count();\n" + EXECUTE_GET;
+            .countSegment();
+        example.code = "example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)\n    .entitySet('People')\n    .countSegment();\n" + EXECUTE_GET;
         example.func = this.executeGet;
         // PROJECTED ENTITIES
         example = new __WEBPACK_IMPORTED_MODULE_3__example_example_data__["a" /* ExampleData */]();
@@ -1374,18 +1374,13 @@ var ODataQuery = (function (_super) {
         this.addSegment(ODataQuery.VALUE);
         return this;
     };
-    ODataQuery.prototype.count = function (count) {
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(count)) {
-            __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.COUNT), ODataQuery.COUNT);
-            if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
-                throw new Error('count can only be appended to entitySet or navigationProperty');
-            }
-            this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$COUNT);
-            this.addSegment(ODataQuery.COUNT);
+    ODataQuery.prototype.countSegment = function () {
+        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.COUNT), ODataQuery.COUNT);
+        if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
+            throw new Error('count can only be appended to entitySet or navigationProperty');
         }
-        else {
-            this.queryOptions.count(count);
-        }
+        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$COUNT);
+        this.addSegment(ODataQuery.COUNT);
         return this;
     };
     ODataQuery.prototype.functionCall = function (functionCall) {
@@ -1432,6 +1427,10 @@ var ODataQuery = (function (_super) {
     };
     ODataQuery.prototype.top = function (top) {
         this.queryOptions.top(top);
+        return this;
+    };
+    ODataQuery.prototype.countOption = function (count) {
+        this.queryOptions.count(count);
         return this;
     };
     ODataQuery.prototype.customOption = function (key, value) {

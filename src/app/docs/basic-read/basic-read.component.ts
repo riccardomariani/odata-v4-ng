@@ -209,10 +209,10 @@ ${EXECUTE_GET}`;
     example.query = SERVICE_ROOT + '/People?$count';
     example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
       .entitySet('People')
-      .count();
+      .countSegment();
     example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)
     .entitySet('People')
-    .count();
+    .countSegment();
 ${EXECUTE_GET}`;
     example.func = this.executeGet;
     // PROJECTED ENTITIES
