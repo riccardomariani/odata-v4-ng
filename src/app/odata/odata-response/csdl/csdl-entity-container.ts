@@ -7,7 +7,7 @@ export class CsdlEntityContainer {
         public name: string,
         public extend?: string,
         public entitySets?: CsdlEntitySet[],
-        public singleton?: CsdlSingleton[],
+        public singletons?: CsdlSingleton[],
         public functionImports?: CsdlFunctionImport[],
         public actionImports?: CsdlActionImport[]
     ) { }

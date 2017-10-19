@@ -9,7 +9,7 @@ import { CsdlEntitySet } from './csdl/csdl-entity-set';
 import { CsdlSingleton } from './csdl/csdl-singleton';
 import { CsdlEntityContainer } from './csdl/csdl-entity-container';
 import { CsdlReference, CsdlInclude, CsdlIncludeAnnotations } from './csdl/csdl-reference';
-import { CsdlAnnotation } from './csdl/csdl-annotation';
+import { CsdlAnnotation, CsdlTerm, CsdlAnnotations } from './csdl/csdl-annotation';
 import { CsdlNavigationPropertyBinding } from './csdl/csdl-navigation-property-binding';
 
 export enum FieldType {
@@ -26,6 +26,8 @@ export class Metadata {
     private static readonly TAG_REFERENCE = 'edmx:Reference';
     private static readonly TAG_INCLUDE = 'edmx:Include';
     private static readonly TAG_INCLUDE_ANNOTATIONS = 'edmx:IncludeAnnotations';
+    private static readonly TAG_TERM = 'Term';
+    private static readonly TAG_ANNOTATIONS = 'Annotations';
     private static readonly TAG_ANNOTATION = 'Annotation';
     private static readonly TAG_SCHEMA = 'Schema';
     private static readonly TAG_ENUM_TYPE = 'EnumType';
@@ -90,6 +92,8 @@ export class Metadata {
     private static readonly ATTRIBUTE_UNDERLYING_TYPE = 'UnderlyingType';
     private static readonly ATTRIBUTE_IS_FLAGS = 'IsFlags';
     private static readonly ATTRIBUTE_EXTENDS = 'Extends';
+    private static readonly ATTRIBUTE_BASE_TERM = 'BaseTerm';
+    private static readonly ATTRIBUTE_APPLIES_TO = 'AppliesTo';
 
     public readonly version: string;
     public readonly references: CsdlReference[];
@@ -113,7 +117,8 @@ export class Metadata {
                 new Field(Metadata.TAG_ANNOTATION, FieldType.TAG)
             ]);
 
-            this.schemas = this.getObjects(document.documentElement, Metadata.TAG_SCHEMA, [
+            const dataServices: Element = document.documentElement.getElementsByTagName(Metadata.TAG_DATA_SERVICES)[0];
+            this.schemas = this.getObjects(dataServices, Metadata.TAG_SCHEMA, [
                 new Field(Metadata.ATTRIBUTE_NAMESPACE, FieldType.ATTRIBUTE),
                 new Field(Metadata.ATTRIBUTE_ALIAS, FieldType.ATTRIBUTE),
                 new Field(Metadata.TAG_ENUM_TYPE, FieldType.TAG),
@@ -122,7 +127,10 @@ export class Metadata {
                 new Field(Metadata.TAG_FUNCTION, FieldType.TAG),
                 new Field(Metadata.TAG_ACTION, FieldType.TAG),
                 new Field(Metadata.TAG_ENTITY_CONTAINER, FieldType.TAG),
-                new Field(Metadata.TAG_TYPE_DEFINITION, FieldType.TAG)
+                new Field(Metadata.TAG_TYPE_DEFINITION, FieldType.TAG),
+                new Field(Metadata.TAG_TERM, FieldType.TAG),
+                new Field(Metadata.TAG_ANNOTATIONS, FieldType.TAG),
+                new Field(Metadata.TAG_ANNOTATION, FieldType.TAG)
             ]);
         } catch (error) {
             throw new Error('Unable to parse metadata, ' + error);
@@ -148,9 +156,14 @@ export class Metadata {
     protected getObjects(parentElement: Element, tag: string, fieldNames: Field[]): any[] {
         let objects: any[];
 
-        const elements: NodeListOf<Element> = parentElement.getElementsByTagName(tag);
-        for (let index = 0; index < elements.length; index++) {
-            const element: Element = elements.item(index);
+        const children: HTMLCollection = parentElement.children;
+        for (let index = 0; index < children.length; index++) {
+            const element: Element = children.item(index);
+
+            if (element.nodeName !== tag) {
+                continue;
+            }
+
             const attributes: NamedNodeMap = element.attributes;
             const fieldValues: any[] = this.getFieldValues(fieldNames, attributes, element);
             if (Utils.isNullOrUndefined(objects)) {
@@ -175,6 +188,27 @@ export class Metadata {
                         fieldValues[1],
                         fieldValues[2]));
                     break;
+                case Metadata.TAG_TERM:
+                    objects.push(new CsdlTerm(
+                        fieldValues[0],
+                        fieldValues[1],
+                        fieldValues[2],
+                        fieldValues[3],
+                        fieldValues[4],
+                        fieldValues[5],
+                        fieldValues[6],
+                        fieldValues[7],
+                        fieldValues[8],
+                        fieldValues[9]
+                    ));
+                    break;
+                case Metadata.TAG_ANNOTATIONS:
+                    objects.push(new CsdlAnnotations(
+                        fieldValues[0],
+                        fieldValues[1],
+                        fieldValues[2]
+                    ));
+                    break;
                 case Metadata.TAG_ANNOTATION:
                     objects.push(new CsdlAnnotation(
                         fieldValues[0],
@@ -191,7 +225,10 @@ export class Metadata {
                         fieldValues[5],
                         fieldValues[6],
                         fieldValues[7],
-                        fieldValues[8]));
+                        fieldValues[8],
+                        fieldValues[9],
+                        fieldValues[10],
+                        fieldValues[11]));
                     break;
                 case Metadata.TAG_ENUM_TYPE:
                     objects.push(new CsdlEnumType(
@@ -288,7 +325,8 @@ export class Metadata {
                     objects.push(new CsdlEntitySet(
                         fieldValues[0],
                         fieldValues[1],
-                        fieldValues[2]));
+                        fieldValues[2],
+                        fieldValues[3]));
                     break;
                 case Metadata.TAG_SINGLETON:
                     objects.push(new CsdlSingleton(
@@ -307,8 +345,7 @@ export class Metadata {
                     objects.push(new CsdlActionImport(
                         fieldValues[0],
                         fieldValues[1],
-                        fieldValues[2],
-                        fieldValues[3]));
+                        fieldValues[2]));
                     break;
                 case Metadata.TAG_NAVIGATION_PROPERTY_BINDING:
                     objects.push(new CsdlNavigationPropertyBinding(
@@ -336,14 +373,18 @@ export class Metadata {
     protected getObject(parentElement: Element, tag: string, fieldNames: Field[]): any {
         let object: any;
 
-        const elements: NodeListOf<Element> = parentElement.getElementsByTagName(tag);
-
-        if (Utils.isNotNullNorUndefined(elements) && elements.length > 1) {
-            throw new Error('Expected one ' + tag);
+        const children: HTMLCollection = parentElement.children;
+        let element: Element;
+        for (let index = 0; index < children.length; index++) {
+            if (children.item(index).nodeName === tag) {
+                if (Utils.isNotNullNorUndefined(element)) {
+                    throw new Error('Expected one ' + tag);
+                }
+                element = children.item(index);
+            }
         }
 
-        if (Utils.isNotNullNorUndefined(elements) && elements.length === 1) {
-            const element: Element = elements.item(0);
+        if (Utils.isNotNullNorUndefined(element)) {
             const attributes: NamedNodeMap = element.attributes;
             const fieldValues: any[] = this.getFieldValues(fieldNames, attributes, element);
             switch (tag) {
@@ -422,6 +463,8 @@ export class Metadata {
             case Metadata.ATTRIBUTE_ENTITY_SET:
             case Metadata.ATTRIBUTE_UNDERLYING_TYPE:
             case Metadata.ATTRIBUTE_EXTENDS:
+            case Metadata.ATTRIBUTE_BASE_TERM:
+            case Metadata.ATTRIBUTE_APPLIES_TO:
                 return this.getAttributeValue(attributes, field.name);
             case Metadata.ATTRIBUTE_NULLABLE:
             case Metadata.ATTRIBUTE_UNICODE:
@@ -455,6 +498,25 @@ export class Metadata {
                     new Field(Metadata.ATTRIBUTE_TERM_NAMESPACE, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_QUALIFIER, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_TARGET_NAMESPACE, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_TERM:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_TYPE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_BASE_TERM, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_DEFAULT_VALUE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_APPLIES_TO, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_NULLABLE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_MAX_LENGTH, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_PRECISION, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SCALE, FieldType.ATTRIBUTE),
+                    new Field(Metadata.ATTRIBUTE_SRID, FieldType.ATTRIBUTE)
+                ]);
+            case Metadata.TAG_ANNOTATIONS:
+                return this.getObjects(element, field.name, [
+                    new Field(Metadata.ATTRIBUTE_TARGET, FieldType.ATTRIBUTE),
+                    new Field(Metadata.TAG_ANNOTATION, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_QUALIFIER, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_ANNOTATION:
                 return this.getObjects(element, field.name, [
@@ -582,7 +644,8 @@ export class Metadata {
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_ENTITY_TYPE, FieldType.ATTRIBUTE),
-                    new Field(Metadata.TAG_NAVIGATION_PROPERTY_BINDING, FieldType.TAG)
+                    new Field(Metadata.TAG_NAVIGATION_PROPERTY_BINDING, FieldType.TAG),
+                    new Field(Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_SINGLETON:
                 return this.getObjects(element, field.name, [
@@ -601,8 +664,7 @@ export class Metadata {
                 return this.getObjects(element, field.name, [
                     new Field(Metadata.ATTRIBUTE_NAME, FieldType.ATTRIBUTE),
                     new Field(Metadata.ATTRIBUTE_ACTION, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_ENTITY_SET, FieldType.ATTRIBUTE),
-                    new Field(Metadata.ATTRIBUTE_INCLUDE_IN_SERVICE_DOCUMENT, FieldType.ATTRIBUTE)
+                    new Field(Metadata.ATTRIBUTE_ENTITY_SET, FieldType.ATTRIBUTE)
                 ]);
             case Metadata.TAG_NAVIGATION_PROPERTY_BINDING:
                 return this.getObjects(element, field.name, [

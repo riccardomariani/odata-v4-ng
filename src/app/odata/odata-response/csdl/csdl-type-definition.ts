@@ -9,7 +9,7 @@ export class CsdlTypeDefinition extends CsdlAnnotable {
         public scale?: number,
         public unicode?: boolean,
         public srid?: string,
-        annotations?: CsdlAnnotation[]) {
-        super(annotations);
+        annotationList?: CsdlAnnotation[]) {
+        super(annotationList);
     }
 }

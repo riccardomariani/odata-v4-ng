@@ -4,7 +4,8 @@ export class CsdlEntitySet {
     constructor(
         public name: string,
         public entityType: string,
-        public navigationPropertyBinding?: CsdlNavigationPropertyBinding[]
+        public navigationPropertyBinding?: CsdlNavigationPropertyBinding[],
+        public includeInServiceDocument?: boolean
     ) {
 
     }

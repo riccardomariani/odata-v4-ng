@@ -5,9 +5,9 @@ export class CsdlReference extends CsdlAnnotable {
         public uri: string,
         public includes?: CsdlInclude[],
         public includeAnnotations?: CsdlIncludeAnnotations[],
-        annotations?: CsdlAnnotation[]
+        annotationList?: CsdlAnnotation[]
     ) {
-        super(annotations);
+        super(annotationList);
     }
 }
 

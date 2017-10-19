@@ -32,8 +32,7 @@ export class CsdlActionImport {
     constructor(
         public name: string,
         public action: string,
-        public entitySet?: string,
-        public IncludeInServiceDocument?: boolean
+        public entitySet?: string
     ) { }
 }
 
