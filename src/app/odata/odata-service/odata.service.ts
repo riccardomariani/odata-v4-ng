@@ -19,39 +19,34 @@ export class ODataService {
   get(odataQuery: ODataQuery, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     return this.http.get(url, requestOptionsArgs)
-      .map(response => new ODataResponse(response))
-      .catch(this.handleError);
+      .map(response => new ODataResponse(response));
   }
 
   post(odataQuery: ODataQueryAbstract, body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     return this.http.post(url, body, requestOptionsArgs)
-      .map(response => new ODataResponse(response))
-      .catch(this.handleError);
+      .map(response => new ODataResponse(response));
   }
 
   patch(odataQuery: ODataQuery, body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
     return this.http.patch(url, body, args)
-      .map(response => new ODataResponse(response))
-      .catch(this.handleError);
+      .map(response => new ODataResponse(response));
   }
 
   put(odataQuery: ODataQuery, body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
     return this.http.put(url, body, args)
-      .map(response => new ODataResponse(response))
-      .catch(this.handleError);
+      .map(response => new ODataResponse(response));
   }
 
   delete(odataQuery: ODataQuery, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
     return this.http.delete(url, args)
-      .map(response => new ODataResponse(response))
-      .catch(this.handleError);
+      .map(response => new ODataResponse(response));
   }
 
   protected mergeETag(args: RequestOptionsArgs, etag: string): RequestOptionsArgs {
@@ -94,19 +89,5 @@ export class ODataService {
     args.responseType = args2.responseType;
 
     return args;
-  }
-
-  protected handleError(error: Response | any): ErrorObservable {
-    let errMsg: string;
-
-    if (error instanceof Response) {
-      const body = error.json() || '';
-      const err = body.error || JSON.stringify(body, null, 4);
-      errMsg = `${error.status} - ${error.statusText || ''} - ${JSON.stringify(err, null, 4)}`;
-    } else {
-      errMsg = error.message ? error.message : error.toString();
-    }
-
-    return Observable.throw(errMsg);
   }
 }

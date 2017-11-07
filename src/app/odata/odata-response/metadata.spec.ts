@@ -28,8 +28,14 @@ describe('Metadata', () => {
 
         xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <edmx:Edmx xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx" Version="4.0">
+        <edmx:DataServices>
+        <Schema>
+            <EntityContainer></EntityContainer>
+        </Schema>
+      </edmx:DataServices>
         </edmx:Edmx>`;
-        expect(metadata.version).toEqual('4.0');
+        const m: Metadata = new Metadata(xml);
+        expect(m.version).toEqual('4.0');
     });
 
     it('test references', () => {

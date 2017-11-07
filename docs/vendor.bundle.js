@@ -371,6 +371,9 @@ var AutoComplete = (function () {
         if (!this.inputKeyDown) {
             return;
         }
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+        }
         var value = event.target.value;
         if (!this.multiple) {
             this.onModelChange(value);
@@ -380,10 +383,6 @@ var AutoComplete = (function () {
             this.onClear.emit(event);
         }
         if (value.length >= this.minLength) {
-            //Cancel the search request if user types within the timeout
-            if (this.timeout) {
-                clearTimeout(this.timeout);
-            }
             this.timeout = setTimeout(function () {
                 _this.search(event, value);
             }, this.delay);
@@ -433,6 +432,9 @@ var AutoComplete = (function () {
             var hasFocus = this.multiple ? document.activeElement == this.multiInputEL.nativeElement : document.activeElement == this.inputEL.nativeElement;
             if (!this.panelVisible && hasFocus) {
                 this.panelVisible = true;
+                if (this.appendTo) {
+                    this.panelEL.nativeElement.style.minWidth = this.domHandler.getWidth(this.el.nativeElement.children[0]) + 'px';
+                }
                 this.panelEL.nativeElement.style.zIndex = ++domhandler_1.DomHandler.zindex;
                 this.domHandler.fadeIn(this.panelEL.nativeElement, 200);
                 this.bindDocumentClickListener();
@@ -451,7 +453,6 @@ var AutoComplete = (function () {
     };
     AutoComplete.prototype.handleDropdownClick = function (event) {
         this.focusInput();
-        this.dropdownClick = true;
         var queryValue = this.multiple ? this.multiInputEL.nativeElement.value : this.inputEL.nativeElement.value;
         if (this.dropdownMode === 'blank')
             this.search(event, '');
@@ -555,15 +556,16 @@ var AutoComplete = (function () {
         this.focus = false;
         this.onModelTouched();
         this.onBlur.emit(event);
-        if (this.forceSelection) {
+        if (this.forceSelection && this.suggestions) {
             var valid = false;
-            var inputValue = event.target.value.toLowerCase().trim();
+            var inputValue = event.target.value.trim();
             if (this.suggestions) {
                 for (var _i = 0, _a = this.suggestions; _i < _a.length; _i++) {
                     var suggestion = _a[_i];
                     var itemValue = this.field ? this.objectUtils.resolveFieldData(suggestion, this.field) : suggestion;
-                    if (itemValue && inputValue === itemValue.toLowerCase()) {
+                    if (itemValue && inputValue === itemValue) {
                         valid = true;
+                        this.selectItem(suggestion);
                         break;
                     }
                 }
@@ -608,7 +610,8 @@ var AutoComplete = (function () {
         if (this.multiple)
             this.filled = (this.value && this.value.length) || (this.multiInputEL && this.multiInputEL.nativeElement && this.multiInputEL.nativeElement.value != '');
         else
-            this.filled = this.inputFieldValue && this.inputFieldValue != '';
+            this.filled = (this.inputFieldValue && this.inputFieldValue != '') || (this.inputEL && this.inputEL.nativeElement && this.inputEL.nativeElement.value != '');
+        ;
     };
     AutoComplete.prototype.updateInputField = function () {
         var formattedValue = this.value ? (this.field ? this.objectUtils.resolveFieldData(this.value, this.field) || '' : this.value) : '';
@@ -625,14 +628,17 @@ var AutoComplete = (function () {
                 if (event.which === 3) {
                     return;
                 }
-                if (!_this.inputClick && !_this.dropdownClick) {
+                if (!_this.inputClick && !_this.isDropdownClick(event)) {
                     _this.hide();
                 }
                 _this.inputClick = false;
-                _this.dropdownClick = false;
                 _this.cd.markForCheck();
             });
         }
+    };
+    AutoComplete.prototype.isDropdownClick = function (event) {
+        var target = event.target;
+        return this.domHandler.hasClass(target, 'ui-autocomplete-dropdown') || this.domHandler.hasClass(target.parentNode, 'ui-autocomplete-dropdown');
     };
     AutoComplete.prototype.unbindDocumentClickListener = function () {
         if (this.documentClickListener) {
@@ -861,6 +867,8 @@ var BlockUI = (function () {
     function BlockUI(el, domHandler) {
         this.el = el;
         this.domHandler = domHandler;
+        this.autoZIndex = true;
+        this.baseZIndex = 0;
     }
     Object.defineProperty(BlockUI.prototype, "blocked", {
         get: function () {
@@ -893,7 +901,9 @@ var BlockUI = (function () {
         else {
             document.body.appendChild(this.mask.nativeElement);
         }
-        this.mask.nativeElement.style.zIndex = String(++domhandler_1.DomHandler.zindex);
+        if (this.autoZIndex) {
+            this.mask.nativeElement.style.zIndex = String(this.baseZIndex + (++domhandler_1.DomHandler.zindex));
+        }
     };
     BlockUI.prototype.unblock = function () {
         this.el.nativeElement.appendChild(this.mask.nativeElement);
@@ -907,6 +917,14 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", Object)
 ], BlockUI.prototype, "target", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], BlockUI.prototype, "autoZIndex", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], BlockUI.prototype, "baseZIndex", void 0);
 __decorate([
     core_1.ViewChild('mask'),
     __metadata("design:type", core_1.ElementRef)
@@ -1004,7 +1022,7 @@ __decorate([
 Breadcrumb = __decorate([
     core_1.Component({
         selector: 'p-breadcrumb',
-        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"'ui-breadcrumb ui-widget ui-widget-header ui-helper-clearfix ui-corner-all'\">\n            <ul>\n                <li class=\"ui-breadcrumb-home fa fa-home\" *ngIf=\"!home\"></li>\n                <li class=\"ui-breadcrumb-home\" *ngIf=\"home\">\n                    <a *ngIf=\"!home.routerLink\" [href]=\"home.url||'#'\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, home)\" \n                        [ngClass]=\"{'ui-state-disabled':home.disabled}\" [attr.target]=\"home.target\" [attr.title]=\"home.title\">\n                        <span class=\"fa fa-home\"></span>\n                    </a>\n                    <a *ngIf=\"home.routerLink\" [routerLink]=\"home.routerLink\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"home.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, home)\" \n                        [ngClass]=\"{'ui-state-disabled':home.disabled}\" [attr.target]=\"home.target\" [attr.title]=\"home.title\">\n                        <span class=\"fa fa-home\"></span>\n                    </a>\n                </li>\n                <li class=\"ui-breadcrumb-chevron fa fa-chevron-right\" *ngIf=\"model\"></li>\n                <ng-template ngFor let-item let-end=\"last\" [ngForOf]=\"model\">\n                    <li role=\"menuitem\">\n                        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item)\" \n                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item)\" \n                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                    </li>\n                    <li class=\"ui-breadcrumb-chevron fa fa-chevron-right\" *ngIf=\"!end\"></li>\n                </ng-template>\n            </ul>\n        </div>\n    "
+        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"'ui-breadcrumb ui-widget ui-widget-header ui-helper-clearfix ui-corner-all'\">\n            <ul>\n                <li class=\"ui-breadcrumb-home\" *ngIf=\"home\">\n                    <a *ngIf=\"!home.routerLink\" [href]=\"home.url||'#'\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, home)\" \n                        [ngClass]=\"{'ui-state-disabled':home.disabled}\" [attr.target]=\"home.target\" [attr.title]=\"home.title\">\n                        <span [ngClass]=\"home.icon||'fa fa-home'\"></span>\n                    </a>\n                    <a *ngIf=\"home.routerLink\" [routerLink]=\"home.routerLink\" [queryParams]=\"home.queryParams\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"home.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, home)\" \n                        [ngClass]=\"{'ui-state-disabled':home.disabled}\" [attr.target]=\"home.target\" [attr.title]=\"home.title\">\n                        <span class=\"fa fa-home\"></span>\n                    </a>\n                </li>\n                <li class=\"ui-breadcrumb-chevron fa fa-chevron-right\" *ngIf=\"model&&home\"></li>\n                <ng-template ngFor let-item let-end=\"last\" [ngForOf]=\"model\">\n                    <li role=\"menuitem\">\n                        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item)\" \n                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item)\" \n                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                    </li>\n                    <li class=\"ui-breadcrumb-chevron fa fa-chevron-right\" *ngIf=\"!end\"></li>\n                </ng-template>\n            </ul>\n        </div>\n    "
     })
 ], Breadcrumb);
 exports.Breadcrumb = Breadcrumb;
@@ -1209,6 +1227,8 @@ var Calendar = (function () {
         this.selectionMode = 'single';
         this.todayButtonStyleClass = 'ui-button-secondary';
         this.clearButtonStyleClass = 'ui-button-secondary';
+        this.autoZIndex = true;
+        this.baseZIndex = 0;
         this.onFocus = new core_1.EventEmitter();
         this.onBlur = new core_1.EventEmitter();
         this.onClose = new core_1.EventEmitter();
@@ -1216,6 +1236,7 @@ var Calendar = (function () {
         this.onInput = new core_1.EventEmitter();
         this.onTodayClick = new core_1.EventEmitter();
         this.onClearClick = new core_1.EventEmitter();
+        this.onMonthChange = new core_1.EventEmitter();
         this._locale = {
             firstDayOfWeek: 0,
             dayNames: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
@@ -1434,6 +1455,7 @@ var Calendar = (function () {
         else {
             this.currentMonth--;
         }
+        this.onMonthChange.emit({ month: this.currentMonth + 1, year: this.currentYear });
         this.createMonth(this.currentMonth, this.currentYear);
         event.preventDefault();
     };
@@ -1452,6 +1474,7 @@ var Calendar = (function () {
         else {
             this.currentMonth++;
         }
+        this.onMonthChange.emit({ month: this.currentMonth + 1, year: this.currentYear });
         this.createMonth(this.currentMonth, this.currentYear);
         event.preventDefault();
     };
@@ -1481,7 +1504,7 @@ var Calendar = (function () {
                 }
             }
         }
-        if (this.isSingleSelection()) {
+        if (!this.showTime && this.isSingleSelection()) {
             this.overlayVisible = false;
         }
         this.updateInputfield();
@@ -1554,6 +1577,12 @@ var Calendar = (function () {
             date.setMinutes(this.currentMinute);
             date.setSeconds(this.currentSecond);
         }
+        if (this.minDate && this.minDate > date) {
+            date = this.minDate;
+        }
+        if (this.maxDate && this.maxDate < date) {
+            date = this.maxDate;
+        }
         if (this.isSingleSelection()) {
             this.updateModel(date);
         }
@@ -1564,7 +1593,7 @@ var Calendar = (function () {
             if (this.value && this.value.length) {
                 var startDate = this.value[0];
                 var endDate = this.value[1];
-                if (!endDate && date.getTime() > startDate.getTime()) {
+                if (!endDate && date.getTime() >= startDate.getTime()) {
                     endDate = date;
                 }
                 else {
@@ -1661,13 +1690,12 @@ var Calendar = (function () {
             return false;
     };
     Calendar.prototype.isDateBetween = function (start, end, dateMeta) {
+        var between = false;
         if (start && end) {
-            return start.getDate() < dateMeta.day && start.getMonth() <= dateMeta.month && start.getFullYear() <= dateMeta.year &&
-                end.getDate() > dateMeta.day && end.getMonth() >= dateMeta.month && end.getFullYear() >= dateMeta.year;
+            var date = new Date(dateMeta.year, dateMeta.month, dateMeta.day);
+            return start.getTime() <= date.getTime() && end.getTime() >= date.getTime();
         }
-        else {
-            return false;
-        }
+        return between;
     };
     Calendar.prototype.isSingleSelection = function () {
         return this.selectionMode === 'single';
@@ -1781,52 +1809,114 @@ var Calendar = (function () {
     };
     Calendar.prototype.incrementHour = function (event) {
         var newHour = this.currentHour + this.stepHour;
-        if (this.hourFormat == '24')
-            this.currentHour = (newHour >= 24) ? (newHour - 24) : newHour;
-        else if (this.hourFormat == '12')
-            this.currentHour = (newHour >= 13) ? (newHour - 12) : newHour;
-        this.updateTime();
+        if (this.validateHour(newHour)) {
+            if (this.hourFormat == '24')
+                this.currentHour = (newHour >= 24) ? (newHour - 24) : newHour;
+            else if (this.hourFormat == '12')
+                this.currentHour = (newHour >= 13) ? (newHour - 12) : newHour;
+            this.updateTime();
+        }
         event.preventDefault();
     };
     Calendar.prototype.decrementHour = function (event) {
         var newHour = this.currentHour - this.stepHour;
-        if (this.hourFormat == '24')
-            this.currentHour = (newHour < 0) ? (24 + newHour) : newHour;
-        else if (this.hourFormat == '12')
-            this.currentHour = (newHour <= 0) ? (12 + newHour) : newHour;
-        this.updateTime();
+        if (this.validateHour(newHour)) {
+            if (this.hourFormat == '24')
+                this.currentHour = (newHour < 0) ? (24 + newHour) : newHour;
+            else if (this.hourFormat == '12')
+                this.currentHour = (newHour <= 0) ? (12 + newHour) : newHour;
+            this.updateTime();
+        }
         event.preventDefault();
+    };
+    Calendar.prototype.validateHour = function (hour) {
+        var valid = true;
+        var valueDateString = this.value ? this.value.toDateString() : null;
+        if (this.minDate && valueDateString && this.minDate.toDateString() === valueDateString) {
+            if (this.minDate.getHours() > hour) {
+                valid = false;
+            }
+        }
+        if (this.maxDate && valueDateString && this.maxDate.toDateString() === valueDateString) {
+            if (this.maxDate.getHours() < hour) {
+                valid = false;
+            }
+        }
+        return valid;
     };
     Calendar.prototype.incrementMinute = function (event) {
         var newMinute = this.currentMinute + this.stepMinute;
-        this.currentMinute = (newMinute > 59) ? newMinute - 60 : newMinute;
-        this.updateTime();
+        if (this.validateMinute(newMinute)) {
+            this.currentMinute = (newMinute > 59) ? newMinute - 60 : newMinute;
+            this.updateTime();
+        }
         event.preventDefault();
     };
     Calendar.prototype.decrementMinute = function (event) {
         var newMinute = this.currentMinute - this.stepMinute;
-        this.currentMinute = (newMinute < 0) ? 60 + newMinute : newMinute;
-        this.updateTime();
+        if (this.validateMinute(newMinute)) {
+            this.currentMinute = (newMinute < 0) ? 60 + newMinute : newMinute;
+            this.updateTime();
+        }
         event.preventDefault();
+    };
+    Calendar.prototype.validateMinute = function (minute) {
+        var valid = true;
+        var valueDateString = this.value ? this.value.toDateString() : null;
+        if (this.minDate && valueDateString && this.minDate.toDateString() === valueDateString) {
+            if (this.minDate.getMinutes() > minute) {
+                valid = false;
+            }
+        }
+        if (this.maxDate && valueDateString && this.maxDate.toDateString() === valueDateString) {
+            if (this.maxDate.getMinutes() < minute) {
+                valid = false;
+            }
+        }
+        return valid;
     };
     Calendar.prototype.incrementSecond = function (event) {
         var newSecond = this.currentSecond + this.stepSecond;
-        this.currentSecond = (newSecond > 59) ? newSecond - 60 : newSecond;
-        this.updateTime();
+        if (this.validateSecond(newSecond)) {
+            this.currentSecond = (newSecond > 59) ? newSecond - 60 : newSecond;
+            this.updateTime();
+        }
         event.preventDefault();
     };
     Calendar.prototype.decrementSecond = function (event) {
         var newSecond = this.currentSecond - this.stepSecond;
-        this.currentSecond = (newSecond < 0) ? 60 + newSecond : newSecond;
-        this.updateTime();
+        if (this.validateSecond(newSecond)) {
+            this.currentSecond = (newSecond < 0) ? 60 + newSecond : newSecond;
+            this.updateTime();
+        }
         event.preventDefault();
     };
+    Calendar.prototype.validateSecond = function (second) {
+        var valid = true;
+        var valueDateString = this.value ? this.value.toDateString() : null;
+        if (this.minDate && valueDateString && this.minDate.toDateString() === valueDateString) {
+            if (this.minDate.getSeconds() > second) {
+                valid = false;
+            }
+        }
+        if (this.maxDate && valueDateString && this.maxDate.toDateString() === valueDateString) {
+            if (this.maxDate.getSeconds() < second) {
+                valid = false;
+            }
+        }
+        return valid;
+    };
     Calendar.prototype.updateTime = function () {
-        var value = this.value || new Date();
-        if (this.hourFormat === '12' && this.pm && this.currentHour != 12)
-            value.setHours(this.currentHour + 12);
-        else
+        var value = this.value ? new Date(this.value.getTime()) : new Date();
+        if (this.hourFormat == '12') {
+            if (this.currentHour === 12)
+                value.setHours(this.pm ? 12 : 0);
+            else
+                value.setHours(this.pm ? this.currentHour + 12 : this.currentHour);
+        }
+        else {
             value.setHours(this.currentHour);
+        }
         value.setMinutes(this.currentMinute);
         value.setSeconds(this.currentSecond);
         this.updateModel(value);
@@ -1912,10 +2002,14 @@ var Calendar = (function () {
     };
     Calendar.prototype.updateUI = function () {
         var val = this.value || this.defaultDate || new Date();
+        if (Array.isArray(val)) {
+            val = val[0];
+        }
         this.createMonth(val.getMonth(), val.getFullYear());
         if (this.showTime || this.timeOnly) {
             var hours = val.getHours();
             if (this.hourFormat == '12') {
+                this.pm = hours > 11;
                 if (hours >= 12) {
                     this.currentHour = (hours == 12) ? 12 : hours - 12;
                 }
@@ -1936,7 +2030,9 @@ var Calendar = (function () {
     Calendar.prototype.showOverlay = function () {
         this.overlayVisible = true;
         this.overlayShown = true;
-        this.overlayViewChild.nativeElement.style.zIndex = String(++domhandler_1.DomHandler.zindex);
+        if (this.autoZIndex) {
+            this.overlayViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++domhandler_1.DomHandler.zindex));
+        }
         this.bindDocumentClickListener();
     };
     Calendar.prototype.alignOverlay = function () {
@@ -1965,65 +2061,80 @@ var Calendar = (function () {
     // Ported from jquery-ui datepicker formatDate    
     Calendar.prototype.formatDate = function (date, format) {
         if (!date) {
-            return "";
+            return '';
         }
-        var iFormat, lookAhead = function (match) {
+        var iFormat;
+        var lookAhead = function (match) {
             var matches = (iFormat + 1 < format.length && format.charAt(iFormat + 1) === match);
             if (matches) {
                 iFormat++;
             }
             return matches;
         }, formatNumber = function (match, value, len) {
-            var num = "" + value;
+            var num = '' + value;
             if (lookAhead(match)) {
                 while (num.length < len) {
-                    num = "0" + num;
+                    num = '0' + num;
                 }
             }
             return num;
         }, formatName = function (match, value, shortNames, longNames) {
             return (lookAhead(match) ? longNames[value] : shortNames[value]);
-        }, output = "", literal = false;
+        };
+        var output = '';
+        var literal = false;
         if (date) {
             for (iFormat = 0; iFormat < format.length; iFormat++) {
                 if (literal) {
-                    if (format.charAt(iFormat) === "'" && !lookAhead("'"))
+                    if (format.charAt(iFormat) === '\'' && !lookAhead('\'')) {
                         literal = false;
-                    else
+                    }
+                    else {
                         output += format.charAt(iFormat);
+                    }
                 }
                 else {
                     switch (format.charAt(iFormat)) {
-                        case "d":
-                            output += formatNumber("d", date.getDate(), 2);
+                        case 'd':
+                            output += formatNumber('d', this.utc ? date.getUTCDate() : date.getDate(), 2);
                             break;
-                        case "D":
-                            output += formatName("D", date.getDay(), this.locale.dayNamesShort, this.locale.dayNames);
+                        case 'D':
+                            output += formatName('D', this.utc ? date.getUTCDay() : date.getDay(), this.locale.dayNamesShort, this.locale.dayNames);
                             break;
-                        case "o":
-                            output += formatNumber("o", Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() - new Date(date.getFullYear(), 0, 0).getTime()) / 86400000), 3);
+                        case 'o':
+                            if (this.utc) {
+                                output += formatNumber('o', Math.round((new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()).getTime() -
+                                    new Date(date.getUTCFullYear(), 0, 0).getTime()) / 86400000), 3);
+                            }
+                            else {
+                                output += formatNumber('o', Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() -
+                                    new Date(date.getFullYear(), 0, 0).getTime()) / 86400000), 3);
+                            }
                             break;
-                        case "m":
-                            output += formatNumber("m", date.getMonth() + 1, 2);
+                        case 'm':
+                            output += formatNumber('m', (this.utc ? date.getUTCMonth() : date.getMonth()) + 1, 2);
                             break;
-                        case "M":
-                            output += formatName("M", date.getMonth(), this.locale.monthNamesShort, this.locale.monthNames);
+                        case 'M':
+                            output += formatName('M', this.utc ? date.getUTCMonth() : date.getMonth(), this.locale.monthNamesShort, this.locale.monthNames);
                             break;
-                        case "y":
-                            output += (lookAhead("y") ? date.getFullYear() :
-                                (date.getFullYear() % 100 < 10 ? "0" : "") + date.getFullYear() % 100);
+                        case 'y':
+                            output += (lookAhead('y') ? (this.utc ? date.getUTCFullYear() : date.getFullYear()) :
+                                ((this.utc ? date.getUTCFullYear() : date.getFullYear()) % 100 < 10 ? '0' : '') +
+                                    (this.utc ? date.getUTCFullYear() : date.getFullYear()) % 100);
                             break;
-                        case "@":
+                        case '@':
                             output += date.getTime();
                             break;
-                        case "!":
+                        case '!':
                             output += date.getTime() * 10000 + this.ticksTo1970;
                             break;
-                        case "'":
-                            if (lookAhead("'"))
-                                output += "'";
-                            else
+                        case '\'':
+                            if (lookAhead('\'')) {
+                                output += '\'';
+                            }
+                            else {
                                 literal = true;
+                            }
                             break;
                         default:
                             output += format.charAt(iFormat);
@@ -2207,7 +2318,10 @@ var Calendar = (function () {
                 day -= dim;
             } while (true);
         }
-        date = this.daylightSavingAdjust(new Date(year, month - 1, day));
+        if (this.utc)
+            date = new Date(Date.UTC(year, month - 1, day));
+        else
+            date = this.daylightSavingAdjust(new Date(year, month - 1, day));
         if (date.getFullYear() !== year || date.getMonth() + 1 !== month || date.getDate() !== day) {
             throw "Invalid date"; // E.g. 31/02/00
         }
@@ -2226,6 +2340,7 @@ var Calendar = (function () {
     Calendar.prototype.onTodayButtonClick = function (event) {
         var date = new Date();
         var dateMeta = { day: date.getDate(), month: date.getMonth(), year: date.getFullYear(), today: true, selectable: true };
+        this.createMonth(dateMeta.month, dateMeta.year);
         this.onDateSelect(event, dateMeta);
         this.onTodayClick.emit(event);
     };
@@ -2407,6 +2522,14 @@ __decorate([
     __metadata("design:type", String)
 ], Calendar.prototype, "clearButtonStyleClass", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Calendar.prototype, "autoZIndex", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], Calendar.prototype, "baseZIndex", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Calendar.prototype, "onFocus", void 0);
@@ -2434,6 +2557,10 @@ __decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Calendar.prototype, "onClearClick", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], Calendar.prototype, "onMonthChange", void 0);
 __decorate([
     core_1.ContentChildren(shared_1.PrimeTemplate),
     __metadata("design:type", core_1.QueryList)
@@ -2483,7 +2610,7 @@ __decorate([
 Calendar = __decorate([
     core_1.Component({
         selector: 'p-calendar',
-        template: "\n        <span [ngClass]=\"{'ui-calendar':true,'ui-calendar-w-btn':showIcon}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ng-template [ngIf]=\"!inline\">\n                <input #inputfield type=\"text\" [attr.id]=\"inputId\" [attr.name]=\"name\" [attr.required]=\"required\" [value]=\"inputFieldValue\" (focus)=\"onInputFocus($event)\" (keydown)=\"onInputKeydown($event)\" (click)=\"datepickerClick=true\" (blur)=\"onInputBlur($event)\"\n                    [readonly]=\"readonlyInput\" (input)=\"onUserInput($event)\" [ngStyle]=\"inputStyle\" [class]=\"inputStyleClass\" [placeholder]=\"placeholder||''\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\"\n                    [ngClass]=\"'ui-inputtext ui-widget ui-state-default ui-corner-all'\"\n                    ><button type=\"button\" [icon]=\"icon\" pButton *ngIf=\"showIcon\" (click)=\"onButtonClick($event,inputfield)\" class=\"ui-datepicker-trigger ui-calendar-button\"\n                    [ngClass]=\"{'ui-state-disabled':disabled}\" [disabled]=\"disabled\" tabindex=\"-1\"></button>\n            </ng-template>\n            <div #datepicker class=\"ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all\" [ngClass]=\"{'ui-datepicker-inline':inline,'ui-shadow':!inline,'ui-state-disabled':disabled,'ui-datepicker-timeonly':timeOnly}\" \n                [ngStyle]=\"{'display': inline ? 'inline-block' : (overlayVisible ? 'block' : 'none')}\" (click)=\"onDatePickerClick($event)\" [@overlayState]=\"inline ? 'visible' : (overlayVisible ? 'visible' : 'hidden')\">\n\n                <div class=\"ui-datepicker-header ui-widget-header ui-helper-clearfix ui-corner-all\" *ngIf=\"!timeOnly && (overlayVisible || inline)\">\n                    <ng-content select=\"p-header\"></ng-content>\n                    <a class=\"ui-datepicker-prev ui-corner-all\" href=\"#\" (click)=\"prevMonth($event)\">\n                        <span class=\"fa fa-angle-left\"></span>\n                    </a>\n                    <a class=\"ui-datepicker-next ui-corner-all\" href=\"#\" (click)=\"nextMonth($event)\">\n                        <span class=\"fa fa-angle-right\"></span>\n                    </a>\n                    <div class=\"ui-datepicker-title\">\n                        <span class=\"ui-datepicker-month\" *ngIf=\"!monthNavigator\">{{locale.monthNames[currentMonth]}}</span>\n                        <select class=\"ui-datepicker-month\" *ngIf=\"monthNavigator\" (change)=\"onMonthDropdownChange($event.target.value)\">\n                            <option [value]=\"i\" *ngFor=\"let month of locale.monthNames;let i = index\" [selected]=\"i == currentMonth\">{{month}}</option>\n                        </select>\n                        <select class=\"ui-datepicker-year\" *ngIf=\"yearNavigator\" (change)=\"onYearDropdownChange($event.target.value)\">\n                            <option [value]=\"year\" *ngFor=\"let year of yearOptions\" [selected]=\"year == currentYear\">{{year}}</option>\n                        </select>\n                        <span class=\"ui-datepicker-year\" *ngIf=\"!yearNavigator\">{{currentYear}}</span>\n                    </div>\n                </div>\n                <table class=\"ui-datepicker-calendar\" *ngIf=\"!timeOnly && (overlayVisible || inline)\">\n                    <thead>\n                        <tr>\n                            <th scope=\"col\" *ngFor=\"let weekDay of weekDays;let begin = first; let end = last\">\n                                <span>{{weekDay}}</span>\n                            </th>\n                        </tr>\n                    </thead>\n                    <tbody>\n                        <tr *ngFor=\"let week of dates\">\n                            <td *ngFor=\"let date of week\" [ngClass]=\"{'ui-datepicker-other-month ui-state-disabled':date.otherMonth,\n                                'ui-datepicker-current-day':isSelected(date),'ui-datepicker-today':date.today}\">\n                                <a class=\"ui-state-default\" href=\"#\" *ngIf=\"date.otherMonth ? showOtherMonths : true\" \n                                    [ngClass]=\"{'ui-state-active':isSelected(date), 'ui-state-highlight':date.today, 'ui-state-disabled':!date.selectable}\"\n                                    (click)=\"onDateSelect($event,date)\">\n                                    <span *ngIf=\"!dateTemplate\">{{date.day}}</span>\n                                    <ng-template [pTemplateWrapper]=\"dateTemplate\" [item]=\"date\" *ngIf=\"dateTemplate\"></ng-template>\n                                </a>\n                            </td>\n                        </tr>\n                    </tbody>\n                </table>\n                <div class=\"ui-timepicker ui-widget-header ui-corner-all\" *ngIf=\"showTime||timeOnly\">\n                    <div class=\"ui-hour-picker\">\n                        <a href=\"#\" (click)=\"incrementHour($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span [ngStyle]=\"{'display': currentHour < 10 ? 'inline': 'none'}\">0</span><span>{{currentHour}}</span>\n                        <a href=\"#\" (click)=\"decrementHour($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-separator\">\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span>:</span>\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-minute-picker\">\n                        <a href=\"#\" (click)=\"incrementMinute($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span [ngStyle]=\"{'display': currentMinute < 10 ? 'inline': 'none'}\">0</span><span>{{currentMinute}}</span>\n                        <a href=\"#\" (click)=\"decrementMinute($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-separator\" *ngIf=\"showSeconds\">\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span>:</span>\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-second-picker\" *ngIf=\"showSeconds\">\n                        <a href=\"#\" (click)=\"incrementSecond($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span [ngStyle]=\"{'display': currentSecond < 10 ? 'inline': 'none'}\">0</span><span>{{currentSecond}}</span>\n                        <a href=\"#\" (click)=\"decrementSecond($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-ampm-picker\" *ngIf=\"hourFormat=='12'\">\n                        <a href=\"#\" (click)=\"toggleAMPM($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span>{{pm ? 'PM' : 'AM'}}</span>\n                        <a href=\"#\" (click)=\"toggleAMPM($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                </div>\n                <div class=\"ui-datepicker-buttonbar ui-widget-header\" *ngIf=\"showButtonBar\">\n                    <div class=\"ui-g\">\n                        <div class=\"ui-g-6\">\n                            <button type=\"button\" [label]=\"_locale.today\" (click)=\"onTodayButtonClick($event)\" pButton [ngClass]=\"[todayButtonStyleClass]\"></button>\n                        </div>\n                        <div class=\"ui-g-6\">\n                            <button type=\"button\" [label]=\"_locale.clear\" (click)=\"onClearButtonClick($event)\" pButton [ngClass]=\"[clearButtonStyleClass]\"></button>\n                        </div>\n                    </div>\n                </div>\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </span>\n    ",
+        template: "\n        <span [ngClass]=\"{'ui-calendar':true,'ui-calendar-w-btn':showIcon}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ng-template [ngIf]=\"!inline\">\n                <input #inputfield type=\"text\" [attr.id]=\"inputId\" [attr.name]=\"name\" [attr.required]=\"required\" [value]=\"inputFieldValue\" (focus)=\"onInputFocus($event)\" (keydown)=\"onInputKeydown($event)\" (click)=\"datepickerClick=true\" (blur)=\"onInputBlur($event)\"\n                    [readonly]=\"readonlyInput\" (input)=\"onUserInput($event)\" [ngStyle]=\"inputStyle\" [class]=\"inputStyleClass\" [placeholder]=\"placeholder||''\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\"\n                    [ngClass]=\"'ui-inputtext ui-widget ui-state-default ui-corner-all'\"\n                    ><button type=\"button\" [icon]=\"icon\" pButton *ngIf=\"showIcon\" (click)=\"onButtonClick($event,inputfield)\" class=\"ui-datepicker-trigger ui-calendar-button\"\n                    [ngClass]=\"{'ui-state-disabled':disabled}\" [disabled]=\"disabled\" tabindex=\"-1\"></button>\n            </ng-template>\n            <div #datepicker class=\"ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all\" [ngClass]=\"{'ui-datepicker-inline':inline,'ui-shadow':!inline,'ui-state-disabled':disabled,'ui-datepicker-timeonly':timeOnly}\" \n                [ngStyle]=\"{'display': inline ? 'inline-block' : (overlayVisible ? 'block' : 'none')}\" (click)=\"onDatePickerClick($event)\" [@overlayState]=\"inline ? 'visible' : (overlayVisible ? 'visible' : 'hidden')\">\n\n                <div class=\"ui-datepicker-header ui-widget-header ui-helper-clearfix ui-corner-all\" *ngIf=\"!timeOnly && (overlayVisible || inline)\">\n                    <ng-content select=\"p-header\"></ng-content>\n                    <a class=\"ui-datepicker-prev ui-corner-all\" href=\"#\" (click)=\"prevMonth($event)\">\n                        <span class=\"fa fa-angle-left\"></span>\n                    </a>\n                    <a class=\"ui-datepicker-next ui-corner-all\" href=\"#\" (click)=\"nextMonth($event)\">\n                        <span class=\"fa fa-angle-right\"></span>\n                    </a>\n                    <div class=\"ui-datepicker-title\">\n                        <span class=\"ui-datepicker-month\" *ngIf=\"!monthNavigator\">{{locale.monthNames[currentMonth]}}</span>\n                        <select class=\"ui-datepicker-month\" *ngIf=\"monthNavigator\" (change)=\"onMonthDropdownChange($event.target.value)\">\n                            <option [value]=\"i\" *ngFor=\"let month of locale.monthNames;let i = index\" [selected]=\"i == currentMonth\">{{month}}</option>\n                        </select>\n                        <select class=\"ui-datepicker-year\" *ngIf=\"yearNavigator\" (change)=\"onYearDropdownChange($event.target.value)\">\n                            <option [value]=\"year\" *ngFor=\"let year of yearOptions\" [selected]=\"year == currentYear\">{{year}}</option>\n                        </select>\n                        <span class=\"ui-datepicker-year\" *ngIf=\"!yearNavigator\">{{currentYear}}</span>\n                    </div>\n                </div>\n                <table class=\"ui-datepicker-calendar\" *ngIf=\"!timeOnly && (overlayVisible || inline)\">\n                    <thead>\n                        <tr>\n                            <th scope=\"col\" *ngFor=\"let weekDay of weekDays;let begin = first; let end = last\">\n                                <span>{{weekDay}}</span>\n                            </th>\n                        </tr>\n                    </thead>\n                    <tbody>\n                        <tr *ngFor=\"let week of dates\">\n                            <td *ngFor=\"let date of week\" [ngClass]=\"{'ui-datepicker-other-month ui-state-disabled':date.otherMonth,\n                                'ui-datepicker-current-day':isSelected(date),'ui-datepicker-today':date.today}\">\n                                <a class=\"ui-state-default\" href=\"#\" *ngIf=\"date.otherMonth ? showOtherMonths : true\" \n                                    [ngClass]=\"{'ui-state-active':isSelected(date), 'ui-state-highlight':date.today, 'ui-state-disabled':!date.selectable}\"\n                                    (click)=\"onDateSelect($event,date)\">\n                                    <ng-container *ngIf=\"!dateTemplate\">{{date.day}}</ng-container>\n                                    <ng-template [pTemplateWrapper]=\"dateTemplate\" [item]=\"date\" *ngIf=\"dateTemplate\"></ng-template>\n                                </a>\n                            </td>\n                        </tr>\n                    </tbody>\n                </table>\n                <div class=\"ui-timepicker ui-widget-header ui-corner-all\" *ngIf=\"showTime||timeOnly\">\n                    <div class=\"ui-hour-picker\">\n                        <a href=\"#\" (click)=\"incrementHour($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span [ngStyle]=\"{'display': currentHour < 10 ? 'inline': 'none'}\">0</span><span>{{currentHour}}</span>\n                        <a href=\"#\" (click)=\"decrementHour($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-separator\">\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span>:</span>\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-minute-picker\">\n                        <a href=\"#\" (click)=\"incrementMinute($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span [ngStyle]=\"{'display': currentMinute < 10 ? 'inline': 'none'}\">0</span><span>{{currentMinute}}</span>\n                        <a href=\"#\" (click)=\"decrementMinute($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-separator\" *ngIf=\"showSeconds\">\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span>:</span>\n                        <a href=\"#\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-second-picker\" *ngIf=\"showSeconds\">\n                        <a href=\"#\" (click)=\"incrementSecond($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span [ngStyle]=\"{'display': currentSecond < 10 ? 'inline': 'none'}\">0</span><span>{{currentSecond}}</span>\n                        <a href=\"#\" (click)=\"decrementSecond($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                    <div class=\"ui-ampm-picker\" *ngIf=\"hourFormat=='12'\">\n                        <a href=\"#\" (click)=\"toggleAMPM($event)\">\n                            <span class=\"fa fa-angle-up\"></span>\n                        </a>\n                        <span>{{pm ? 'PM' : 'AM'}}</span>\n                        <a href=\"#\" (click)=\"toggleAMPM($event)\">\n                            <span class=\"fa fa-angle-down\"></span>\n                        </a>\n                    </div>\n                </div>\n                <div class=\"ui-datepicker-buttonbar ui-widget-header\" *ngIf=\"showButtonBar\">\n                    <div class=\"ui-g\">\n                        <div class=\"ui-g-6\">\n                            <button type=\"button\" [label]=\"_locale.today\" (click)=\"onTodayButtonClick($event)\" pButton [ngClass]=\"[todayButtonStyleClass]\"></button>\n                        </div>\n                        <div class=\"ui-g-6\">\n                            <button type=\"button\" [label]=\"_locale.clear\" (click)=\"onClearButtonClick($event)\" pButton [ngClass]=\"[clearButtonStyleClass]\"></button>\n                        </div>\n                    </div>\n                </div>\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </span>\n    ",
         animations: [
             animations_1.trigger('overlayState', [
                 animations_1.state('hidden', animations_1.style({
@@ -2764,8 +2891,10 @@ var Carousel = (function () {
     };
     Carousel.prototype.updateMobileDropdown = function () {
         this.mobileDropdownOptions = [];
-        for (var i = 0; i < this.value.length; i++) {
-            this.mobileDropdownOptions.push(i);
+        if (this.value && this.value.length) {
+            for (var i = 0; i < this.value.length; i++) {
+                this.mobileDropdownOptions.push(i);
+            }
         }
     };
     Carousel.prototype.render = function () {
@@ -3184,6 +3313,9 @@ var Checkbox = (function () {
             else
                 this.removeValue();
             this.onModelChange(this.model);
+            if (this.formControl) {
+                this.formControl.setValue(this.model);
+            }
         }
         else {
             this.onModelChange(this.checked);
@@ -3270,6 +3402,10 @@ __decorate([
     __metadata("design:type", String)
 ], Checkbox.prototype, "styleClass", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", forms_1.FormControl)
+], Checkbox.prototype, "formControl", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Checkbox.prototype, "onChange", void 0);
@@ -3332,6 +3468,8 @@ var Chips = (function () {
         this.onAdd = new core_1.EventEmitter();
         this.onRemove = new core_1.EventEmitter();
         this.allowDuplicate = true;
+        this.onFocus = new core_1.EventEmitter();
+        this.onBlur = new core_1.EventEmitter();
         this.onModelChange = function () { };
         this.onModelTouched = function () { };
     }
@@ -3378,12 +3516,18 @@ var Chips = (function () {
             return null;
         }
     };
-    Chips.prototype.onFocus = function () {
+    Chips.prototype.onInputFocus = function () {
         this.focus = true;
+        this.onFocus.emit();
     };
-    Chips.prototype.onBlur = function () {
+    Chips.prototype.onInputBlur = function (event, inputEL) {
         this.focus = false;
+        if (this.addOnBlur && inputEL.value) {
+            this.addItem(event, inputEL.value);
+            inputEL.value = '';
+        }
         this.onModelTouched();
+        this.onBlur.emit();
     };
     Chips.prototype.removeItem = function (event, index) {
         if (this.disabled) {
@@ -3400,7 +3544,7 @@ var Chips = (function () {
     Chips.prototype.addItem = function (event, item) {
         this.value = this.value || [];
         if (item && item.trim().length && (!this.max || this.max > item.length)) {
-            if (this.allowDuplicate || !this.value.includes(item)) {
+            if (this.allowDuplicate || this.value.indexOf(item) === -1) {
                 this.value = this.value.concat([item]);
                 this.onModelChange(this.value);
                 this.onAdd.emit({
@@ -3510,13 +3654,25 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Chips.prototype, "addOnTab", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Chips.prototype, "addOnBlur", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], Chips.prototype, "onFocus", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], Chips.prototype, "onBlur", void 0);
+__decorate([
     core_1.ContentChildren(shared_1.PrimeTemplate),
     __metadata("design:type", core_1.QueryList)
 ], Chips.prototype, "templates", void 0);
 Chips = __decorate([
     core_1.Component({
         selector: 'p-chips',
-        template: "\n        <div [ngClass]=\"'ui-chips ui-widget'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ul [ngClass]=\"{'ui-inputtext ui-state-default ui-corner-all':true,'ui-state-focus':focus,'ui-state-disabled':disabled}\" (click)=\"inputtext.focus()\">\n                <li #token *ngFor=\"let item of value; let i = index;\" class=\"ui-chips-token ui-state-highlight ui-corner-all\">\n                    <span *ngIf=\"!disabled\" class=\"ui-chips-token-icon fa fa-fw fa-close\" (click)=\"removeItem($event,i)\"></span>\n                    <span *ngIf=\"!itemTemplate\" class=\"ui-chips-token-label\">{{field ? resolveFieldData(item,field) : item}}</span>\n                    <ng-template *ngIf=\"itemTemplate\" [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\"></ng-template>\n                </li>\n                <li class=\"ui-chips-input-token\">\n                    <input #inputtext type=\"text\" [attr.id]=\"inputId\" [attr.placeholder]=\"placeholder\" [attr.tabindex]=\"tabindex\" (keydown)=\"onKeydown($event,inputtext)\" \n                        (focus)=\"onFocus()\" (blur)=\"onBlur()\" [disabled]=\"maxedOut||disabled\" [disabled]=\"disabled\" [ngStyle]=\"inputStyle\" [class]=\"inputStyleClass\">\n                </li>\n            </ul>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"'ui-chips ui-widget'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ul [ngClass]=\"{'ui-inputtext ui-state-default ui-corner-all':true,'ui-state-focus':focus,'ui-state-disabled':disabled}\" (click)=\"inputtext.focus()\">\n                <li #token *ngFor=\"let item of value; let i = index;\" class=\"ui-chips-token ui-state-highlight ui-corner-all\">\n                    <span *ngIf=\"!disabled\" class=\"ui-chips-token-icon fa fa-fw fa-close\" (click)=\"removeItem($event,i)\"></span>\n                    <span *ngIf=\"!itemTemplate\" class=\"ui-chips-token-label\">{{field ? resolveFieldData(item,field) : item}}</span>\n                    <ng-template *ngIf=\"itemTemplate\" [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\"></ng-template>\n                </li>\n                <li class=\"ui-chips-input-token\">\n                    <input #inputtext type=\"text\" [attr.id]=\"inputId\" [attr.placeholder]=\"placeholder\" [attr.tabindex]=\"tabindex\" (keydown)=\"onKeydown($event,inputtext)\" \n                        (focus)=\"onInputFocus()\" (blur)=\"onInputBlur($event,inputtext)\" [disabled]=\"maxedOut||disabled\" [disabled]=\"disabled\" [ngStyle]=\"inputStyle\" [class]=\"inputStyleClass\">\n                </li>\n            </ul>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler, exports.CHIPS_VALUE_ACCESSOR]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler])
@@ -3642,16 +3798,16 @@ var ColorPicker = (function () {
         this.pickHue(event);
     };
     ColorPicker.prototype.pickHue = function (event) {
-        var top = this.hueViewChild.nativeElement.getBoundingClientRect().top + document.body.scrollTop;
+        var top = this.hueViewChild.nativeElement.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0);
         this.value = this.validateHSB({
             h: Math.floor(360 * (150 - Math.max(0, Math.min(150, (event.pageY - top)))) / 150),
-            s: 100,
-            b: 100
+            s: this.value.s,
+            b: this.value.b
         });
         this.updateColorSelector();
         this.updateUI();
         this.updateModel();
-        this.onChange.emit({ originalEvent: event, value: this.value });
+        this.onChange.emit({ originalEvent: event, value: this.getValueToUpdate() });
     };
     ColorPicker.prototype.onColorMousedown = function (event) {
         if (this.disabled) {
@@ -3664,7 +3820,7 @@ var ColorPicker = (function () {
     };
     ColorPicker.prototype.pickColor = function (event) {
         var rect = this.colorSelectorViewChild.nativeElement.getBoundingClientRect();
-        var top = rect.top + document.body.scrollTop;
+        var top = rect.top + (window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0);
         var left = rect.left + document.body.scrollLeft;
         var saturation = Math.floor(100 * (Math.max(0, Math.min(150, (event.pageX - left)))) / 150);
         var brightness = Math.floor(100 * (150 - Math.max(0, Math.min(150, (event.pageY - top)))) / 150);
@@ -4111,7 +4267,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
+var Subject_1 = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
 var ConfirmationService = (function () {
     function ConfirmationService() {
         this.requireConfirmationSource = new Subject_1.Subject();
@@ -4149,7 +4305,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
+var Subject_1 = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
 var MessageService = (function () {
     function MessageService() {
         this.messageSource = new Subject_1.Subject();
@@ -4282,6 +4438,7 @@ exports.TemplateWrapper = TemplateWrapper;
 var Column = (function () {
     function Column() {
         this.filterType = 'text';
+        this.exportable = true;
         this.sortFunction = new core_1.EventEmitter();
     }
     Column.prototype.ngAfterContentInit = function () {
@@ -4357,6 +4514,10 @@ __decorate([
 ], Column.prototype, "filterType", void 0);
 __decorate([
     core_1.Input(),
+    __metadata("design:type", Boolean)
+], Column.prototype, "excludeGlobalFilter", void 0);
+__decorate([
+    core_1.Input(),
     __metadata("design:type", Number)
 ], Column.prototype, "rowspan", void 0);
 __decorate([
@@ -4365,12 +4526,44 @@ __decorate([
 ], Column.prototype, "colspan", void 0);
 __decorate([
     core_1.Input(),
+    __metadata("design:type", String)
+], Column.prototype, "scope", void 0);
+__decorate([
+    core_1.Input(),
     __metadata("design:type", Object)
 ], Column.prototype, "style", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", String)
 ], Column.prototype, "styleClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Column.prototype, "exportable", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Column.prototype, "headerStyle", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Column.prototype, "headerStyleClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Column.prototype, "bodyStyle", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Column.prototype, "bodyStyleClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Column.prototype, "footerStyle", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Column.prototype, "footerStyleClass", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
@@ -4410,7 +4603,7 @@ __decorate([
 Column = __decorate([
     core_2.Component({
         selector: 'p-column',
-        template: ""
+        template: ''
     })
 ], Column);
 exports.Column = Column;
@@ -4436,6 +4629,10 @@ var HeaderColumnGroup = (function () {
     return HeaderColumnGroup;
 }());
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], HeaderColumnGroup.prototype, "frozen", void 0);
+__decorate([
     core_1.ContentChildren(Row),
     __metadata("design:type", core_1.QueryList)
 ], HeaderColumnGroup.prototype, "rows", void 0);
@@ -4451,6 +4648,10 @@ var FooterColumnGroup = (function () {
     }
     return FooterColumnGroup;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], FooterColumnGroup.prototype, "frozen", void 0);
 __decorate([
     core_1.ContentChildren(Row),
     __metadata("design:type", core_1.QueryList)
@@ -4683,7 +4884,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
+var Subject_1 = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
 var TreeDragDropService = (function () {
     function TreeDragDropService() {
         this.dragStartSource = new Subject_1.Subject();
@@ -4730,12 +4931,13 @@ var shared_1 = __webpack_require__("../../../../primeng/components/common/shared
 var button_1 = __webpack_require__("../../../../primeng/components/button/button.js");
 var confirmationservice_1 = __webpack_require__("../../../../primeng/components/common/confirmationservice.js");
 var ConfirmDialog = (function () {
-    function ConfirmDialog(el, domHandler, renderer, confirmationService) {
+    function ConfirmDialog(el, domHandler, renderer, confirmationService, zone) {
         var _this = this;
         this.el = el;
         this.domHandler = domHandler;
         this.renderer = renderer;
         this.confirmationService = confirmationService;
+        this.zone = zone;
         this.acceptIcon = 'fa-check';
         this.acceptLabel = 'Yes';
         this.acceptVisible = true;
@@ -4777,6 +4979,7 @@ var ConfirmDialog = (function () {
                     this.positionInitialized = true;
                 }
                 this.el.nativeElement.children[0].style.zIndex = ++domhandler_1.DomHandler.zindex;
+                this.bindGlobalListeners();
                 this.executePostShowActions = true;
             }
             if (this._visible)
@@ -4788,22 +4991,7 @@ var ConfirmDialog = (function () {
         configurable: true
     });
     ConfirmDialog.prototype.ngAfterViewInit = function () {
-        var _this = this;
         this.contentContainer = this.domHandler.findSingle(this.el.nativeElement, '.ui-dialog-content');
-        if (this.responsive) {
-            this.documentResponsiveListener = this.renderer.listen('window', 'resize', function (event) {
-                _this.center();
-            });
-        }
-        if (this.closeOnEscape && this.closable) {
-            this.documentEscapeListener = this.renderer.listen('document', 'keydown', function (event) {
-                if (event.which == 27) {
-                    if (_this.el.nativeElement.children[0].style.zIndex == domhandler_1.DomHandler.zindex) {
-                        _this.close(event);
-                    }
-                }
-            });
-        }
         if (this.appendTo) {
             if (this.appendTo === 'body')
                 document.body.appendChild(this.el.nativeElement);
@@ -4860,9 +5048,38 @@ var ConfirmDialog = (function () {
     };
     ConfirmDialog.prototype.hide = function () {
         this.visible = false;
+        this.unbindGlobalListeners();
     };
     ConfirmDialog.prototype.moveOnTop = function () {
         this.el.nativeElement.children[0].style.zIndex = ++domhandler_1.DomHandler.zindex;
+    };
+    ConfirmDialog.prototype.bindGlobalListeners = function () {
+        var _this = this;
+        if (this.closeOnEscape && this.closable && !this.documentEscapeListener) {
+            this.documentEscapeListener = this.renderer.listen('document', 'keydown', function (event) {
+                if (event.which == 27) {
+                    if (_this.el.nativeElement.children[0].style.zIndex == domhandler_1.DomHandler.zindex && _this.visible) {
+                        _this.close(event);
+                    }
+                }
+            });
+        }
+        if (this.responsive) {
+            this.zone.runOutsideAngular(function () {
+                _this.documentResponsiveListener = _this.center.bind(_this);
+                window.addEventListener('resize', _this.documentResponsiveListener);
+            });
+        }
+    };
+    ConfirmDialog.prototype.unbindGlobalListeners = function () {
+        if (this.documentEscapeListener) {
+            this.documentEscapeListener();
+            this.documentEscapeListener = null;
+        }
+        if (this.documentResponsiveListener) {
+            window.removeEventListener('resize', this.documentResponsiveListener);
+            this.documentResponsiveListener = null;
+        }
     };
     ConfirmDialog.prototype.ngOnDestroy = function () {
         this.disableModality();
@@ -4973,7 +5190,7 @@ __decorate([
 ConfirmDialog = __decorate([
     core_1.Component({
         selector: 'p-confirmDialog',
-        template: "\n        <div [ngClass]=\"{'ui-dialog ui-confirmdialog ui-widget ui-widget-content ui-corner-all ui-shadow':true,'ui-dialog-rtl':rtl}\" \n            [style.display]=\"visible ? 'block' : 'none'\" [style.width.px]=\"width\" [style.height.px]=\"height\" (mousedown)=\"moveOnTop()\" [@dialogState]=\"visible ? 'visible' : 'hidden'\">\n            <div class=\"ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top\">\n                <span class=\"ui-dialog-title\" *ngIf=\"header\">{{header}}</span>\n                <a *ngIf=\"closable\" [ngClass]=\"{'ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all':true}\" href=\"#\" role=\"button\" (click)=\"close($event)\">\n                    <span class=\"fa fa-fw fa-close\"></span>\n                </a>\n            </div>\n            <div class=\"ui-dialog-content ui-widget-content\">\n                <i [ngClass]=\"'fa'\" [class]=\"icon\"></i>\n                <span class=\"ui-confirmdialog-message\" [innerHTML]=\"message\"></span>\n            </div>\n            <div class=\"ui-dialog-footer ui-widget-content\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n            <div class=\"ui-dialog-footer ui-widget-content\" *ngIf=\"!footer\">\n                <button type=\"button\" pButton [icon]=\"acceptIcon\" [label]=\"acceptLabel\" (click)=\"accept()\" *ngIf=\"acceptVisible\"></button>\n                <button type=\"button\" pButton [icon]=\"rejectIcon\" [label]=\"rejectLabel\" (click)=\"reject()\" *ngIf=\"rejectVisible\"></button>\n            </div>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"{'ui-dialog ui-confirmdialog ui-widget ui-widget-content ui-corner-all ui-shadow':true,'ui-dialog-rtl':rtl}\" \n            [style.display]=\"visible ? 'block' : 'none'\" [style.width.px]=\"width\" [style.height.px]=\"height\" (mousedown)=\"moveOnTop()\" [@dialogState]=\"visible ? 'visible' : 'hidden'\">\n            <div class=\"ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top\">\n                <span class=\"ui-dialog-title\" *ngIf=\"header\">{{header}}</span>\n                <a *ngIf=\"closable\" [ngClass]=\"{'ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all':true}\" href=\"#\" role=\"button\" (click)=\"close($event)\">\n                    <span class=\"fa fa-fw fa-close\"></span>\n                </a>\n            </div>\n            <div class=\"ui-dialog-content ui-widget-content\">\n                <i [ngClass]=\"'fa'\" [class]=\"icon\" *ngIf=\"icon\"></i>\n                <span class=\"ui-confirmdialog-message\" [innerHTML]=\"message\"></span>\n            </div>\n            <div class=\"ui-dialog-footer ui-widget-content\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n            <div class=\"ui-dialog-footer ui-widget-content\" *ngIf=\"!footer\">\n                <button type=\"button\" pButton [icon]=\"acceptIcon\" [label]=\"acceptLabel\" (click)=\"accept()\" *ngIf=\"acceptVisible\"></button>\n                <button type=\"button\" pButton [icon]=\"rejectIcon\" [label]=\"rejectLabel\" (click)=\"reject()\" *ngIf=\"rejectVisible\"></button>\n            </div>\n        </div>\n    ",
         animations: [
             animations_1.trigger('dialogState', [
                 animations_1.state('hidden', animations_1.style({
@@ -4989,7 +5206,7 @@ ConfirmDialog = __decorate([
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler,
-        core_1.Renderer2, confirmationservice_1.ConfirmationService])
+        core_1.Renderer2, confirmationservice_1.ConfirmationService, core_1.NgZone])
 ], ConfirmDialog);
 exports.ConfirmDialog = ConfirmDialog;
 var ConfirmDialogModule = (function () {
@@ -5103,7 +5320,7 @@ __decorate([
 ContextMenuSub = __decorate([
     core_1.Component({
         selector: 'p-contextMenuSub',
-        template: "\n        <ul [ngClass]=\"{'ui-helper-reset':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}\" class=\"ui-menu-list\"\n            (click)=\"listClick($event)\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #item [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':item==activeItem}\"\n                    (mouseenter)=\"onItemMouseEnter($event,item,child)\" (mouseleave)=\"onItemMouseLeave($event,item)\" [style.display]=\"child.visible === false ? 'none' : 'block'\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" [attr.target]=\"child.target\" [attr.title]=\"child.title\" (click)=\"itemClick($event, child)\"\n                        [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [routerLinkActive]=\"'ui-state-active'\" \n                        [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        (click)=\"itemClick($event, child)\" [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" \n                        [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-contextMenuSub class=\"ui-submenu\" [item]=\"child\" *ngIf=\"child.items\"></p-contextMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    ",
+        template: "\n        <ul [ngClass]=\"{'ui-helper-reset':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}\" class=\"ui-menu-list\"\n            (click)=\"listClick($event)\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #item [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':item==activeItem}\"\n                    (mouseenter)=\"onItemMouseEnter($event,item,child)\" (mouseleave)=\"onItemMouseLeave($event,item)\" [style.display]=\"child.visible === false ? 'none' : 'block'\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" [attr.target]=\"child.target\" [attr.title]=\"child.title\" (click)=\"itemClick($event, child)\"\n                        [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [queryParams]=\"child.queryParams\" [routerLinkActive]=\"'ui-state-active'\" \n                        [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        (click)=\"itemClick($event, child)\" [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" \n                        [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-contextMenuSub class=\"ui-submenu\" [item]=\"child\" *ngIf=\"child.items\"></p-contextMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __param(1, core_1.Inject(core_1.forwardRef(function () { return ContextMenu; }))),
@@ -5726,7 +5943,7 @@ __decorate([
 DataList = __decorate([
     core_1.Component({
         selector: 'p-dataList',
-        template: "\n        <div [ngClass]=\"{'ui-datalist ui-widget': true, 'ui-datalist-scrollable': scrollable}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-datalist-header ui-widget-header ui-corner-top\" *ngIf=\"header\">\n                <ng-content select=\"p-header\"></ng-content>\n            </div>\n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" [alwaysShow]=\"alwaysShowPaginator\"\n            (onPageChange)=\"paginate($event)\" styleClass=\"ui-paginator-bottom\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator  && paginatorPosition!='bottom' || paginatorPosition =='both'\"></p-paginator>\n            <div class=\"ui-datalist-content ui-widget-content\" [ngStyle]=\"{'max-height': scrollHeight}\">\n                <div *ngIf=\"isEmpty()\" class=\"ui-datalist-emptymessage\">{{emptyMessage}}</div>\n                <ul class=\"ui-datalist-data\">\n                    <li *ngFor=\"let item of dataToRender;let i = index;trackBy: trackBy\">\n                        <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\" [index]=\"i\"></ng-template>\n                    </li>\n                </ul>\n            </div>\n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" [alwaysShow]=\"alwaysShowPaginator\"\n            (onPageChange)=\"paginate($event)\" styleClass=\"ui-paginator-bottom\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator  && paginatorPosition!='top' || paginatorPosition =='both'\"></p-paginator>\n            <div class=\"ui-datalist-footer ui-widget-header ui-corner-bottom\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </div>\n    "
+        template: "\n        <div [ngClass]=\"{'ui-datalist ui-widget': true, 'ui-datalist-scrollable': scrollable}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-datalist-header ui-widget-header ui-corner-top\" *ngIf=\"header\">\n                <ng-content select=\"p-header\"></ng-content>\n            </div>\n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" [alwaysShow]=\"alwaysShowPaginator\"\n            (onPageChange)=\"paginate($event)\" styleClass=\"ui-paginator-bottom\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator  && paginatorPosition!='bottom' || paginatorPosition =='both'\"></p-paginator>\n            <div class=\"ui-datalist-content ui-widget-content\" [ngStyle]=\"{'max-height': scrollHeight}\">\n                <div *ngIf=\"isEmpty()\" class=\"ui-datalist-emptymessage\">{{emptyMessage}}</div>\n                <ul class=\"ui-datalist-data\">\n                    <li *ngFor=\"let item of dataToRender;let i = index;trackBy: trackBy\">\n                        <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\" [index]=\"i + first\"></ng-template>\n                    </li>\n                </ul>\n            </div>\n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" [alwaysShow]=\"alwaysShowPaginator\"\n            (onPageChange)=\"paginate($event)\" styleClass=\"ui-paginator-bottom\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator  && paginatorPosition!='top' || paginatorPosition =='both'\"></p-paginator>\n            <div class=\"ui-datalist-footer ui-widget-header ui-corner-bottom\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </div>\n    "
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, core_1.IterableDiffers])
 ], DataList);
@@ -6049,7 +6266,7 @@ __decorate([
 DTCheckbox = __decorate([
     core_1.Component({
         selector: 'p-dtCheckbox',
-        template: "\n        <div class=\"ui-chkbox ui-widget\">\n            <div class=\"ui-helper-hidden-accessible\">\n                <input type=\"checkbox\" [checked]=\"checked\">\n            </div>\n            <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" (click)=\"handleClick($event)\"\n                        (mouseover)=\"hover=true\" (mouseout)=\"hover=false\" \n                        [ngClass]=\"{'ui-state-hover':hover&&!disabled,'ui-state-active':checked&&!disabled,'ui-state-disabled':disabled}\">\n                <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':checked}\"></span>\n            </div>\n        </div>\n    "
+        template: "\n        <div class=\"ui-chkbox ui-widget\">\n            <div class=\"ui-helper-hidden-accessible\">\n                <input type=\"checkbox\" [checked]=\"checked\">\n            </div>\n            <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" (click)=\"handleClick($event)\"\n                        (mouseover)=\"hover=true\" (mouseout)=\"hover=false\"\n                        [ngClass]=\"{'ui-state-hover':hover&&!disabled,'ui-state-active':checked&&!disabled,'ui-state-disabled':disabled}\">\n                <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':checked}\"></span>\n            </div>\n        </div>\n    "
     })
 ], DTCheckbox);
 exports.DTCheckbox = DTCheckbox;
@@ -6101,7 +6318,7 @@ __decorate([
 ColumnHeaders = __decorate([
     core_1.Component({
         selector: '[pColumnHeaders]',
-        template: "\n        <ng-template ngFor let-col [ngForOf]=\"columns\" let-lastCol=\"last\">\n            <th #headerCell [attr.id]=\"col.colId\" [ngStyle]=\"col.style\" [class]=\"col.styleClass\" (click)=\"dt.sort($event,col)\" [attr.colspan]=\"col.colspan\" [attr.rowspan]=\"col.rowspan\"\n                [ngClass]=\"{'ui-state-default ui-unselectable-text':true, 'ui-sortable-column': col.sortable, 'ui-state-active': dt.isSorted(col), 'ui-resizable-column': dt.resizableColumns, 'ui-selection-column':col.selectionMode,\n                            'ui-helper-hidden': col.hidden}\" \n                (dragstart)=\"dt.onColumnDragStart($event)\" (dragleave)=\"dt.onColumnDragleave($event)\" (drop)=\"dt.onColumnDrop($event)\" (mousedown)=\"dt.onHeaderMousedown($event,headerCell)\"\n                [attr.tabindex]=\"col.sortable ? tabindex : null\" (keydown)=\"dt.onHeaderKeydown($event,col)\">\n                <span class=\"ui-column-resizer ui-clickable\" *ngIf=\"dt.resizableColumns && ((dt.columnResizeMode == 'fit' && !lastCol) || dt.columnResizeMode == 'expand')\" (mousedown)=\"dt.initColumnResize($event)\"></span>\n                <span class=\"ui-column-title\" *ngIf=\"!col.selectionMode&&!col.headerTemplate\">{{col.header}}</span>\n                <span class=\"ui-column-title\" *ngIf=\"col.headerTemplate\">\n                    <p-columnHeaderTemplateLoader [column]=\"col\"></p-columnHeaderTemplateLoader>\n                </span>\n                <span class=\"ui-sortable-column-icon fa fa-fw fa-sort\" *ngIf=\"col.sortable\"\n                     [ngClass]=\"{'fa-sort-desc': (dt.getSortOrder(col) == -1),'fa-sort-asc': (dt.getSortOrder(col) == 1)}\"></span>\n                <input [attr.type]=\"col.filterType\" class=\"ui-column-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [attr.maxlength]=\"col.filterMaxlength\" [attr.placeholder]=\"col.filterPlaceholder\" *ngIf=\"col.filter&&!col.filterTemplate\" [value]=\"dt.filters[col.filterField||col.field] ? dt.filters[col.filterField||col.field].value : ''\" \n                    (click)=\"dt.onFilterInputClick($event)\" (input)=\"dt.onFilterKeyup($event.target.value, col.filterField||col.field, col.filterMatchMode)\"/>\n                <p-columnFilterTemplateLoader [column]=\"col\" *ngIf=\"col.filterTemplate\"></p-columnFilterTemplateLoader>\n                <p-dtCheckbox *ngIf=\"col.selectionMode=='multiple'\" (onChange)=\"dt.toggleRowsWithCheckbox($event)\" [checked]=\"dt.allSelected\" [disabled]=\"dt.isEmpty()\"></p-dtCheckbox>\n            </th>\n        </ng-template>\n    "
+        template: "\n        <ng-template ngFor let-col [ngForOf]=\"columns\" let-lastCol=\"last\">\n            <th #headerCell [attr.id]=\"col.colId\" [ngStyle]=\"col.headerStyle||col.style\" [class]=\"col.headerStyleClass||col.styleClass\" (click)=\"dt.sort($event,col)\" [attr.colspan]=\"col.colspan\" [attr.rowspan]=\"col.rowspan\"\n                [ngClass]=\"{'ui-state-default ui-unselectable-text':true, 'ui-sortable-column': col.sortable, 'ui-state-active': dt.isSorted(col), 'ui-resizable-column': dt.resizableColumns, 'ui-selection-column':col.selectionMode,\n                            'ui-helper-hidden': col.hidden}\"\n                (dragstart)=\"dt.onColumnDragStart($event)\" (dragleave)=\"dt.onColumnDragleave($event)\" (drop)=\"dt.onColumnDrop($event)\" (mousedown)=\"dt.onHeaderMousedown($event,headerCell)\"\n                [attr.tabindex]=\"col.sortable ? tabindex : null\" (keydown)=\"dt.onHeaderKeydown($event,col)\"\n                [attr.scope]=\"col.scope||(col.colspan ? 'colgroup' : 'col')\">\n                <span class=\"ui-column-resizer ui-clickable\" *ngIf=\"dt.resizableColumns && ((dt.columnResizeMode == 'fit' && !lastCol) || dt.columnResizeMode == 'expand')\" (mousedown)=\"dt.initColumnResize($event)\"></span>\n                <span class=\"ui-column-title\" *ngIf=\"!col.selectionMode&&!col.headerTemplate\">{{col.header}}</span>\n                <span class=\"ui-column-title\" *ngIf=\"col.headerTemplate\">\n                    <p-columnHeaderTemplateLoader [column]=\"col\"></p-columnHeaderTemplateLoader>\n                </span>\n                <span class=\"ui-sortable-column-icon fa fa-fw fa-sort\" *ngIf=\"col.sortable\"\n                     [ngClass]=\"{'fa-sort-desc': (dt.getSortOrder(col) == -1),'fa-sort-asc': (dt.getSortOrder(col) == 1)}\"></span>\n                <input [attr.type]=\"col.filterType\" class=\"ui-column-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [attr.maxlength]=\"col.filterMaxlength\" [attr.placeholder]=\"col.filterPlaceholder\" *ngIf=\"col.filter&&!col.filterTemplate\" [value]=\"dt.filters[col.filterField||col.field] ? dt.filters[col.filterField||col.field].value : ''\"\n                    (click)=\"dt.onFilterInputClick($event)\" (input)=\"dt.onFilterKeyup($event.target.value, col.filterField||col.field, col.filterMatchMode)\"/>\n                <p-columnFilterTemplateLoader [column]=\"col\" *ngIf=\"col.filter&&col.filterTemplate\"></p-columnFilterTemplateLoader>\n                <p-dtCheckbox *ngIf=\"col.selectionMode=='multiple' && dt.showHeaderCheckbox === true\" (onChange)=\"dt.toggleRowsWithCheckbox($event)\" [checked]=\"dt.allSelected\" [disabled]=\"dt.isEmpty()\"></p-dtCheckbox>\n            </th>\n        </ng-template>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return DataTable; }))),
     __metadata("design:paramtypes", [DataTable])
@@ -6120,7 +6337,7 @@ __decorate([
 ColumnFooters = __decorate([
     core_1.Component({
         selector: '[pColumnFooters]',
-        template: "\n        <td *ngFor=\"let col of columns\" [ngStyle]=\"col.style\" [class]=\"col.styleClass\"\n            [attr.colspan]=\"col.colspan\" [attr.rowspan]=\"col.rowspan\"\n            [ngClass]=\"{'ui-state-default':true, 'ui-helper-hidden': col.hidden}\">\n            <span class=\"ui-column-footer\" *ngIf=\"!col.footerTemplate\">{{col.footer}}</span>\n            <span class=\"ui-column-footer\" *ngIf=\"col.footerTemplate\">\n                <p-columnFooterTemplateLoader [column]=\"col\"></p-columnFooterTemplateLoader>\n            </span>\n        </td>\n    "
+        template: "\n        <td *ngFor=\"let col of columns\" [ngStyle]=\"col.footerStyle||col.style\" [class]=\"col.footerStyleClass||col.styleClass\"\n            [attr.colspan]=\"col.colspan\" [attr.rowspan]=\"col.rowspan\"\n            [ngClass]=\"{'ui-state-default':true, 'ui-helper-hidden': col.hidden}\">\n            <span class=\"ui-column-footer\" *ngIf=\"!col.footerTemplate\">{{col.footer}}</span>\n            <span class=\"ui-column-footer\" *ngIf=\"col.footerTemplate\">\n                <p-columnFooterTemplateLoader [column]=\"col\"></p-columnFooterTemplateLoader>\n            </span>\n        </td>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return DataTable; }))),
     __metadata("design:paramtypes", [DataTable])
@@ -6146,7 +6363,7 @@ __decorate([
 TableBody = __decorate([
     core_1.Component({
         selector: '[pTableBody]',
-        template: "\n        <ng-template ngFor let-rowData [ngForOf]=\"data\" let-even=\"even\" let-odd=\"odd\" let-rowIndex=\"index\" [ngForTrackBy]=\"dt.rowTrackBy\">\n            <tr #rowGroupElement class=\"ui-widget-header ui-rowgroup-header\" \n                *ngIf=\"dt.rowGroupMode=='subheader' && (rowIndex === 0||(dt.resolveFieldData(rowData,dt.groupField) !== dt.resolveFieldData(dt.dataToRender[rowIndex - 1], dt.groupField)))\"\n                (click)=\"dt.onRowGroupClick($event)\" [ngStyle]=\"{'cursor': dt.sortableRowGroup ? 'pointer' : 'auto'}\">\n                <td [attr.colspan]=\"dt.visibleColumns().length\">\n                    <a href=\"#\" *ngIf=\"dt.expandableRowGroups\" (click)=\"dt.toggleRowGroup($event,rowData)\">\n                        <span class=\"fa fa-fw\" [ngClass]=\"dt.isRowGroupExpanded(rowData) ? dt.expandedIcon : dt.collapsedIcon\"></span>\n                    </a>\n                    <span class=\"ui-rowgroup-header-name\">\n                        <p-templateLoader [template]=\"dt.rowGroupHeaderTemplate\" [data]=\"rowData\"></p-templateLoader>\n                    </span>\n                </td>\n            </tr>\n            <tr #rowElement *ngIf=\"!dt.expandableRowGroups||dt.isRowGroupExpanded(rowData)\"\n                    (click)=\"dt.handleRowClick($event, rowData, rowIndex)\" (dblclick)=\"dt.rowDblclick($event,rowData)\" (contextmenu)=\"dt.onRowRightClick($event,rowData)\" (touchend)=\"dt.handleRowTouchEnd($event)\"\n                    [ngClass]=\"[even&&dt.rowGroupMode!='rowspan'? 'ui-datatable-even':'',\n                                odd&&dt.rowGroupMode!='rowspan'?'ui-datatable-odd':'',\n                                dt.isSelected(rowData)? 'ui-state-highlight': '', \n                                dt.getRowStyleClass(rowData,rowIndex)]\">\n                <ng-template ngFor let-col [ngForOf]=\"columns\" let-colIndex=\"index\">\n                    <td #cell *ngIf=\"!dt.rowGroupMode || (dt.rowGroupMode == 'subheader') ||\n                        (dt.rowGroupMode=='rowspan' && ((dt.sortField==col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) || (dt.sortField!=col.field)))\"\n                        [ngStyle]=\"col.style\" [class]=\"col.styleClass\" (click)=\"dt.switchCellToEditMode(cell,col,rowData)\"\n                        [ngClass]=\"{'ui-editable-column':col.editable,'ui-selection-column':col.selectionMode, 'ui-helper-hidden': col.hidden}\"\n                        [attr.rowspan]=\"(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null\">\n                        <span class=\"ui-column-title\" *ngIf=\"dt.responsive\">{{col.header}}</span>\n                        <span class=\"ui-cell-data\" *ngIf=\"!col.bodyTemplate && !col.expander && !col.selectionMode\">{{dt.resolveFieldData(rowData,col.field)}}</span>\n                        <span class=\"ui-cell-data\" *ngIf=\"col.bodyTemplate\">\n                            <p-columnBodyTemplateLoader [column]=\"col\" [rowData]=\"rowData\" [rowIndex]=\"rowIndex + dt.first\"></p-columnBodyTemplateLoader>\n                        </span>\n                        <div class=\"ui-cell-editor\" *ngIf=\"col.editable\">\n                            <input *ngIf=\"!col.editorTemplate\" type=\"text\" [(ngModel)]=\"rowData[col.field]\" required=\"true\"\n                                (keydown)=\"dt.onCellEditorKeydown($event, col, rowData, rowIndex)\" class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\"/>\n                            <a *ngIf=\"col.editorTemplate\" class=\"ui-cell-editor-proxy-focus\" href=\"#\" (focus)=\"dt.onCustomEditorFocusPrev($event, colIndex)\"></a>\n                            <p-columnEditorTemplateLoader *ngIf=\"col.editorTemplate\" [column]=\"col\" [rowData]=\"rowData\" [rowIndex]=\"rowIndex\"></p-columnEditorTemplateLoader>\n                            <a *ngIf=\"col.editorTemplate\" class=\"ui-cell-editor-proxy-focus\" href=\"#\" (focus)=\"dt.onCustomEditorFocusNext($event, colIndex)\"></a>\n                        </div>\n                        <a href=\"#\" *ngIf=\"col.expander\" (click)=\"dt.toggleRow(rowData,$event)\">\n                            <span class=\"ui-row-toggler fa fa-fw ui-clickable\" [ngClass]=\"dt.isRowExpanded(rowData) ? dt.expandedIcon : dt.collapsedIcon\"></span>\n                        </a>\n                        <p-dtRadioButton *ngIf=\"col.selectionMode=='single'\" (onClick)=\"dt.selectRowWithRadio($event, rowData)\" [checked]=\"dt.isSelected(rowData)\"></p-dtRadioButton>\n                        <p-dtCheckbox *ngIf=\"col.selectionMode=='multiple'\" (onChange)=\"dt.toggleRowWithCheckbox($event,rowData)\" [checked]=\"dt.isSelected(rowData)\"></p-dtCheckbox>\n                    </td>\n                </ng-template>\n            </tr>\n            <tr class=\"ui-widget-header\" *ngIf=\"dt.rowGroupFooterTemplate && dt.rowGroupMode=='subheader' && ((rowIndex === dt.dataToRender.length - 1)||(dt.resolveFieldData(rowData,dt.groupField) !== dt.resolveFieldData(dt.dataToRender[rowIndex + 1],dt.groupField))) && (!dt.expandableRowGroups || dt.isRowGroupExpanded(rowData))\">\n                <p-templateLoader class=\"ui-helper-hidden\" [data]=\"rowData\" [template]=\"dt.rowGroupFooterTemplate\"></p-templateLoader>\n            </tr>\n            <tr *ngIf=\"dt.expandableRows && dt.isRowExpanded(rowData)\">\n                <td [attr.colspan]=\"dt.visibleColumns().length\">\n                    <p-rowExpansionLoader [rowData]=\"rowData\" [rowIndex]=\"rowIndex\" [template]=\"dt.rowExpansionTemplate\"></p-rowExpansionLoader>\n                </td>\n            </tr>\n        </ng-template>\n\n        <tr *ngIf=\"dt.isEmpty()\" class=\"ui-widget-content ui-datatable-emptymessage-row\">\n            <td [attr.colspan]=\"dt.visibleColumns().length\" class=\"ui-datatable-emptymessage\">\n                <span *ngIf=\"!dt.emptyMessageTemplate\">{{dt.emptyMessage}}</span>\n                <p-templateLoader [template]=\"dt.emptyMessageTemplate\"></p-templateLoader>\n            </td>\n        </tr>\n    "
+        template: "\n        <ng-template ngFor let-rowData [ngForOf]=\"data\" let-even=\"even\" let-odd=\"odd\" let-rowIndex=\"index\" [ngForTrackBy]=\"dt.rowTrackBy\">\n            <tr #rowGroupElement class=\"ui-widget-header ui-rowgroup-header\"\n                *ngIf=\"dt.rowGroupMode=='subheader' && (rowIndex === 0||(dt.resolveFieldData(rowData,dt.groupField) !== dt.resolveFieldData(dt.dataToRender[rowIndex - 1], dt.groupField)))\"\n                (click)=\"dt.onRowGroupClick($event)\" [ngStyle]=\"{'cursor': dt.sortableRowGroup ? 'pointer' : 'auto'}\">\n                <td [attr.colspan]=\"dt.visibleColumns().length\">\n                    <a href=\"#\" *ngIf=\"dt.expandableRowGroups\" (click)=\"dt.toggleRowGroup($event,rowData)\">\n                        <span class=\"fa fa-fw\" [ngClass]=\"dt.isRowGroupExpanded(rowData) ? dt.expandedIcon : dt.collapsedIcon\"></span>\n                    </a>\n                    <span class=\"ui-rowgroup-header-name\">\n                        <p-templateLoader [template]=\"dt.rowGroupHeaderTemplate\" [data]=\"rowData\"></p-templateLoader>\n                    </span>\n                </td>\n            </tr>\n            <tr #rowElement *ngIf=\"!dt.expandableRowGroups||dt.isRowGroupExpanded(rowData)\"\n                    (click)=\"dt.handleRowClick($event, rowData, rowIndex)\" (dblclick)=\"dt.rowDblclick($event,rowData)\" (contextmenu)=\"dt.onRowRightClick($event,rowData)\" (touchend)=\"dt.handleRowTouchEnd($event)\"\n                    [ngClass]=\"[even&&dt.rowGroupMode!='rowspan'? 'ui-datatable-even':'',\n                                odd&&dt.rowGroupMode!='rowspan'?'ui-datatable-odd':'',\n                                dt.isSelected(rowData)? 'ui-state-highlight': '',\n                                dt.isRowExpanded(rowData) ? 'ui-expanded-row': '',\n                                dt.getRowStyleClass(rowData,rowIndex)]\">\n                <ng-template ngFor let-col [ngForOf]=\"columns\" let-colIndex=\"index\">\n                    <td #cell *ngIf=\"!dt.rowGroupMode || (dt.rowGroupMode == 'subheader') ||\n                        (dt.rowGroupMode=='rowspan' && ((dt.sortField==col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) || (dt.sortField!=col.field)))\"\n                        [ngStyle]=\"col.bodyStyle||col.style\" [class]=\"col.bodyStyleClass||col.styleClass\" (click)=\"dt.switchCellToEditMode(cell,col,rowData)\"\n                        [ngClass]=\"{'ui-editable-column':col.editable,'ui-selection-column':col.selectionMode, 'ui-helper-hidden': col.hidden}\"\n                        [attr.rowspan]=\"(dt.rowGroupMode=='rowspan' && dt.sortField == col.field && dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].index == rowIndex) ? dt.rowGroupMetadata[dt.resolveFieldData(rowData,dt.sortField)].size : null\">\n                        <span class=\"ui-column-title\" *ngIf=\"dt.responsive\">{{col.header}}</span>\n                        <span class=\"ui-cell-data\" *ngIf=\"!col.bodyTemplate && !col.expander && !col.selectionMode\">{{dt.resolveFieldData(rowData,col.field)}}</span>\n                        <span class=\"ui-cell-data\" *ngIf=\"col.bodyTemplate\">\n                            <p-columnBodyTemplateLoader [column]=\"col\" [rowData]=\"rowData\" [rowIndex]=\"rowIndex + dt.first\"></p-columnBodyTemplateLoader>\n                        </span>\n                        <div class=\"ui-cell-editor\" *ngIf=\"col.editable\">\n                            <input *ngIf=\"!col.editorTemplate\" type=\"text\" [(ngModel)]=\"rowData[col.field]\"\n                                (keydown)=\"dt.onCellEditorKeydown($event, col, rowData, rowIndex)\" (blur)=\"dt.onCellEditorBlur($event, col, rowData, rowIndex)\"\n                                (input)=\"dt.onCellEditorInput($event, col, rowData, rowIndex)\" (change)=\"dt.onCellEditorChange($event, col, rowData, rowIndex)\"\n                                class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\"/>\n                            <a *ngIf=\"col.editorTemplate\" class=\"ui-cell-editor-proxy-focus\" href=\"#\" (focus)=\"dt.onCustomEditorFocusPrev($event, colIndex)\"></a>\n                            <p-columnEditorTemplateLoader *ngIf=\"col.editorTemplate\" [column]=\"col\" [rowData]=\"rowData\" [rowIndex]=\"rowIndex\"></p-columnEditorTemplateLoader>\n                            <a *ngIf=\"col.editorTemplate\" class=\"ui-cell-editor-proxy-focus\" href=\"#\" (focus)=\"dt.onCustomEditorFocusNext($event, colIndex)\"></a>\n                        </div>\n                        <a href=\"#\" *ngIf=\"col.expander\" (click)=\"dt.toggleRow(rowData,$event)\">\n                            <span class=\"ui-row-toggler fa fa-fw ui-clickable\" [ngClass]=\"dt.isRowExpanded(rowData) ? dt.expandedIcon : dt.collapsedIcon\"></span>\n                        </a>\n                        <p-dtRadioButton *ngIf=\"col.selectionMode=='single'\" (onClick)=\"dt.selectRowWithRadio($event, rowData)\" [checked]=\"dt.isSelected(rowData)\"></p-dtRadioButton>\n                        <p-dtCheckbox *ngIf=\"col.selectionMode=='multiple'\" (onChange)=\"dt.toggleRowWithCheckbox($event,rowData)\" [checked]=\"dt.isSelected(rowData)\"></p-dtCheckbox>\n                    </td>\n                </ng-template>\n            </tr>\n            <tr *ngIf=\"dt.expandableRows && dt.isRowExpanded(rowData)\" class=\"ui-expanded-row-content\">\n                <td [attr.colspan]=\"dt.visibleColumns().length\">\n                    <p-rowExpansionLoader [rowData]=\"rowData\" [rowIndex]=\"rowIndex\" [template]=\"dt.rowExpansionTemplate\"></p-rowExpansionLoader>\n                </td>\n            </tr>\n            <tr class=\"ui-widget-header ui-rowgroup-footer\" *ngIf=\"dt.rowGroupFooterTemplate && dt.rowGroupMode=='subheader' && ((rowIndex === dt.dataToRender.length - 1)||(dt.resolveFieldData(rowData,dt.groupField) !== dt.resolveFieldData(dt.dataToRender[rowIndex + 1],dt.groupField))) && (!dt.expandableRowGroups || dt.isRowGroupExpanded(rowData))\">\n                <p-templateLoader class=\"ui-helper-hidden\" [data]=\"rowData\" [template]=\"dt.rowGroupFooterTemplate\"></p-templateLoader>\n            </tr>\n        </ng-template>\n\n        <tr *ngIf=\"dt.isEmpty()\" class=\"ui-widget-content ui-datatable-emptymessage-row\" [style.visibility]=\"dt.loading ? 'hidden' : 'visible'\">\n            <td [attr.colspan]=\"dt.visibleColumns().length\" class=\"ui-datatable-emptymessage\">\n                <span *ngIf=\"!dt.emptyMessageTemplate\">{{dt.emptyMessage}}</span>\n                <p-templateLoader [template]=\"dt.emptyMessageTemplate\"></p-templateLoader>\n            </td>\n        </tr>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return DataTable; }))),
     __metadata("design:paramtypes", [DataTable])
@@ -6189,18 +6406,22 @@ var ScrollableView = (function () {
         this.scrollTableWrapper = this.scrollTableWrapperViewChild.nativeElement;
         this.scrollFooter = this.scrollFooterViewChild ? this.scrollFooterViewChild.nativeElement : null;
         this.scrollFooterBox = this.scrollFooterBoxViewChild ? this.scrollFooterBoxViewChild.nativeElement : null;
+        this.setScrollHeight();
         if (!this.frozen) {
             this.zone.runOutsideAngular(function () {
                 _this.scrollHeader.addEventListener('scroll', _this.onHeaderScroll.bind(_this));
                 _this.scrollBody.addEventListener('scroll', _this.onBodyScroll.bind(_this));
             });
         }
-        if (!this.frozen)
+        if (!this.frozen) {
             this.alignScrollBar();
-        else
+        }
+        else {
             this.scrollBody.style.paddingBottom = this.domHandler.calculateScrollbarWidth() + 'px';
+        }
     };
     ScrollableView.prototype.onBodyScroll = function (event) {
+        var _this = this;
         var frozenView = this.el.nativeElement.previousElementSibling;
         if (frozenView) {
             var frozenScrollBody = this.domHandler.findSingle(frozenView, '.ui-datatable-scrollable-body');
@@ -6215,15 +6436,35 @@ var ScrollableView = (function () {
         if (this.virtualScroll) {
             var viewport = this.domHandler.getOuterHeight(this.scrollBody);
             var tableHeight = this.domHandler.getOuterHeight(this.scrollTable);
-            var pageHeight = this.rowHeight * this.dt.rows;
+            var pageHeight_1 = this.rowHeight * this.dt.rows;
             var virtualTableHeight = this.domHandler.getOuterHeight(this.scrollTableWrapper);
-            var pageCount = (virtualTableHeight / pageHeight) || 1;
+            var pageCount = (virtualTableHeight / pageHeight_1) || 1;
             if (this.scrollBody.scrollTop + viewport > parseFloat(this.scrollTable.style.top) + tableHeight || this.scrollBody.scrollTop < parseFloat(this.scrollTable.style.top)) {
-                var page = Math.floor((this.scrollBody.scrollTop * pageCount) / (this.scrollBody.scrollHeight)) + 1;
+                var page_1 = Math.floor((this.scrollBody.scrollTop * pageCount) / (this.scrollBody.scrollHeight)) + 1;
                 this.onVirtualScroll.emit({
-                    page: page
+                    page: page_1,
+                    callback: function () {
+                        _this.scrollTable.style.top = ((page_1 - 1) * pageHeight_1) + 'px';
+                    }
                 });
-                this.scrollTable.style.top = ((page - 1) * pageHeight) + 'px';
+            }
+        }
+    };
+    ScrollableView.prototype.setScrollHeight = function () {
+        if (this.dt.scrollHeight) {
+            if (this.dt.scrollHeight.indexOf('%') !== -1) {
+                this.scrollBody.style.visibility = 'hidden';
+                this.scrollBody.style.height = '100px'; //temporary height to calculate static height
+                var containerHeight = this.domHandler.getOuterHeight(this.dt.el.nativeElement.children[0]);
+                var relativeHeight = this.domHandler.getOuterHeight(this.dt.el.nativeElement.parentElement) * parseInt(this.dt.scrollHeight) / 100;
+                var staticHeight = containerHeight - 100; //total height of headers, footers, paginators
+                var scrollBodyHeight = (relativeHeight - staticHeight);
+                this.scrollBody.style.height = 'auto';
+                this.scrollBody.style.maxHeight = scrollBodyHeight + 'px';
+                this.scrollBody.style.visibility = 'visible';
+            }
+            else {
+                this.scrollBody.style.maxHeight = this.dt.scrollHeight;
             }
         }
     };
@@ -6250,6 +6491,14 @@ __decorate([
     core_1.Input("pScrollableView"),
     __metadata("design:type", Array)
 ], ScrollableView.prototype, "columns", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", shared_2.HeaderColumnGroup)
+], ScrollableView.prototype, "headerColumnGroup", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", shared_2.HeaderColumnGroup)
+], ScrollableView.prototype, "footerColumnGroup", void 0);
 __decorate([
     core_1.ViewChild('scrollHeader'),
     __metadata("design:type", core_1.ElementRef)
@@ -6297,7 +6546,7 @@ __decorate([
 ScrollableView = __decorate([
     core_1.Component({
         selector: '[pScrollableView]',
-        template: "\n        <div #scrollHeader class=\"ui-widget-header ui-datatable-scrollable-header\" [ngStyle]=\"{'width': width}\">\n            <div #scrollHeaderBox  class=\"ui-datatable-scrollable-header-box\">\n                <table [ngClass]=\"dt.tableStyleClass\" [ngStyle]=\"dt.tableStyle\">\n                    <thead class=\"ui-datatable-thead\">\n                        <tr *ngIf=\"!dt.headerColumnGroup\" class=\"ui-state-default\" [pColumnHeaders]=\"columns\"></tr>\n                        <ng-template [ngIf]=\"dt.headerColumnGroup\">\n                            <tr *ngFor=\"let headerRow of dt.headerColumnGroup.rows\" class=\"ui-state-default\" [pColumnHeaders]=\"headerRow.columns\"></tr>\n                        </ng-template>\n                    </thead>\n                    <tbody *ngIf=\"dt.frozenValue\" [ngClass]=\"{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (dt.rowHover||dt.selectionMode)}\" [pTableBody]=\"columns\" [data]=\"dt.frozenValue\"></tbody>\n                </table>\n            </div>\n        </div>\n        <div #scrollBody class=\"ui-datatable-scrollable-body\" [ngStyle]=\"{'width': width,'max-height':dt.scrollHeight}\">\n            <div #scrollTableWrapper class=\"ui-datatable-scrollable-table-wrapper\" style=\"position:relative\">\n                <table #scrollTable [class]=\"dt.tableStyleClass\" [ngStyle]=\"dt.tableStyle\" [ngClass]=\"{'ui-datatable-virtual-table':virtualScroll}\" style=\"top:0px\">\n                    <colgroup class=\"ui-datatable-scrollable-colgroup\">\n                        <col *ngFor=\"let col of columns\" [ngStyle]=\"col.style\" [ngClass]=\"{'ui-helper-hidden': col.hidden}\"/>\n                    </colgroup>\n                    <tbody [ngClass]=\"{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (dt.rowHover||dt.selectionMode)}\" [pTableBody]=\"columns\" [data]=\"dt.dataToRender\"></tbody>\n                </table>\n            </div>\n        </div>\n        <div #scrollFooter class=\"ui-widget-header ui-datatable-scrollable-footer\" [ngStyle]=\"{'width': width}\" *ngIf=\"dt.hasFooter()\">\n            <div #scrollFooterBox  class=\"ui-datatable-scrollable-footer-box\">\n                <table [ngClass]=\"dt.tableStyleClass\" [ngStyle]=\"dt.tableStyle\">\n                    <tfoot class=\"ui-datatable-tfoot\">\n                        <tr *ngIf=\"!dt.footerColumnGroup\" [pColumnFooters]=\"columns\" class=\"ui-state-default\"></tr>\n                        <ng-template [ngIf]=\"dt.footerColumnGroup\">\n                            <tr *ngFor=\"let footerRow of dt.footerColumnGroup.rows\" class=\"ui-state-default\" [pColumnFooters]=\"footerRow.columns\"></tr>\n                        </ng-template>\n                    </tfoot>\n                </table>\n            </div>\n        </div>\n    "
+        template: "\n        <div #scrollHeader class=\"ui-widget-header ui-datatable-scrollable-header\" [ngStyle]=\"{'width': width}\">\n            <div #scrollHeaderBox  class=\"ui-datatable-scrollable-header-box\">\n                <table [ngClass]=\"dt.tableStyleClass\" [ngStyle]=\"dt.tableStyle\">\n                    <thead class=\"ui-datatable-thead\">\n                        <tr *ngIf=\"!headerColumnGroup\" class=\"ui-state-default\" [pColumnHeaders]=\"columns\"></tr>\n                        <ng-template [ngIf]=\"headerColumnGroup\">\n                            <tr *ngFor=\"let headerRow of headerColumnGroup.rows\" class=\"ui-state-default\" [pColumnHeaders]=\"headerRow.columns\"></tr>\n                        </ng-template>\n                    </thead>\n                    <tbody *ngIf=\"dt.frozenValue\" [ngClass]=\"{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (dt.rowHover||dt.selectionMode)}\" [pTableBody]=\"columns\" [data]=\"dt.frozenValue\"></tbody>\n                </table>\n            </div>\n        </div>\n        <div #scrollBody class=\"ui-datatable-scrollable-body\" [ngStyle]=\"{'width': width}\">\n            <div #scrollTableWrapper class=\"ui-datatable-scrollable-table-wrapper\" style=\"position:relative\">\n                <table #scrollTable [class]=\"dt.tableStyleClass\" [ngStyle]=\"dt.tableStyle\" [ngClass]=\"{'ui-datatable-virtual-table':virtualScroll}\" style=\"top:0px\">\n                    <colgroup class=\"ui-datatable-scrollable-colgroup\">\n                        <col *ngFor=\"let col of columns\" [ngStyle]=\"col.headerStyle||col.style\" [ngClass]=\"{'ui-helper-hidden': col.hidden}\"/>\n                    </colgroup>\n                    <tbody [ngClass]=\"{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (dt.rowHover||dt.selectionMode)}\" [pTableBody]=\"columns\" [data]=\"dt.dataToRender\"></tbody>\n                </table>\n            </div>\n        </div>\n        <div #scrollFooter class=\"ui-widget-header ui-datatable-scrollable-footer\" [ngStyle]=\"{'width': width}\" *ngIf=\"dt.hasFooter()\">\n            <div #scrollFooterBox  class=\"ui-datatable-scrollable-footer-box\">\n                <table [ngClass]=\"dt.tableStyleClass\" [ngStyle]=\"dt.tableStyle\">\n                    <tfoot class=\"ui-datatable-tfoot\">\n                        <tr *ngIf=\"!footerColumnGroup\" [pColumnFooters]=\"columns\" class=\"ui-state-default\"></tr>\n                        <ng-template [ngIf]=\"footerColumnGroup\">\n                            <tr *ngFor=\"let footerRow of footerColumnGroup.rows\" class=\"ui-state-default\" [pColumnFooters]=\"footerRow.columns\"></tr>\n                        </ng-template>\n                    </tfoot>\n                </table>\n            </div>\n        </div>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return DataTable; }))),
     __metadata("design:paramtypes", [DataTable, domhandler_1.DomHandler, core_1.ElementRef, core_1.Renderer2, core_1.NgZone])
@@ -6314,6 +6563,7 @@ var DataTable = (function () {
         this.zone = zone;
         this.pageLinks = 5;
         this.selectionChange = new core_1.EventEmitter();
+        this.showHeaderCheckbox = true;
         this.onRowClick = new core_1.EventEmitter();
         this.onRowSelect = new core_1.EventEmitter();
         this.onRowUnselect = new core_1.EventEmitter();
@@ -6326,7 +6576,6 @@ var DataTable = (function () {
         this.onColResize = new core_1.EventEmitter();
         this.onColReorder = new core_1.EventEmitter();
         this.sortMode = 'single';
-        this.sortOrder = 1;
         this.defaultSortOrder = 1;
         this.csvSeparator = ',';
         this.exportFilename = 'download';
@@ -6351,8 +6600,8 @@ var DataTable = (function () {
         this.sortableRowGroup = true;
         this.filters = {};
         this.loadingIcon = 'fa-circle-o-notch';
-        this.enableLoader = true;
         this.virtualScrollDelay = 500;
+        this.rowGroupExpandMode = 'multiple';
         this.valueChange = new core_1.EventEmitter();
         this.firstChange = new core_1.EventEmitter();
         this.onRowExpand = new core_1.EventEmitter();
@@ -6362,6 +6611,7 @@ var DataTable = (function () {
         this.page = 0;
         this.columnsChanged = false;
         this._first = 0;
+        this._sortOrder = 1;
         this.filterConstraints = {
             startsWith: function (value, filter) {
                 if (filter === undefined || filter === null || filter.trim() === '') {
@@ -6434,6 +6684,7 @@ var DataTable = (function () {
     DataTable.prototype.ngAfterContentInit = function () {
         var _this = this;
         this.initColumns();
+        this.initColumnGroups();
         this.columnsSubscription = this.cols.changes.subscribe(function (_) {
             _this.initColumns();
             _this.changeDetector.markForCheck();
@@ -6489,6 +6740,45 @@ var DataTable = (function () {
         this.virtualScrollableTableWrapper = this.domHandler.findSingle(this.el.nativeElement, 'div.ui-datatable-scrollable-table-wrapper');
         this.initialized = true;
     };
+    Object.defineProperty(DataTable.prototype, "multiSortMeta", {
+        get: function () {
+            return this._multiSortMeta;
+        },
+        set: function (val) {
+            this._multiSortMeta = val;
+            if (this.sortMode === 'multiple') {
+                this.sortMultiple();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DataTable.prototype, "sortField", {
+        get: function () {
+            return this._sortField;
+        },
+        set: function (val) {
+            this._sortField = val;
+            if (this.sortMode === 'single') {
+                this.sortSingle();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DataTable.prototype, "sortOrder", {
+        get: function () {
+            return this._sortOrder;
+        },
+        set: function (val) {
+            this._sortOrder = val;
+            if (this.sortMode === 'single') {
+                this.sortSingle();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DataTable.prototype, "value", {
         get: function () {
             return this._value;
@@ -6540,9 +6830,14 @@ var DataTable = (function () {
             if (this.dataKey && !this.preventSelectionKeysPropagation) {
                 this.selectionKeys = {};
                 if (this._selection) {
-                    for (var _i = 0, _a = this._selection; _i < _a.length; _i++) {
-                        var data = _a[_i];
-                        this.selectionKeys[String(this.objectUtils.resolveFieldData(data, this.dataKey))] = 1;
+                    if (Array.isArray(this._selection)) {
+                        for (var _i = 0, _a = this._selection; _i < _a.length; _i++) {
+                            var data = _a[_i];
+                            this.selectionKeys[String(this.objectUtils.resolveFieldData(data, this.dataKey))] = 1;
+                        }
+                    }
+                    else {
+                        this.selectionKeys[String(this.objectUtils.resolveFieldData(this._selection, this.dataKey))] = 1;
                     }
                 }
             }
@@ -6561,11 +6856,11 @@ var DataTable = (function () {
     };
     DataTable.prototype.handleDataChange = function () {
         var _this = this;
-        if (this.lazy && this.enableLoader) {
-            this.loading = false;
-        }
         if (this.paginator) {
             this.updatePaginator();
+        }
+        if (this.virtualScroll && this.virtualScrollCallback) {
+            this.virtualScrollCallback();
         }
         if (!this.lazy) {
             if (this.hasFilter()) {
@@ -6587,42 +6882,41 @@ var DataTable = (function () {
         this.updateDataToRender(this.filteredValue || this.value);
     };
     DataTable.prototype.initColumns = function () {
-        var _this = this;
         this.columns = this.cols.toArray();
-        if (this.scrollable) {
-            this.scrollableColumns = [];
-            this.frozenColumns = [];
-            this.cols.forEach(function (col) {
-                if (col.frozen) {
-                    _this.frozenColumns.push(col);
-                }
-                else {
-                    _this.scrollableColumns.push(col);
-                }
-            });
-        }
+        this.initScrollableColumns();
         this.columnsChanged = true;
     };
+    DataTable.prototype.initScrollableColumns = function () {
+        this.scrollableColumns = [];
+        this.frozenColumns = [];
+        for (var _i = 0, _a = this.columns; _i < _a.length; _i++) {
+            var col = _a[_i];
+            if (col.frozen)
+                this.frozenColumns.push(col);
+            else
+                this.scrollableColumns.push(col);
+        }
+    };
+    DataTable.prototype.initColumnGroups = function () {
+        var headerColumnsGroups = this.headerColumnGroups.toArray();
+        var footerColumnsGroups = this.footerColumnGroups.toArray();
+        for (var _i = 0, headerColumnsGroups_1 = headerColumnsGroups; _i < headerColumnsGroups_1.length; _i++) {
+            var columnGroup = headerColumnsGroups_1[_i];
+            if (columnGroup.frozen)
+                this.frozenHeaderColumnGroup = columnGroup;
+            else
+                this.scrollableHeaderColumnGroup = columnGroup;
+        }
+        for (var _a = 0, footerColumnsGroups_1 = footerColumnsGroups; _a < footerColumnsGroups_1.length; _a++) {
+            var columnGroup = footerColumnsGroups_1[_a];
+            if (columnGroup.frozen)
+                this.frozenFooterColumnGroup = columnGroup;
+            else
+                this.scrollableFooterColumnGroup = columnGroup;
+        }
+    };
     DataTable.prototype.resolveFieldData = function (data, field) {
-        if (data && field) {
-            if (field.indexOf('.') == -1) {
-                return data[field];
-            }
-            else {
-                var fields = field.split('.');
-                var value = data;
-                for (var i = 0, len = fields.length; i < len; ++i) {
-                    if (value == null) {
-                        return null;
-                    }
-                    value = value[fields[i]];
-                }
-                return value;
-            }
-        }
-        else {
-            return null;
-        }
+        return this.objectUtils.resolveFieldData(data, field);
     };
     DataTable.prototype.updateRowGroupMetadata = function () {
         this.rowGroupMetadata = {};
@@ -6696,6 +6990,7 @@ var DataTable = (function () {
     DataTable.prototype.onVirtualScroll = function (event) {
         var _this = this;
         this._first = (event.page - 1) * this.rows;
+        this.virtualScrollCallback = event.callback;
         this.zone.run(function () {
             if (_this.virtualScrollTimer) {
                 clearTimeout(_this.virtualScrollTimer);
@@ -6734,13 +7029,13 @@ var DataTable = (function () {
                 this.preventSortPropagation = true;
             }
             var columnSortField = column.sortField || column.field;
-            this.sortOrder = (this.sortField === columnSortField) ? this.sortOrder * -1 : this.defaultSortOrder;
-            this.sortField = columnSortField;
+            this._sortOrder = (this.sortField === columnSortField) ? this.sortOrder * -1 : this.defaultSortOrder;
+            this._sortField = columnSortField;
             this.sortColumn = column;
             var metaKey = event.metaKey || event.ctrlKey;
             if (this.sortMode == 'multiple') {
                 if (!this.multiSortMeta || !metaKey) {
-                    this.multiSortMeta = [];
+                    this._multiSortMeta = [];
                 }
                 this.addSortMeta({ field: this.sortField, order: this.sortOrder });
             }
@@ -6887,11 +7182,11 @@ var DataTable = (function () {
             var targetNode = event.target.nodeName;
             if ((targetNode == 'TD' || (targetNode == 'SPAN' && !this.domHandler.hasClass(event.target, 'ui-clickable')))) {
                 if (this.sortField != this.groupField) {
-                    this.sortField = this.groupField;
+                    this._sortField = this.groupField;
                     this.sortSingle();
                 }
                 else {
-                    this.sortOrder = -1 * this.sortOrder;
+                    this._sortOrder = -1 * this.sortOrder;
                     this.sortSingle();
                 }
             }
@@ -7040,6 +7335,7 @@ var DataTable = (function () {
                         if (selected) {
                             var selectionIndex_2 = this.findIndexInSelection(rowData);
                             this._selection = this.selection.filter(function (val, i) { return i != selectionIndex_2; });
+                            this.selectionChange.emit(this.selection);
                             this.onRowUnselect.emit({ originalEvent: event, data: rowData, type: 'row' });
                             if (dataKeyValue) {
                                 delete this.selectionKeys[dataKeyValue];
@@ -7047,13 +7343,13 @@ var DataTable = (function () {
                         }
                         else {
                             this._selection = (this.selection || []).concat([rowData]);
+                            this.selectionChange.emit(this.selection);
                             this.onRowSelect.emit({ originalEvent: event, data: rowData, type: 'row' });
                             if (dataKeyValue) {
                                 this.selectionKeys[dataKeyValue] = 1;
                             }
                         }
                     }
-                    this.selectionChange.emit(this.selection);
                 }
             }
             this.preventSelectionKeysPropagation = true;
@@ -7087,6 +7383,7 @@ var DataTable = (function () {
         var dataKeyValue = this.dataKey ? String(this.resolveFieldData(rowData, this.dataKey)) : null;
         if (selectionIndex != -1) {
             this._selection = this.selection.filter(function (val, i) { return i != selectionIndex; });
+            this.selectionChange.emit(this.selection);
             this.onRowUnselect.emit({ originalEvent: event, data: rowData, type: 'checkbox' });
             if (dataKeyValue) {
                 delete this.selectionKeys[dataKeyValue];
@@ -7094,12 +7391,12 @@ var DataTable = (function () {
         }
         else {
             this._selection = this.selection.concat([rowData]);
+            this.selectionChange.emit(this.selection);
             this.onRowSelect.emit({ originalEvent: event, data: rowData, type: 'checkbox' });
             if (dataKeyValue) {
                 this.selectionKeys[dataKeyValue] = 1;
             }
         }
-        this.selectionChange.emit(this.selection);
         this.preventSelectionKeysPropagation = true;
         this.preventRowClickPropagation = true;
     };
@@ -7127,12 +7424,12 @@ var DataTable = (function () {
                 }
                 if (this.dataKey) {
                     this.selectionKeys[String(this.resolveFieldData(rowData, this.dataKey))] = 1;
+                    this.preventSelectionKeysPropagation = true;
                 }
             }
             this.contextMenu.show(event);
             this.onContextMenuSelect.emit({ originalEvent: event, data: rowData });
         }
-        this.preventSelectionKeysPropagation = true;
     };
     DataTable.prototype.rowDblclick = function (event, rowData) {
         this.onRowDblclick.emit({ originalEvent: event, data: rowData });
@@ -7229,6 +7526,9 @@ var DataTable = (function () {
             this.onLazyLoad.emit(this.createLazyLoadMetadata());
         }
         else {
+            if (!this.value || !this.columns) {
+                return;
+            }
             this.filteredValue = [];
             for (var i = 0; i < this.value.length; i++) {
                 var localMatch = true;
@@ -7247,7 +7547,7 @@ var DataTable = (function () {
                         }
                     }
                     //global
-                    if (this.globalFilter && !globalMatch) {
+                    if (!col.excludeGlobalFilter && this.globalFilter && !globalMatch) {
                         globalMatch = this.filterConstraints['contains'](this.resolveFieldData(this.value[i], col.filterField || col.field), this.globalFilter.value);
                     }
                 }
@@ -7336,27 +7636,42 @@ var DataTable = (function () {
     };
     DataTable.prototype.onCellEditorKeydown = function (event, column, rowData, rowIndex) {
         if (this.editable) {
-            this.onEdit.emit({ originalEvent: event, column: column, data: rowData, index: rowIndex });
             //enter
             if (event.keyCode == 13) {
-                this.onEditComplete.emit({ column: column, data: rowData, index: rowIndex });
-                this.domHandler.invokeElementMethod(event.target, 'blur');
-                this.switchCellToViewMode(event.target);
-                event.preventDefault();
+                if (this.domHandler.find(this.editingCell, '.ng-invalid.ng-dirty').length == 0) {
+                    this.switchCellToViewMode(event.target);
+                    event.preventDefault();
+                }
             }
             else if (event.keyCode == 27) {
-                this.onEditCancel.emit({ column: column, data: rowData, index: rowIndex });
-                this.domHandler.invokeElementMethod(event.target, 'blur');
                 this.switchCellToViewMode(event.target);
                 event.preventDefault();
             }
             else if (event.keyCode == 9) {
-                this.onEditComplete.emit({ column: column, data: rowData, index: rowIndex });
                 if (event.shiftKey)
                     this.moveToPreviousCell(event);
                 else
                     this.moveToNextCell(event);
             }
+        }
+    };
+    DataTable.prototype.onCellEditorInput = function (event, column, rowData, rowIndex) {
+        if (this.editable) {
+            this.onEdit.emit({ originalEvent: event, column: column, data: rowData, index: rowIndex });
+        }
+    };
+    DataTable.prototype.onCellEditorChange = function (event, column, rowData, rowIndex) {
+        if (this.editable) {
+            this.editChanged = true;
+            this.onEditComplete.emit({ column: column, data: rowData, index: rowIndex });
+        }
+    };
+    DataTable.prototype.onCellEditorBlur = function (event, column, rowData, rowIndex) {
+        if (this.editable) {
+            if (this.editChanged)
+                this.editChanged = false;
+            else
+                this.onEditCancel.emit({ column: column, data: rowData, index: rowIndex });
         }
     };
     DataTable.prototype.moveToPreviousCell = function (event) {
@@ -7609,6 +7924,9 @@ var DataTable = (function () {
             }
             if (allowDrop) {
                 this.objectUtils.reorderArray(this.columns, dragIndex, dropIndex);
+                if (this.scrollable) {
+                    this.initScrollableColumns();
+                }
                 this.onColReorder.emit({
                     dragIndex: dragIndex,
                     dropIndex: dropIndex,
@@ -7643,7 +7961,7 @@ var DataTable = (function () {
         }
     };
     DataTable.prototype.hasFooter = function () {
-        if (this.footerColumnGroup) {
+        if (this.footerColumnGroups.first) {
             return true;
         }
         else {
@@ -7661,9 +7979,6 @@ var DataTable = (function () {
         return !this.dataToRender || (this.dataToRender.length == 0);
     };
     DataTable.prototype.createLazyLoadMetadata = function () {
-        if (this.enableLoader) {
-            this.loading = true;
-        }
         return {
             first: this.first,
             rows: this.virtualScroll ? this.rows * 2 : this.rows,
@@ -7733,6 +8048,9 @@ var DataTable = (function () {
         return this.findExpandedRowGroupIndex(row) != -1;
     };
     DataTable.prototype.toggleRowGroup = function (event, row) {
+        if (!this.expandedRowsGroups) {
+            this.expandedRowsGroups = [];
+        }
         this.rowGroupToggleClick = true;
         var index = this.findExpandedRowGroupIndex(row);
         var rowGroupField = this.resolveFieldData(row, this.groupField);
@@ -7744,7 +8062,9 @@ var DataTable = (function () {
             });
         }
         else {
-            this.expandedRowsGroups = this.expandedRowsGroups || [];
+            if (this.rowGroupExpandMode === 'single') {
+                this.expandedRowsGroups = [];
+            }
             this.expandedRowsGroups.push(rowGroupField);
             this.onRowGroupExpand.emit({
                 originalEvent: event,
@@ -7754,8 +8074,8 @@ var DataTable = (function () {
         event.preventDefault();
     };
     DataTable.prototype.reset = function () {
-        this.sortField = null;
-        this.sortOrder = 1;
+        this._sortField = null;
+        this._sortOrder = 1;
         this.filteredValue = null;
         this.filters = {};
         this._first = 0;
@@ -7766,25 +8086,30 @@ var DataTable = (function () {
         else
             this.updateDataToRender(this.value);
     };
-    DataTable.prototype.exportCSV = function () {
+    DataTable.prototype.exportCSV = function (options) {
         var _this = this;
         var data = this.filteredValue || this.value;
         var csv = '\ufeff';
+        if (options && options.selectionOnly) {
+            data = this.selection || [];
+        }
         //headers
         for (var i = 0; i < this.columns.length; i++) {
-            if (this.columns[i].field) {
-                csv += '"' + (this.columns[i].header || this.columns[i].field) + '"';
+            var column = this.columns[i];
+            if (column.exportable && column.field) {
+                csv += '"' + (column.header || column.field) + '"';
                 if (i < (this.columns.length - 1)) {
                     csv += this.csvSeparator;
                 }
             }
         }
-        //body        
+        //body
         data.forEach(function (record, i) {
             csv += '\n';
             for (var i_1 = 0; i_1 < _this.columns.length; i_1++) {
-                if (_this.columns[i_1].field) {
-                    csv += '"' + _this.resolveFieldData(record, _this.columns[i_1].field) + '"';
+                var column = _this.columns[i_1];
+                if (column.exportable && column.field) {
+                    csv += '"' + _this.resolveFieldData(record, column.field) + '"';
                     if (i_1 < (_this.columns.length - 1)) {
                         csv += _this.csvSeparator;
                     }
@@ -7867,6 +8192,9 @@ var DataTable = (function () {
         if (this.columnsSubscription) {
             this.columnsSubscription.unsubscribe();
         }
+        if (this.virtualScrollCallback) {
+            this.virtualScrollCallback = null;
+        }
     };
     return DataTable;
 }());
@@ -7906,6 +8234,10 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
 ], DataTable.prototype, "editable", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], DataTable.prototype, "showHeaderCheckbox", void 0);
 __decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
@@ -8016,24 +8348,12 @@ __decorate([
 ], DataTable.prototype, "sortMode", void 0);
 __decorate([
     core_1.Input(),
-    __metadata("design:type", String)
-], DataTable.prototype, "sortField", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Number)
-], DataTable.prototype, "sortOrder", void 0);
-__decorate([
-    core_1.Input(),
     __metadata("design:type", Number)
 ], DataTable.prototype, "defaultSortOrder", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", String)
 ], DataTable.prototype, "groupField", void 0);
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Array)
-], DataTable.prototype, "multiSortMeta", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Object)
@@ -8188,12 +8508,12 @@ __decorate([
 ], DataTable.prototype, "loadingIcon", void 0);
 __decorate([
     core_1.Input(),
-    __metadata("design:type", Boolean)
-], DataTable.prototype, "enableLoader", void 0);
-__decorate([
-    core_1.Input(),
     __metadata("design:type", Number)
 ], DataTable.prototype, "virtualScrollDelay", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], DataTable.prototype, "rowGroupExpandMode", void 0);
 __decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
@@ -8227,13 +8547,28 @@ __decorate([
     __metadata("design:type", core_1.QueryList)
 ], DataTable.prototype, "cols", void 0);
 __decorate([
-    core_1.ContentChild(shared_2.HeaderColumnGroup),
-    __metadata("design:type", shared_2.HeaderColumnGroup)
-], DataTable.prototype, "headerColumnGroup", void 0);
+    core_1.ContentChildren(shared_2.HeaderColumnGroup),
+    __metadata("design:type", core_1.QueryList)
+], DataTable.prototype, "headerColumnGroups", void 0);
 __decorate([
-    core_1.ContentChild(shared_2.FooterColumnGroup),
-    __metadata("design:type", shared_2.FooterColumnGroup)
-], DataTable.prototype, "footerColumnGroup", void 0);
+    core_1.ContentChildren(shared_2.FooterColumnGroup),
+    __metadata("design:type", core_1.QueryList)
+], DataTable.prototype, "footerColumnGroups", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array),
+    __metadata("design:paramtypes", [Array])
+], DataTable.prototype, "multiSortMeta", null);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String),
+    __metadata("design:paramtypes", [String])
+], DataTable.prototype, "sortField", null);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number),
+    __metadata("design:paramtypes", [Number])
+], DataTable.prototype, "sortOrder", null);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Array),
@@ -8257,7 +8592,7 @@ __decorate([
 DataTable = __decorate([
     core_1.Component({
         selector: 'p-dataTable',
-        template: "\n        <div [ngStyle]=\"style\" [class]=\"styleClass\" [style.width]=\"containerWidth\"\n            [ngClass]=\"{'ui-datatable ui-widget':true,'ui-datatable-reflow':responsive,'ui-datatable-stacked':stacked,'ui-datatable-resizable':resizableColumns,'ui-datatable-scrollable':scrollable}\">\n            <div class=\"ui-datatable-loading ui-widget-overlay\" *ngIf=\"loading\"></div>\n            <div class=\"ui-datatable-loading-content\" *ngIf=\"loading\">\n                <i [class]=\"'fa fa-spin fa-2x ' + loadingIcon\"></i>\n            </div>\n            <div class=\"ui-datatable-header ui-widget-header\" *ngIf=\"header\">\n                <ng-content select=\"p-header\"></ng-content>\n            </div>\n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" styleClass=\"ui-paginator-top\" [alwaysShow]=\"alwaysShowPaginator\"\n                (onPageChange)=\"onPageChange($event)\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator && paginatorPosition =='top' || paginatorPosition =='both'\"></p-paginator>\n            <div class=\"ui-datatable-tablewrapper\" *ngIf=\"!scrollable\">\n                <table [ngClass]=\"tableStyleClass\" [ngStyle]=\"tableStyle\">\n                    <thead class=\"ui-datatable-thead\">\n                        <tr *ngIf=\"!headerColumnGroup\" class=\"ui-state-default\" [pColumnHeaders]=\"columns\"></tr>\n                        <ng-template [ngIf]=\"headerColumnGroup\">\n                            <tr *ngFor=\"let headerRow of headerColumnGroup.rows\" class=\"ui-state-default\" [pColumnHeaders]=\"headerRow.columns\"></tr>\n                        </ng-template>\n                    </thead>\n                    <tfoot *ngIf=\"hasFooter()\" class=\"ui-datatable-tfoot\">\n                        <tr *ngIf=\"!footerColumnGroup\" class=\"ui-state-default\" [pColumnFooters]=\"columns\"></tr>\n                        <ng-template [ngIf]=\"footerColumnGroup\">\n                            <tr *ngFor=\"let footerRow of footerColumnGroup.rows\" class=\"ui-state-default\" [pColumnFooters]=\"footerRow.columns\"></tr>\n                        </ng-template>\n                    </tfoot>\n                    <tbody [ngClass]=\"{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (rowHover||selectionMode)}\" [pTableBody]=\"columns\" [data]=\"dataToRender\"></tbody>\n                </table>\n            </div>\n            \n            <ng-template [ngIf]=\"scrollable\">\n                <div class=\"ui-datatable-scrollable-wrapper ui-helper-clearfix\" [ngClass]=\"{'max-height':scrollHeight}\">\n                    <div *ngIf=\"hasFrozenColumns()\" [pScrollableView]=\"frozenColumns\" frozen=\"true\" \n                        [ngStyle]=\"{'width':this.frozenWidth}\" class=\"ui-datatable-scrollable-view ui-datatable-frozen-view\"></div>\n                    <div [pScrollableView]=\"scrollableColumns\" [ngStyle]=\"{'width':this.unfrozenWidth, 'left': this.frozenWidth}\"\n                        class=\"ui-datatable-scrollable-view\" [virtualScroll]=\"virtualScroll\" (onVirtualScroll)=\"onVirtualScroll($event)\"\n                        [ngClass]=\"{'ui-datatable-unfrozen-view': hasFrozenColumns()}\"></div>\n                </div>\n            </ng-template>\n            \n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" styleClass=\"ui-paginator-bottom\" [alwaysShow]=\"alwaysShowPaginator\"\n                (onPageChange)=\"onPageChange($event)\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator && paginatorPosition =='bottom' || paginatorPosition =='both'\"></p-paginator>\n            <div class=\"ui-datatable-footer ui-widget-header\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n            \n            <div class=\"ui-column-resizer-helper ui-state-highlight\" style=\"display:none\"></div>\n            <span class=\"fa fa-arrow-down ui-datatable-reorder-indicator-up\" style=\"position: absolute; display: none;\"></span>\n            <span class=\"fa fa-arrow-up ui-datatable-reorder-indicator-down\" style=\"position: absolute; display: none;\"></span>\n        </div>\n    ",
+        template: "\n        <div [ngStyle]=\"style\" [class]=\"styleClass\" [style.width]=\"containerWidth\"\n            [ngClass]=\"{'ui-datatable ui-widget':true,'ui-datatable-reflow':responsive,'ui-datatable-stacked':stacked,'ui-datatable-resizable':resizableColumns,'ui-datatable-scrollable':scrollable}\">\n            <div class=\"ui-datatable-loading ui-widget-overlay\" *ngIf=\"loading\"></div>\n            <div class=\"ui-datatable-loading-content\" *ngIf=\"loading\">\n                <i [class]=\"'fa fa-spin fa-2x ' + loadingIcon\"></i>\n            </div>\n            <div class=\"ui-datatable-header ui-widget-header\" *ngIf=\"header\">\n                <ng-content select=\"p-header\"></ng-content>\n            </div>\n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" styleClass=\"ui-paginator-top\" [alwaysShow]=\"alwaysShowPaginator\"\n                (onPageChange)=\"onPageChange($event)\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator && (paginatorPosition === 'top' || paginatorPosition =='both')\"></p-paginator>\n            <div class=\"ui-datatable-tablewrapper\" *ngIf=\"!scrollable\">\n                <table [ngClass]=\"tableStyleClass\" [ngStyle]=\"tableStyle\">\n                    <thead class=\"ui-datatable-thead\">\n                        <tr *ngIf=\"!headerColumnGroups.first\" class=\"ui-state-default\" [pColumnHeaders]=\"columns\"></tr>\n                        <ng-template [ngIf]=\"headerColumnGroups.first\">\n                            <tr *ngFor=\"let headerRow of headerColumnGroups.first.rows\" class=\"ui-state-default\" [pColumnHeaders]=\"headerRow.columns\"></tr>\n                        </ng-template>\n                    </thead>\n                    <tfoot *ngIf=\"hasFooter()\" class=\"ui-datatable-tfoot\">\n                        <tr *ngIf=\"!footerColumnGroups.first\" class=\"ui-state-default\" [pColumnFooters]=\"columns\"></tr>\n                        <ng-template [ngIf]=\"footerColumnGroups.first\">\n                            <tr *ngFor=\"let footerRow of footerColumnGroups.first.rows\" class=\"ui-state-default\" [pColumnFooters]=\"footerRow.columns\"></tr>\n                        </ng-template>\n                    </tfoot>\n                    <tbody [ngClass]=\"{'ui-datatable-data ui-widget-content': true, 'ui-datatable-hoverable-rows': (rowHover||selectionMode)}\" [pTableBody]=\"columns\" [data]=\"dataToRender\"></tbody>\n                </table>\n            </div>\n            \n            <ng-template [ngIf]=\"scrollable\">\n                <div class=\"ui-datatable-scrollable-wrapper ui-helper-clearfix\">\n                    <div *ngIf=\"hasFrozenColumns()\" [pScrollableView]=\"frozenColumns\" frozen=\"true\"\n                        [headerColumnGroup]=\"frozenHeaderColumnGroup\" [footerColumnGroup]=\"frozenFooterColumnGroup\"\n                        [ngStyle]=\"{'width':this.frozenWidth}\" class=\"ui-datatable-scrollable-view ui-datatable-frozen-view\"></div>\n                    <div [pScrollableView]=\"scrollableColumns\" [ngStyle]=\"{'width':this.unfrozenWidth, 'left': this.frozenWidth}\"\n                        [headerColumnGroup]=\"scrollableHeaderColumnGroup\" [footerColumnGroup]=\"scrollableFooterColumnGroup\"\n                        class=\"ui-datatable-scrollable-view\" [virtualScroll]=\"virtualScroll\" (onVirtualScroll)=\"onVirtualScroll($event)\"\n                        [ngClass]=\"{'ui-datatable-unfrozen-view': hasFrozenColumns()}\"></div>\n                </div>\n            </ng-template>\n            \n            <p-paginator [rows]=\"rows\" [first]=\"first\" [totalRecords]=\"totalRecords\" [pageLinkSize]=\"pageLinks\" styleClass=\"ui-paginator-bottom\" [alwaysShow]=\"alwaysShowPaginator\"\n                (onPageChange)=\"onPageChange($event)\" [rowsPerPageOptions]=\"rowsPerPageOptions\" *ngIf=\"paginator && (paginatorPosition === 'bottom' || paginatorPosition =='both')\"></p-paginator>\n            <div class=\"ui-datatable-footer ui-widget-header\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n            \n            <div class=\"ui-column-resizer-helper ui-state-highlight\" style=\"display:none\"></div>\n            <span class=\"fa fa-arrow-down ui-datatable-reorder-indicator-up\" style=\"position: absolute; display: none;\"></span>\n            <span class=\"fa fa-arrow-up ui-datatable-reorder-indicator-down\" style=\"position: absolute; display: none;\"></span>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler, objectutils_1.ObjectUtils]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.IterableDiffers,
@@ -8395,10 +8730,11 @@ var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
 var domhandler_1 = __webpack_require__("../../../../primeng/components/dom/domhandler.js");
 var shared_1 = __webpack_require__("../../../../primeng/components/common/shared.js");
 var Dialog = (function () {
-    function Dialog(el, domHandler, renderer) {
+    function Dialog(el, domHandler, renderer, zone) {
         this.el = el;
         this.domHandler = domHandler;
         this.renderer = renderer;
+        this.zone = zone;
         this.draggable = true;
         this.resizable = true;
         this.minWidth = 150;
@@ -8409,6 +8745,8 @@ var Dialog = (function () {
         this.showHeader = true;
         this.breakpoint = 640;
         this.blockScroll = false;
+        this.autoZIndex = true;
+        this.baseZIndex = 0;
         this.onShow = new core_1.EventEmitter();
         this.onHide = new core_1.EventEmitter();
         this.visibleChange = new core_1.EventEmitter();
@@ -8442,7 +8780,7 @@ var Dialog = (function () {
     };
     Dialog.prototype.show = function () {
         this.executePostDisplayActions = true;
-        this.containerViewChild.nativeElement.style.zIndex = String(++domhandler_1.DomHandler.zindex);
+        this.moveOnTop();
         this.bindGlobalListeners();
         if (this.modal) {
             this.enableModality();
@@ -8513,7 +8851,11 @@ var Dialog = (function () {
         if (!this.mask) {
             this.mask = document.createElement('div');
             this.mask.style.zIndex = String(parseInt(this.containerViewChild.nativeElement.style.zIndex) - 1);
-            this.domHandler.addMultipleClasses(this.mask, 'ui-widget-overlay ui-dialog-mask');
+            var maskStyleClass = 'ui-widget-overlay ui-dialog-mask';
+            if (this.blockScroll) {
+                maskStyleClass += ' ui-dialog-mask-scrollblocker';
+            }
+            this.domHandler.addMultipleClasses(this.mask, maskStyleClass);
             if (this.closable && this.dismissableMask) {
                 this.maskClickListener = this.renderer.listen(this.mask, 'click', function (event) {
                     _this.close(event);
@@ -8529,7 +8871,18 @@ var Dialog = (function () {
         if (this.mask) {
             document.body.removeChild(this.mask);
             if (this.blockScroll) {
-                this.domHandler.removeClass(document.body, 'ui-overflow-hidden');
+                var bodyChildren = document.body.children;
+                var hasBlockerMasks = void 0;
+                for (var i = 0; i < bodyChildren.length; i++) {
+                    var bodyChild = bodyChildren[i];
+                    if (this.domHandler.hasClass(bodyChild, 'ui-dialog-mask-scrollblocker')) {
+                        hasBlockerMasks = true;
+                        break;
+                    }
+                }
+                if (!hasBlockerMasks) {
+                    this.domHandler.removeClass(document.body, 'ui-overflow-hidden');
+                }
             }
             this.mask = null;
         }
@@ -8541,7 +8894,9 @@ var Dialog = (function () {
         }
     };
     Dialog.prototype.moveOnTop = function () {
-        this.containerViewChild.nativeElement.style.zIndex = String(++domhandler_1.DomHandler.zindex);
+        if (this.autoZIndex) {
+            this.containerViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++domhandler_1.DomHandler.zindex));
+        }
     };
     Dialog.prototype.onCloseMouseDown = function (event) {
         this.closeIconMouseDown = true;
@@ -8555,6 +8910,7 @@ var Dialog = (function () {
             this.dragging = true;
             this.lastPageX = event.pageX;
             this.lastPageY = event.pageY;
+            this.domHandler.addClass(document.body, 'ui-unselectable-text');
         }
     };
     Dialog.prototype.onDrag = function (event) {
@@ -8572,6 +8928,7 @@ var Dialog = (function () {
     Dialog.prototype.endDrag = function (event) {
         if (this.draggable) {
             this.dragging = false;
+            this.domHandler.removeClass(document.body, 'ui-unselectable-text');
         }
     };
     Dialog.prototype.initResize = function (event) {
@@ -8580,6 +8937,7 @@ var Dialog = (function () {
             this.resizing = true;
             this.lastPageX = event.pageX;
             this.lastPageY = event.pageY;
+            this.domHandler.addClass(document.body, 'ui-unselectable-text');
         }
     };
     Dialog.prototype.onResize = function (event) {
@@ -8600,6 +8958,12 @@ var Dialog = (function () {
             }
             this.lastPageX = event.pageX;
             this.lastPageY = event.pageY;
+        }
+    };
+    Dialog.prototype.onResizeEnd = function (event) {
+        if (this.resizing) {
+            this.resizing = false;
+            this.domHandler.removeClass(document.body, 'ui-unselectable-text');
         }
     };
     Dialog.prototype.bindGlobalListeners = function () {
@@ -8624,57 +8988,60 @@ var Dialog = (function () {
     };
     Dialog.prototype.bindDocumentDragListener = function () {
         var _this = this;
-        this.documentDragListener = this.renderer.listen('document', 'mousemove', function (event) {
-            _this.onDrag(event);
+        this.zone.runOutsideAngular(function () {
+            _this.documentDragListener = _this.onDrag.bind(_this);
+            window.document.addEventListener('mousemove', _this.documentDragListener);
         });
     };
     Dialog.prototype.unbindDocumentDragListener = function () {
         if (this.documentDragListener) {
-            this.documentDragListener();
+            window.document.removeEventListener('mousemove', this.documentDragListener);
             this.documentDragListener = null;
         }
     };
     Dialog.prototype.bindDocumentResizeListeners = function () {
         var _this = this;
-        this.documentResizeListener = this.renderer.listen('document', 'mousemove', function (event) {
-            _this.onResize(event);
-        });
-        this.documentResizeEndListener = this.renderer.listen('document', 'mouseup', function (event) {
-            if (_this.resizing) {
-                _this.resizing = false;
-            }
+        this.zone.runOutsideAngular(function () {
+            _this.documentResizeListener = _this.onResize.bind(_this);
+            _this.documentResizeEndListener = _this.onResizeEnd.bind(_this);
+            window.document.addEventListener('mousemove', _this.documentResizeListener);
+            window.document.addEventListener('mouseup', _this.documentResizeEndListener);
         });
     };
     Dialog.prototype.unbindDocumentResizeListeners = function () {
         if (this.documentResizeListener && this.documentResizeEndListener) {
-            this.documentResizeListener();
-            this.documentResizeEndListener();
+            window.document.removeEventListener('mouseup', this.documentResizeListener);
+            window.document.removeEventListener('mouseup', this.documentResizeEndListener);
             this.documentResizeListener = null;
             this.documentResizeEndListener = null;
         }
     };
     Dialog.prototype.bindDocumentResponsiveListener = function () {
         var _this = this;
-        this.documentResponsiveListener = this.renderer.listen('window', 'resize', function (event) {
-            var viewport = _this.domHandler.getViewport();
-            var width = _this.domHandler.getOuterWidth(_this.containerViewChild.nativeElement);
-            if (viewport.width <= _this.breakpoint) {
-                if (!_this.preWidth) {
-                    _this.preWidth = width;
-                }
-                _this.containerViewChild.nativeElement.style.left = '0px';
-                _this.containerViewChild.nativeElement.style.width = '100%';
-            }
-            else {
-                _this.containerViewChild.nativeElement.style.width = _this.preWidth + 'px';
-                _this.positionOverlay();
-            }
+        this.zone.runOutsideAngular(function () {
+            _this.documentResponsiveListener = _this.onWindowResize.bind(_this);
+            window.addEventListener('resize', _this.documentResponsiveListener);
         });
     };
     Dialog.prototype.unbindDocumentResponsiveListener = function () {
         if (this.documentResponsiveListener) {
-            this.documentResponsiveListener();
+            window.removeEventListener('resize', this.documentResponsiveListener);
             this.documentResponsiveListener = null;
+        }
+    };
+    Dialog.prototype.onWindowResize = function (event) {
+        var viewport = this.domHandler.getViewport();
+        var width = this.domHandler.getOuterWidth(this.containerViewChild.nativeElement);
+        if (viewport.width <= this.breakpoint) {
+            if (!this.preWidth) {
+                this.preWidth = width;
+            }
+            this.containerViewChild.nativeElement.style.left = '0px';
+            this.containerViewChild.nativeElement.style.width = '100%';
+        }
+        else {
+            this.containerViewChild.nativeElement.style.width = this.preWidth + 'px';
+            this.positionOverlay();
         }
     };
     Dialog.prototype.bindDocumentEscapeListener = function () {
@@ -8704,6 +9071,14 @@ var Dialog = (function () {
     };
     return Dialog;
 }());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Dialog.prototype, "id", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Dialog.prototype, "ariaLabelledBy", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", String)
@@ -8793,12 +9168,20 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Dialog.prototype, "blockScroll", void 0);
 __decorate([
-    core_1.ContentChild(shared_1.Header),
-    __metadata("design:type", Object)
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Dialog.prototype, "autoZIndex", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], Dialog.prototype, "baseZIndex", void 0);
+__decorate([
+    core_1.ContentChildren(shared_1.Header, { descendants: false }),
+    __metadata("design:type", core_1.QueryList)
 ], Dialog.prototype, "headerFacet", void 0);
 __decorate([
-    core_1.ContentChild(shared_1.Footer),
-    __metadata("design:type", Object)
+    core_1.ContentChildren(shared_1.Footer, { descendants: false }),
+    __metadata("design:type", core_1.QueryList)
 ], Dialog.prototype, "footerFacet", void 0);
 __decorate([
     core_1.ViewChild('container'),
@@ -8832,7 +9215,7 @@ __decorate([
 Dialog = __decorate([
     core_1.Component({
         selector: 'p-dialog',
-        template: "\n        <div #container [ngClass]=\"{'ui-dialog ui-widget ui-widget-content ui-corner-all ui-shadow':true,'ui-dialog-rtl':rtl,'ui-dialog-draggable':draggable}\" [ngStyle]=\"style\" [class]=\"styleClass\"\n            [style.display]=\"visible ? 'block' : 'none'\" [style.width.px]=\"width\" [style.height.px]=\"height\" [style.minWidth.px]=\"minWidth\" (mousedown)=\"moveOnTop()\" [@dialogState]=\"visible ? 'visible' : 'hidden'\">\n            <div #titlebar class=\"ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top\"\n                (mousedown)=\"initDrag($event)\" (mouseup)=\"endDrag($event)\" *ngIf=\"showHeader\">\n                <span class=\"ui-dialog-title\" *ngIf=\"header\">{{header}}</span>\n                <span class=\"ui-dialog-title\" *ngIf=\"headerFacet\">\n                    <ng-content select=\"p-header\"></ng-content>\n                </span>\n                <a *ngIf=\"closable\" [ngClass]=\"{'ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all':true}\" href=\"#\" role=\"button\" (click)=\"close($event)\" (mousedown)=\"onCloseMouseDown($event)\">\n                    <span class=\"fa fa-fw fa-close\"></span>\n                </a>\n            </div>\n            <div #content class=\"ui-dialog-content ui-widget-content\" [ngStyle]=\"contentStyle\">\n                <ng-content></ng-content>\n            </div>\n            <div class=\"ui-dialog-footer ui-widget-content\" *ngIf=\"footerFacet\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n            <div *ngIf=\"resizable\" class=\"ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se\" style=\"z-index: 90;\"\n                (mousedown)=\"initResize($event)\"></div>\n        </div>\n    ",
+        template: "\n        <div #container [ngClass]=\"{'ui-dialog ui-widget ui-widget-content ui-corner-all ui-shadow':true,'ui-dialog-rtl':rtl,'ui-dialog-draggable':draggable}\" [ngStyle]=\"style\" [class]=\"styleClass\"\n            [style.display]=\"visible ? 'block' : 'none'\" [style.width.px]=\"width\" [style.height.px]=\"height\" [style.minWidth.px]=\"minWidth\" (mousedown)=\"moveOnTop()\" [@dialogState]=\"visible ? 'visible' : 'hidden'\"\n            role=\"dialog\" [attr.aria-labelledby]=\"ariaLabelledBy\">\n            <div #titlebar class=\"ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top\"\n                (mousedown)=\"initDrag($event)\" (mouseup)=\"endDrag($event)\" *ngIf=\"showHeader\">\n                <span [attr.id]=\"ariaLabelledBy\" class=\"ui-dialog-title\" *ngIf=\"header\">{{header}}</span>\n                <span [attr.id]=\"ariaLabelledBy\" class=\"ui-dialog-title\" *ngIf=\"headerFacet && headerFacet.first\">\n                    <ng-content select=\"p-header\"></ng-content>\n                </span>\n                <a *ngIf=\"closable\" [ngClass]=\"{'ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all':true}\" href=\"#\" role=\"button\" (click)=\"close($event)\" (mousedown)=\"onCloseMouseDown($event)\">\n                    <span class=\"fa fa-fw fa-close\"></span>\n                </a>\n            </div>\n            <div #content class=\"ui-dialog-content ui-widget-content\" [ngStyle]=\"contentStyle\">\n                <ng-content></ng-content>\n            </div>\n            <div class=\"ui-dialog-footer ui-widget-content\" *ngIf=\"footerFacet && footerFacet.first\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n            <div *ngIf=\"resizable\" class=\"ui-resizable-handle ui-resizable-se ui-icon ui-icon-gripsmall-diagonal-se\" style=\"z-index: 90;\"\n                (mousedown)=\"initResize($event)\"></div>\n        </div>\n    ",
         animations: [
             animations_1.trigger('dialogState', [
                 animations_1.state('hidden', animations_1.style({
@@ -8847,7 +9230,7 @@ Dialog = __decorate([
         ],
         providers: [domhandler_1.DomHandler]
     }),
-    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2])
+    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2, core_1.NgZone])
 ], Dialog);
 exports.Dialog = Dialog;
 var DialogModule = (function () {
@@ -9506,6 +9889,8 @@ var Dropdown = (function () {
         this.autoWidth = true;
         this.filterBy = 'label';
         this.lazy = true;
+        this.resetFilterOnHide = false;
+        this.dropdownIcon = 'fa fa-fw fa-caret-down';
         this.onChange = new core_1.EventEmitter();
         this.onFocus = new core_1.EventEmitter();
         this.onBlur = new core_1.EventEmitter();
@@ -9534,7 +9919,8 @@ var Dropdown = (function () {
         get: function () {
             return this._options;
         },
-        set: function (opts) {
+        set: function (val) {
+            var opts = this.optionLabel ? this.objectUtils.generateSelectItems(val, this.optionLabel) : val;
             this._options = opts;
             this.optionsToDisplay = this._options;
             this.updateSelectedOption(this.value);
@@ -9711,6 +10097,9 @@ var Dropdown = (function () {
     };
     Dropdown.prototype.hide = function () {
         this.panelVisible = false;
+        if (this.filter && this.resetFilterOnHide) {
+            this.resetFilter();
+        }
     };
     Dropdown.prototype.alignPanel = function () {
         if (this.appendTo)
@@ -9861,6 +10250,10 @@ __decorate([
 ], Dropdown.prototype, "filter", void 0);
 __decorate([
     core_1.Input(),
+    __metadata("design:type", String)
+], Dropdown.prototype, "name", void 0);
+__decorate([
+    core_1.Input(),
     __metadata("design:type", Object)
 ], Dropdown.prototype, "style", void 0);
 __decorate([
@@ -9932,6 +10325,18 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Dropdown.prototype, "autofocus", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Dropdown.prototype, "resetFilterOnHide", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Dropdown.prototype, "dropdownIcon", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Dropdown.prototype, "optionLabel", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Dropdown.prototype, "onChange", void 0);
@@ -9979,7 +10384,7 @@ __decorate([
 Dropdown = __decorate([
     core_1.Component({
         selector: 'p-dropdown',
-        template: "\n         <div #container [ngClass]=\"{'ui-dropdown ui-widget ui-state-default ui-corner-all ui-helper-clearfix':true,\n            'ui-state-disabled':disabled,'ui-dropdown-open':panelVisible,'ui-state-focus':focus}\"\n            (click)=\"onMouseclick($event)\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-helper-hidden-accessible\" *ngIf=\"autoWidth\">\n                <select [required]=\"required\" name=\"options\" [attr.aria-label]=\"selectedOption ? selectedOption.label : ' '\" tabindex=\"-1\" aria-hidden=\"true\">\n                    <option *ngFor=\"let option of options\" [value]=\"option.value\" [selected]=\"selectedOption == option\">{{option.label}}</option>\n                </select>\n            </div>\n            <div class=\"ui-helper-hidden-accessible\">\n                <input #in [attr.id]=\"inputId\" type=\"text\" [attr.aria-label]=\"selectedOption ? selectedOption.label : ' '\" readonly (focus)=\"onInputFocus($event)\" role=\"listbox\"\n                    (blur)=\"onInputBlur($event)\" (keydown)=\"onKeydown($event)\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\" [attr.autofocus]=\"autofocus\">\n            </div>\n            <label [ngClass]=\"{'ui-dropdown-label ui-inputtext ui-corner-all':true,'ui-dropdown-label-empty':(label === null)}\" *ngIf=\"!editable&&(label !== null)\">{{label||'empty'}}</label>\n            <label [ngClass]=\"{'ui-dropdown-label ui-inputtext ui-corner-all ui-placeholder':true}\" *ngIf=\"!editable&&(label === null)\">{{placeholder}}</label>\n            <input #editableInput type=\"text\" [attr.aria-label]=\"selectedOption ? selectedOption.label : ' '\" class=\"ui-dropdown-label ui-inputtext ui-corner-all\" *ngIf=\"editable\" [disabled]=\"disabled\" [attr.placeholder]=\"placeholder\"\n                        (click)=\"onEditableInputClick($event)\" (input)=\"onEditableInputChange($event)\" (focus)=\"onEditableInputFocus($event)\" (blur)=\"onInputBlur($event)\">\n            <div class=\"ui-dropdown-trigger ui-state-default ui-corner-right\">\n                <span class=\"fa fa-fw fa-caret-down ui-clickable\"></span>\n            </div>\n            <div #panel [ngClass]=\"'ui-dropdown-panel ui-widget-content ui-corner-all ui-helper-hidden ui-shadow'\" [@panelState]=\"panelVisible ? 'visible' : 'hidden'\"\n                [style.display]=\"panelVisible ? 'block' : 'none'\" [ngStyle]=\"panelStyle\" [class]=\"panelStyleClass\">\n                <div *ngIf=\"filter\" class=\"ui-dropdown-filter-container\" (input)=\"onFilter($event)\" (click)=\"$event.stopPropagation()\">\n                    <input #filter type=\"text\" autocomplete=\"off\" class=\"ui-dropdown-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [attr.placeholder]=\"filterPlaceholder\"\n                    (keydown.enter)=\"$event.preventDefault()\" (keydown)=\"onKeydown($event)\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <div #itemswrapper class=\"ui-dropdown-items-wrapper\" [style.max-height]=\"scrollHeight||'auto'\">\n                    <ul class=\"ui-dropdown-items ui-dropdown-list ui-widget-content ui-widget ui-corner-all ui-helper-reset\" *ngIf=\"lazy ? panelVisible : true\">\n                        <li *ngFor=\"let option of optionsToDisplay;let i=index\" \n                            [ngClass]=\"{'ui-dropdown-item ui-corner-all':true, 'ui-state-highlight':(selectedOption == option), \n                            'ui-dropdown-item-empty':!option.label||option.label.length === 0}\"\n                            (click)=\"onItemClick($event, option)\">\n                            <span *ngIf=\"!itemTemplate\">{{option.label||'empty'}}</span>\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"option\" *ngIf=\"itemTemplate\"></ng-template>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n    ",
+        template: "\n         <div #container [ngClass]=\"{'ui-dropdown ui-widget ui-state-default ui-corner-all ui-helper-clearfix':true,\n            'ui-state-disabled':disabled,'ui-dropdown-open':panelVisible,'ui-state-focus':focus}\"\n            (click)=\"onMouseclick($event)\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-helper-hidden-accessible\" *ngIf=\"autoWidth\">\n                <select [required]=\"required\" [attr.name]=\"name\" [attr.aria-label]=\"selectedOption ? selectedOption.label : ' '\" tabindex=\"-1\" aria-hidden=\"true\">\n                    <option *ngIf=\"placeholder\">{{placeholder}}</option>\n                    <option *ngFor=\"let option of options\" [value]=\"option.value\" [selected]=\"selectedOption == option\">{{option.label}}</option>\n                </select>\n            </div>\n            <div class=\"ui-helper-hidden-accessible\">\n                <input #in [attr.id]=\"inputId\" type=\"text\" [attr.aria-label]=\"selectedOption ? selectedOption.label : ' '\" readonly (focus)=\"onInputFocus($event)\" role=\"listbox\"\n                    (blur)=\"onInputBlur($event)\" (keydown)=\"onKeydown($event)\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\" [attr.autofocus]=\"autofocus\">\n            </div>\n            <label [ngClass]=\"{'ui-dropdown-label ui-inputtext ui-corner-all':true,'ui-dropdown-label-empty':(label == null || label.length === 0)}\" *ngIf=\"!editable && (label != null)\">{{label||'empty'}}</label>\n            <label [ngClass]=\"{'ui-dropdown-label ui-inputtext ui-corner-all ui-placeholder':true,'ui-dropdown-label-empty': (placeholder == null || placeholder.length === 0)}\" *ngIf=\"!editable && (label == null)\">{{placeholder||'empty'}}</label>\n            <input #editableInput type=\"text\" [attr.aria-label]=\"selectedOption ? selectedOption.label : ' '\" class=\"ui-dropdown-label ui-inputtext ui-corner-all\" *ngIf=\"editable\" [disabled]=\"disabled\" [attr.placeholder]=\"placeholder\"\n                        (click)=\"onEditableInputClick($event)\" (input)=\"onEditableInputChange($event)\" (focus)=\"onEditableInputFocus($event)\" (blur)=\"onInputBlur($event)\">\n            <div class=\"ui-dropdown-trigger ui-state-default ui-corner-right\">\n                <span class=\"ui-clickable\" [ngClass]=\"dropdownIcon\"></span>\n            </div>\n            <div #panel [ngClass]=\"'ui-dropdown-panel ui-widget-content ui-corner-all ui-shadow'\" [@panelState]=\"panelVisible ? 'visible' : 'hidden'\"\n                [style.display]=\"panelVisible ? 'block' : 'none'\" [ngStyle]=\"panelStyle\" [class]=\"panelStyleClass\">\n                <div *ngIf=\"filter\" class=\"ui-dropdown-filter-container\" (input)=\"onFilter($event)\" (click)=\"$event.stopPropagation()\">\n                    <input #filter type=\"text\" autocomplete=\"off\" class=\"ui-dropdown-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [attr.placeholder]=\"filterPlaceholder\"\n                    (keydown.enter)=\"$event.preventDefault()\" (keydown)=\"onKeydown($event)\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <div #itemswrapper class=\"ui-dropdown-items-wrapper\" [style.max-height]=\"scrollHeight||'auto'\">\n                    <ul class=\"ui-dropdown-items ui-dropdown-list ui-widget-content ui-widget ui-corner-all ui-helper-reset\" *ngIf=\"lazy ? panelVisible : true\">\n                        <li *ngFor=\"let option of optionsToDisplay;let i=index\"\n                            [ngClass]=\"{'ui-dropdown-item ui-corner-all':true, 'ui-state-highlight':(selectedOption == option),\n                            'ui-dropdown-item-empty':!option.label||option.label.length === 0}\"\n                            (click)=\"onItemClick($event, option)\">\n                            <span *ngIf=\"!itemTemplate\">{{option.label||'empty'}}</span>\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"option\" *ngIf=\"itemTemplate\"></ng-template>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n    ",
         animations: [
             animations_1.trigger('panelState', [
                 animations_1.state('hidden', animations_1.style({
@@ -10112,6 +10517,22 @@ var Editor = (function () {
     Editor.prototype.getQuill = function () {
         return this.quill;
     };
+    Object.defineProperty(Editor.prototype, "readonly", {
+        get: function () {
+            return this._readonly;
+        },
+        set: function (val) {
+            this._readonly = val;
+            if (this.quill) {
+                if (this._readonly)
+                    this.quill.disable();
+                else
+                    this.quill.enable();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     return Editor;
 }());
 __decorate([
@@ -10140,16 +10561,17 @@ __decorate([
 ], Editor.prototype, "placeholder", void 0);
 __decorate([
     core_1.Input(),
-    __metadata("design:type", Boolean)
-], Editor.prototype, "readonly", void 0);
-__decorate([
-    core_1.Input(),
     __metadata("design:type", Array)
 ], Editor.prototype, "formats", void 0);
 __decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Editor.prototype, "onInit", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean),
+    __metadata("design:paramtypes", [Boolean])
+], Editor.prototype, "readonly", null);
 Editor = __decorate([
     core_1.Component({
         selector: 'p-editor',
@@ -11227,19 +11649,20 @@ var Growl = (function () {
         this.messageService = messageService;
         this.life = 3000;
         this.immutable = true;
+        this.autoZIndex = true;
+        this.baseZIndex = 0;
         this.onClick = new core_1.EventEmitter();
         this.onHover = new core_1.EventEmitter();
         this.onClose = new core_1.EventEmitter();
         this.valueChange = new core_1.EventEmitter();
-        this.zIndex = domhandler_1.DomHandler.zindex;
         this.differ = differs.find([]).create(null);
         if (messageService) {
             this.subscription = messageService.messageObserver.subscribe(function (messages) {
                 if (messages) {
                     if (messages instanceof Array)
-                        _this.value = messages;
+                        _this.value = _this.value ? _this.value.concat(messages) : messages.slice();
                     else
-                        _this.value = [messages];
+                        _this.value = _this.value ? _this.value.concat([messages]) : [messages];
                 }
                 else {
                     _this.value = null;
@@ -11248,7 +11671,6 @@ var Growl = (function () {
         }
     }
     Growl.prototype.ngAfterViewInit = function () {
-        this.container = this.containerViewChild.nativeElement;
         if (!this.sticky) {
             this.initTimeout();
         }
@@ -11259,7 +11681,7 @@ var Growl = (function () {
         },
         set: function (val) {
             this._value = val;
-            if (this.container && this.immutable) {
+            if (this.containerViewChild && this.containerViewChild.nativeElement && this.immutable) {
                 this.handleValueChange();
             }
         },
@@ -11267,7 +11689,7 @@ var Growl = (function () {
         configurable: true
     });
     Growl.prototype.ngDoCheck = function () {
-        if (!this.immutable && this.container) {
+        if (!this.immutable && this.containerViewChild && this.containerViewChild.nativeElement) {
             var changes = this.differ.diff(this.value);
             if (changes) {
                 this.handleValueChange();
@@ -11279,8 +11701,10 @@ var Growl = (function () {
             this.preventRerender = false;
             return;
         }
-        this.zIndex = ++domhandler_1.DomHandler.zindex;
-        this.domHandler.fadeIn(this.container, 250);
+        if (this.autoZIndex) {
+            this.containerViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++domhandler_1.DomHandler.zindex));
+        }
+        this.domHandler.fadeIn(this.containerViewChild.nativeElement, 250);
         if (!this.sticky) {
             this.initTimeout();
         }
@@ -11313,7 +11737,7 @@ var Growl = (function () {
     Growl.prototype.removeAll = function () {
         var _this = this;
         if (this.value && this.value.length) {
-            this.domHandler.fadeOut(this.container, 250);
+            this.domHandler.fadeOut(this.containerViewChild.nativeElement, 250);
             setTimeout(function () {
                 _this.value.forEach(function (msg, index) { return _this.onClose.emit({ message: _this.value[index] }); });
                 if (_this.immutable) {
@@ -11366,6 +11790,14 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Growl.prototype, "immutable", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Growl.prototype, "autoZIndex", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], Growl.prototype, "baseZIndex", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Growl.prototype, "onClick", void 0);
@@ -11393,7 +11825,7 @@ __decorate([
 Growl = __decorate([
     core_1.Component({
         selector: 'p-growl',
-        template: "\n        <div #container [ngClass]=\"'ui-growl ui-widget'\" [style.zIndex]=\"zIndex\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div #msgel *ngFor=\"let msg of value;let i = index\" class=\"ui-growl-item-container ui-state-highlight ui-corner-all ui-shadow\" aria-live=\"polite\"\n                [ngClass]=\"{'ui-growl-message-info':msg.severity == 'info','ui-growl-message-warn':msg.severity == 'warn',\n                    'ui-growl-message-error':msg.severity == 'error','ui-growl-message-success':msg.severity == 'success'}\"\n                    (click)=\"onMessageClick(i)\" (mouseenter)=\"onMessageHover(i)\">\n                <div class=\"ui-growl-item\">\n                     <div class=\"ui-growl-icon-close fa fa-close\" (click)=\"remove(i,msgel)\"></div>\n                     <span class=\"ui-growl-image fa fa-2x\"\n                        [ngClass]=\"{'fa-info-circle':msg.severity == 'info','fa-exclamation-circle':msg.severity == 'warn',\n                                'fa-close':msg.severity == 'error','fa-check':msg.severity == 'success'}\"></span>\n                     <div class=\"ui-growl-message\">\n                        <span class=\"ui-growl-title\">{{msg.summary}}</span>\n                        <p [innerHTML]=\"msg.detail\"></p>\n                     </div>\n                     <div style=\"clear: both;\"></div>\n                </div>\n            </div>\n        </div>\n    ",
+        template: "\n        <div #container [ngClass]=\"'ui-growl ui-widget'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div #msgel *ngFor=\"let msg of value;let i = index\" class=\"ui-growl-item-container ui-state-highlight ui-corner-all ui-shadow\" aria-live=\"polite\"\n                [ngClass]=\"{'ui-growl-message-info':msg.severity == 'info','ui-growl-message-warn':msg.severity == 'warn',\n                    'ui-growl-message-error':msg.severity == 'error','ui-growl-message-success':msg.severity == 'success'}\"\n                    (click)=\"onMessageClick(i)\" (mouseenter)=\"onMessageHover(i)\">\n                <div class=\"ui-growl-item\">\n                     <div class=\"ui-growl-icon-close fa fa-close\" (click)=\"remove(i,msgel)\"></div>\n                     <span class=\"ui-growl-image fa fa-2x\"\n                        [ngClass]=\"{'fa-info-circle':msg.severity == 'info','fa-exclamation-circle':msg.severity == 'warn',\n                                'fa-close':msg.severity == 'error','fa-check':msg.severity == 'success'}\"></span>\n                     <div class=\"ui-growl-message\">\n                        <span class=\"ui-growl-title\">{{msg.summary}}</span>\n                        <p [innerHTML]=\"msg.detail\"></p>\n                     </div>\n                     <div style=\"clear: both;\"></div>\n                </div>\n            </div>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __param(3, core_1.Optional()),
@@ -12169,7 +12601,7 @@ var InputSwitch = (function () {
         this.offLabelChild = this.domHandler.findSingle(this.offContainer, 'span.ui-inputswitch-offlabel');
     };
     InputSwitch.prototype.ngAfterViewChecked = function () {
-        if (this.container.offsetParent && !this.initialized) {
+        if (this.container && this.container.offsetParent && !this.initialized) {
             this.render();
         }
     };
@@ -12722,7 +13154,7 @@ __decorate([
 Lightbox = __decorate([
     core_1.Component({
         selector: 'p-lightbox',
-        template: "\n        <div [ngStyle]=\"style\" [class]=\"styleClass\" *ngIf=\"(type == 'image')\">\n            <a *ngFor=\"let image of images; let i = index;\" [href]=\"image.source\" (click)=\"onImageClick($event,image,i,content)\">\n                <img [src]=\"image.thumbnail\" [title]=\"image.title\" [alt]=\"image.alt\">\n            </a>\n        </div>\n        <span [ngStyle]=\"style\" [class]=\"styleClass\" *ngIf=\"(type == 'content')\" (click)=\"onLinkClick($event,content)\">\n            <ng-content select=\"a\"></ng-content>\n        </span>\n        <div class=\"ui-lightbox ui-widget ui-helper-hidden ui-corner-all ui-shadow\" [style.display]=\"visible ? 'block' : 'none'\" [style.zIndex]=\"zindex\"\n            [ngClass]=\"{'ui-lightbox-loading': loading}\"\n            [style.transitionProperty]=\"'all'\" [style.transitionDuration]=\"effectDuration\" [style.transitionTimingFunction]=\"easing\" (click)=\"preventDocumentClickListener=true\">\n           <div class=\"ui-lightbox-content-wrapper\">\n              <a class=\"ui-state-default ui-lightbox-nav-left ui-corner-right\" [style.zIndex]=\"zindex + 1\" (click)=\"prev(img)\"\n                [ngClass]=\"{'ui-helper-hidden':!leftVisible}\"><span class=\"fa fa-fw fa-caret-left\"></span></a>\n              <div #content class=\"ui-lightbox-content ui-corner-all\" #content \n                [style.transitionProperty]=\"'width,height'\" [style.transitionDuration]=\"effectDuration\" [style.transitionTimingFunction]=\"easing\">\n                <img #img [src]=\"currentImage ? currentImage.source||'' : ''\" (load)=\"onImageLoad($event,content)\" style=\"display:none\">\n                <ng-content></ng-content>\n              </div>\n              <a class=\"ui-state-default ui-lightbox-nav-right ui-corner-left ui-helper-hidden\" [style.zIndex]=\"zindex + 1\" (click)=\"next(img)\"\n                [ngClass]=\"{'ui-helper-hidden':!rightVisible}\"><span class=\"fa fa-fw fa-caret-right\"></span></a>\n           </div>\n           <div class=\"ui-lightbox-caption ui-widget-header\" [style.display]=\"captionText ? 'block' : 'none'\">\n              <span class=\"ui-lightbox-caption-text\">{{captionText}}</span><a class=\"ui-lightbox-close ui-corner-all\" href=\"#\" (click)=\"hide($event)\"><span class=\"fa fa-fw fa-close\"></span></a>\n              <div style=\"clear:both\"></div>\n           </div>\n        </div>\n    ",
+        template: "\n        <div [ngStyle]=\"style\" [class]=\"styleClass\" *ngIf=\"(type == 'image')\">\n            <a *ngFor=\"let image of images; let i = index;\" [href]=\"image.source\" (click)=\"onImageClick($event,image,i,content)\">\n                <img [src]=\"image.thumbnail\" [title]=\"image.title\" [alt]=\"image.alt\">\n            </a>\n        </div>\n        <span [ngStyle]=\"style\" [class]=\"styleClass\" *ngIf=\"(type == 'content')\" (click)=\"onLinkClick($event,content)\">\n            <ng-content select=\"a\"></ng-content>\n        </span>\n        <div class=\"ui-lightbox ui-widget ui-corner-all ui-shadow\" [style.display]=\"visible ? 'block' : 'none'\" [style.zIndex]=\"zindex\"\n            [ngClass]=\"{'ui-lightbox-loading': loading}\"\n            [style.transitionProperty]=\"'all'\" [style.transitionDuration]=\"effectDuration\" [style.transitionTimingFunction]=\"easing\" (click)=\"preventDocumentClickListener=true\">\n           <div class=\"ui-lightbox-content-wrapper\">\n              <a class=\"ui-state-default ui-lightbox-nav-left ui-corner-right\" [style.zIndex]=\"zindex + 1\" (click)=\"prev(img)\"\n                [ngClass]=\"{'ui-helper-hidden':!leftVisible}\"><span class=\"fa fa-fw fa-caret-left\"></span></a>\n              <div #content class=\"ui-lightbox-content ui-corner-all\" \n                [style.transitionProperty]=\"'width,height'\" [style.transitionDuration]=\"effectDuration\" [style.transitionTimingFunction]=\"easing\">\n                <img #img [src]=\"currentImage ? currentImage.source||'' : ''\" (load)=\"onImageLoad($event,content)\" style=\"display:none\">\n                <ng-content></ng-content>\n              </div>\n              <a class=\"ui-state-default ui-lightbox-nav-right ui-corner-left ui-helper-hidden\" [style.zIndex]=\"zindex + 1\" (click)=\"next(img)\"\n                [ngClass]=\"{'ui-helper-hidden':!rightVisible}\"><span class=\"fa fa-fw fa-caret-right\"></span></a>\n           </div>\n           <div class=\"ui-lightbox-caption ui-widget-header\" [style.display]=\"captionText ? 'block' : 'none'\">\n              <span class=\"ui-lightbox-caption-text\">{{captionText}}</span><a class=\"ui-lightbox-close ui-corner-all\" href=\"#\" (click)=\"hide($event)\"><span class=\"fa fa-fw fa-close\"></span></a>\n              <div style=\"clear:both\"></div>\n           </div>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2])
@@ -12772,12 +13204,14 @@ exports.LISTBOX_VALUE_ACCESSOR = {
     multi: true
 };
 var Listbox = (function () {
-    function Listbox(el, domHandler, objectUtils) {
+    function Listbox(el, domHandler, objectUtils, cd) {
         this.el = el;
         this.domHandler = domHandler;
         this.objectUtils = objectUtils;
+        this.cd = cd;
         this.checkbox = false;
         this.filter = false;
+        this.filterMode = 'contains';
         this.metaKeySelection = true;
         this.showToggleAll = true;
         this.onChange = new core_1.EventEmitter();
@@ -12785,6 +13219,17 @@ var Listbox = (function () {
         this.onModelChange = function () { };
         this.onModelTouched = function () { };
     }
+    Object.defineProperty(Listbox.prototype, "options", {
+        get: function () {
+            return this._options;
+        },
+        set: function (val) {
+            var opts = this.optionLabel ? this.objectUtils.generateSelectItems(val, this.optionLabel) : val;
+            this._options = opts;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Listbox.prototype.ngAfterContentInit = function () {
         var _this = this;
         this.templates.forEach(function (item) {
@@ -12800,6 +13245,7 @@ var Listbox = (function () {
     };
     Listbox.prototype.writeValue = function (value) {
         this.value = value;
+        this.cd.markForCheck();
     };
     Listbox.prototype.registerOnChange = function (fn) {
         this.onModelChange = fn;
@@ -12922,59 +13368,49 @@ var Listbox = (function () {
     };
     Object.defineProperty(Listbox.prototype, "allChecked", {
         get: function () {
-            if (this.filterValue && this.filterValue.trim().length)
+            if (this.filterValue)
                 return this.allFilteredSelected();
             else
-                return this.value && this.options && (this.value.length == this.options.length);
+                return this.value && this.options && (this.value.length === this.options.length);
         },
         enumerable: true,
         configurable: true
     });
     Listbox.prototype.allFilteredSelected = function () {
         var allSelected;
-        if (this.value && this.visibleOptions && this.visibleOptions.length) {
+        if (this.value && this.options && this.options.length) {
             allSelected = true;
-            for (var _i = 0, _a = this.visibleOptions; _i < _a.length; _i++) {
+            for (var _i = 0, _a = this.options; _i < _a.length; _i++) {
                 var opt = _a[_i];
-                var selected = void 0;
-                for (var _b = 0, _c = this.value; _b < _c.length; _b++) {
-                    var val = _c[_b];
-                    if (this.objectUtils.equals(val, opt.value, this.dataKey)) {
-                        selected = true;
+                if (this.isItemVisible(opt)) {
+                    if (!this.isSelected(opt)) {
+                        allSelected = false;
+                        break;
                     }
-                }
-                if (!selected) {
-                    allSelected = false;
-                    break;
                 }
             }
         }
         return allSelected;
     };
     Listbox.prototype.onFilter = function (event) {
-        this.filterValue = event.target.value.trim().toLowerCase();
-        this.visibleOptions = [];
-        for (var i = 0; i < this.options.length; i++) {
-            var option = this.options[i];
-            if (option.label.toLowerCase().indexOf(this.filterValue.toLowerCase()) > -1) {
-                this.visibleOptions.push(option);
-            }
-        }
-        this.filtered = true;
+        var query = event.target.value.trim().toLowerCase();
+        this.filterValue = query.length ? query : null;
     };
     Listbox.prototype.toggleAll = function (event, checkbox) {
-        if (this.disabled || (this.filterValue && this.filterValue.trim().length && (!this.visibleOptions || this.visibleOptions.length === 0))) {
+        if (this.disabled || !this.options || this.options.length === 0) {
             return;
         }
         if (checkbox.checked) {
             this.value = [];
         }
         else {
-            var opts = (this.visibleOptions && this.visibleOptions.length) ? this.visibleOptions : this.options;
-            if (opts) {
+            if (this.options) {
                 this.value = [];
-                for (var i = 0; i < opts.length; i++) {
-                    this.value.push(opts[i].value);
+                for (var i = 0; i < this.options.length; i++) {
+                    var opt = this.options[i];
+                    if (this.isItemVisible(opt)) {
+                        this.value.push(opt.value);
+                    }
                 }
             }
         }
@@ -12983,12 +13419,19 @@ var Listbox = (function () {
         this.onChange.emit({ originalEvent: event, value: this.value });
     };
     Listbox.prototype.isItemVisible = function (option) {
-        if (this.filterValue && this.filterValue.trim().length) {
-            for (var i = 0; i < this.visibleOptions.length; i++) {
-                if (this.visibleOptions[i].value == option.value) {
-                    return true;
-                }
+        if (this.filterValue) {
+            var visible = void 0;
+            switch (this.filterMode) {
+                case 'startsWith':
+                    visible = option.label.toLowerCase().indexOf(this.filterValue.toLowerCase()) === 0;
+                    break;
+                case 'contains':
+                    visible = option.label.toLowerCase().indexOf(this.filterValue.toLowerCase()) > -1;
+                    break;
+                default:
+                    visible = true;
             }
+            return visible;
         }
         else {
             return true;
@@ -13022,12 +13465,14 @@ var Listbox = (function () {
             value: this.value
         });
     };
+    Listbox.prototype.onInputFocus = function (event) {
+        this.focus = true;
+    };
+    Listbox.prototype.onInputBlur = function (event) {
+        this.focus = false;
+    };
     return Listbox;
 }());
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", Array)
-], Listbox.prototype, "options", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
@@ -13047,6 +13492,10 @@ __decorate([
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
+], Listbox.prototype, "readonly", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
 ], Listbox.prototype, "disabled", void 0);
 __decorate([
     core_1.Input(),
@@ -13056,6 +13505,10 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
 ], Listbox.prototype, "filter", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Listbox.prototype, "filterMode", void 0);
 __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
@@ -13069,6 +13522,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Listbox.prototype, "showToggleAll", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Listbox.prototype, "optionLabel", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Listbox.prototype, "onChange", void 0);
@@ -13077,6 +13534,10 @@ __decorate([
     __metadata("design:type", core_1.EventEmitter)
 ], Listbox.prototype, "onDblClick", void 0);
 __decorate([
+    core_1.ContentChild(shared_1.Header),
+    __metadata("design:type", Object)
+], Listbox.prototype, "headerFacet", void 0);
+__decorate([
     core_1.ContentChild(shared_1.Footer),
     __metadata("design:type", Object)
 ], Listbox.prototype, "footerFacet", void 0);
@@ -13084,13 +13545,18 @@ __decorate([
     core_1.ContentChildren(shared_1.PrimeTemplate),
     __metadata("design:type", core_1.QueryList)
 ], Listbox.prototype, "templates", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array),
+    __metadata("design:paramtypes", [Array])
+], Listbox.prototype, "options", null);
 Listbox = __decorate([
     core_1.Component({
         selector: 'p-listbox',
-        template: "\n        <div [ngClass]=\"{'ui-listbox ui-inputtext ui-widget ui-widget-content ui-corner-all':true,'ui-state-disabled':disabled}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix\" *ngIf=\"(checkbox && multiple) || filter\" [ngClass]=\"{'ui-listbox-header-w-checkbox': checkbox}\">\n                <div class=\"ui-chkbox ui-widget\" *ngIf=\"checkbox && multiple && showToggleAll\">\n                    <div class=\"ui-helper-hidden-accessible\">\n                        <input #cb type=\"checkbox\" readonly=\"readonly\" [checked]=\"allChecked\">\n                    </div>\n                    <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':allChecked}\" (click)=\"toggleAll($event,cb)\">\n                        <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':allChecked}\"></span>\n                    </div>\n                </div>\n                <div class=\"ui-listbox-filter-container\" *ngIf=\"filter\">\n                    <input type=\"text\" role=\"textbox\" (input)=\"onFilter($event)\" class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n            </div>\n            <div class=\"ui-listbox-list-wrapper\">\n                <ul class=\"ui-listbox-list\" [ngStyle]=\"listStyle\">\n                    <li *ngFor=\"let option of options; let i = index;\" [style.display]=\"isItemVisible(option) ? 'block' : 'none'\"\n                        [ngClass]=\"{'ui-listbox-item ui-corner-all':true,'ui-state-highlight':isSelected(option)}\"\n                        (click)=\"onOptionClick($event,option)\" (dblclick)=\"onDoubleClick($event,option)\" (touchend)=\"onOptionTouchEnd($event,option)\">\n                        <div class=\"ui-chkbox ui-widget\" *ngIf=\"checkbox && multiple\" (click)=\"onCheckboxClick($event,option)\">\n                            <div class=\"ui-helper-hidden-accessible\">\n                                <input type=\"checkbox\" [checked]=\"isSelected(option)\" [disabled]=\"disabled\">\n                            </div>\n                            <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':isSelected(option)}\">\n                                <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':isSelected(option)}\"></span>\n                            </div>\n                        </div>\n                        <span *ngIf=\"!itemTemplate\">{{option.label}}</span>\n                        <ng-template *ngIf=\"itemTemplate\" [pTemplateWrapper]=\"itemTemplate\" [item]=\"option\" [index]=\"i\"></ng-template>\n                    </li>\n                </ul>\n            </div>\n            <div class=\"ui-listbox-footer ui-widget-header ui-corner-all\" *ngIf=\"footerFacet\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </div>\n    ",
+        template: "\n    <div [ngClass]=\"{'ui-listbox ui-inputtext ui-widget ui-widget-content ui-corner-all':true,'ui-state-disabled':disabled,'ui-state-focus':focus}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n      <div class=\"ui-helper-hidden-accessible\">\n        <input type=\"text\" readonly=\"readonly\" (focus)=\"onInputFocus($event)\" (blur)=\"onInputBlur($event)\">\n      </div>\n      <div class=\"ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix\" *ngIf=\"headerFacet\">\n        <ng-content select=\"p-header\"></ng-content>\n      </div>\n      <div class=\"ui-widget-header ui-corner-all ui-listbox-header ui-helper-clearfix\" *ngIf=\"(checkbox && multiple) || filter\" [ngClass]=\"{'ui-listbox-header-w-checkbox': checkbox}\">\n        <div class=\"ui-chkbox ui-widget\" *ngIf=\"checkbox && multiple && showToggleAll\">\n          <div class=\"ui-helper-hidden-accessible\">\n            <input #cb type=\"checkbox\" readonly=\"readonly\" [checked]=\"allChecked\">\n          </div>\n          <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':allChecked}\" (click)=\"toggleAll($event,cb)\">\n            <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':allChecked}\"></span>\n          </div>\n        </div>\n        <div class=\"ui-listbox-filter-container\" *ngIf=\"filter\">\n          <input type=\"text\" role=\"textbox\" (input)=\"onFilter($event)\" class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\">\n          <span class=\"fa fa-search\"></span>\n        </div>\n      </div>\n      <div class=\"ui-listbox-list-wrapper\">\n        <ul class=\"ui-listbox-list\" [ngStyle]=\"listStyle\">\n          <li *ngFor=\"let option of options; let i = index;\" [style.display]=\"isItemVisible(option) ? 'block' : 'none'\"\n              [ngClass]=\"{'ui-listbox-item ui-corner-all':true,'ui-state-highlight':isSelected(option)}\"\n              (click)=\"onOptionClick($event,option)\" (dblclick)=\"onDoubleClick($event,option)\" (touchend)=\"onOptionTouchEnd($event,option)\">\n            <div class=\"ui-chkbox ui-widget\" *ngIf=\"checkbox && multiple\" (click)=\"onCheckboxClick($event,option)\">\n              <div class=\"ui-helper-hidden-accessible\">\n                <input type=\"checkbox\" [checked]=\"isSelected(option)\" [disabled]=\"disabled\">\n              </div>\n              <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':isSelected(option)}\">\n                <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':isSelected(option)}\"></span>\n              </div>\n            </div>\n            <span *ngIf=\"!itemTemplate\">{{option.label}}</span>\n            <ng-template *ngIf=\"itemTemplate\" [pTemplateWrapper]=\"itemTemplate\" [item]=\"option\" [index]=\"i\"></ng-template>\n          </li>\n        </ul>\n      </div>\n      <div class=\"ui-listbox-footer ui-widget-header ui-corner-all\" *ngIf=\"footerFacet\">\n        <ng-content select=\"p-footer\"></ng-content>\n      </div>\n    </div>\n  ",
         providers: [domhandler_1.DomHandler, objectutils_1.ObjectUtils, exports.LISTBOX_VALUE_ACCESSOR]
     }),
-    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, objectutils_1.ObjectUtils])
+    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, objectutils_1.ObjectUtils, core_1.ChangeDetectorRef])
 ], Listbox);
 exports.Listbox = Listbox;
 var ListboxModule = (function () {
@@ -13216,7 +13682,7 @@ __decorate([
 MegaMenu = __decorate([
     core_1.Component({
         selector: 'p-megaMenu',
-        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\"\n            [ngClass]=\"{'ui-menu ui-menubar ui-megamenu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix':true,'ui-megamenu-vertical': orientation == 'vertical'}\">\n            <ul class=\"ui-menu-list ui-helper-reset ui-menubar-root-list\">\n                <ng-template ngFor let-category [ngForOf]=\"model\">\n                    <li *ngIf=\"category.separator\" class=\"ui-menu-separator ui-widget-content\">\n                    <li *ngIf=\"!category.separator\" #item [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':category.items,'ui-menuitem-active':item==activeItem}\"\n                        (mouseenter)=\"onItemMouseEnter($event, item, category)\" (mouseleave)=\"onItemMouseLeave($event, item)\">\n                        <a class=\"ui-menuitem-link ui-corner-all ui-submenu-link\" [ngClass]=\"{'ui-state-disabled':category.disabled}\">\n                            <span class=\"ui-menuitem-icon fa fa-fw\" [ngClass]=\"category.icon\"></span>\n                            <span class=\"ui-menuitem-text\">{{category.label}}</span>\n                            <span class=\"ui-submenu-icon fa fa-fw\" [ngClass]=\"{'fa-caret-down':orientation=='horizontal','fa-caret-right':orientation=='vertical'}\"></span>\n                        </a>\n                        <div class=\"ui-megamenu-panel ui-widget-content ui-menu-list ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow\">\n                            <div class=\"ui-g\">\n                                <ng-template ngFor let-column [ngForOf]=\"category.items\">\n                                    <div [class]=\"getColumnClass(category)\">\n                                        <ng-template ngFor let-submenu [ngForOf]=\"column\">\n                                            <ul class=\"ui-menu-list ui-helper-reset\">\n                                                <li class=\"ui-widget-header ui-corner-all\"><h3>{{submenu.label}}</h3></li>\n                                                <ng-template ngFor let-item [ngForOf]=\"submenu.items\">\n                                                    <li *ngIf=\"item.separator\" class=\"ui-menu-separator ui-widget-content\">\n                                                    <li *ngIf=\"!item.separator\" class=\"ui-menuitem ui-widget ui-corner-all\">\n                                                        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\" [attr.title]=\"item.title\"\n                                                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                                                            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n                                                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                                                        </a>\n                                                        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [routerLinkActive]=\"'ui-state-active'\" \n                                                            [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" \n                                                             [attr.target]=\"item.target\" [attr.title]=\"item.title\"\n                                                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                                                            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n                                                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                                                        </a>\n                                                    </li>\n                                                </ng-template>\n                                            </ul>\n                                        </ng-template>\n                                    </div>\n                                </ng-template>\n                            </div>\n                        </div>\n                    </li>\n                </ng-template>\n                <li class=\"ui-menuitem ui-menuitem-custom ui-widget ui-corner-all\" *ngIf=\"orientation === 'horizontal'\">\n                    <ng-content></ng-content>\n                </li>\n            </ul>\n        </div>\n    ",
+        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\"\n            [ngClass]=\"{'ui-menu ui-menubar ui-megamenu ui-widget ui-widget-content ui-corner-all ui-helper-clearfix':true,'ui-megamenu-vertical': orientation == 'vertical'}\">\n            <ul class=\"ui-menu-list ui-helper-reset ui-menubar-root-list\">\n                <ng-template ngFor let-category [ngForOf]=\"model\">\n                    <li *ngIf=\"category.separator\" class=\"ui-menu-separator ui-widget-content\">\n                    <li *ngIf=\"!category.separator\" #item [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':category.items,'ui-menuitem-active':item==activeItem}\"\n                        (mouseenter)=\"onItemMouseEnter($event, item, category)\" (mouseleave)=\"onItemMouseLeave($event, item)\">\n                        <a class=\"ui-menuitem-link ui-corner-all ui-submenu-link\" [ngClass]=\"{'ui-state-disabled':category.disabled}\">\n                            <span class=\"ui-menuitem-icon fa fa-fw\" [ngClass]=\"category.icon\"></span>\n                            <span class=\"ui-menuitem-text\">{{category.label}}</span>\n                            <span class=\"ui-submenu-icon fa fa-fw\" [ngClass]=\"{'fa-caret-down':orientation=='horizontal','fa-caret-right':orientation=='vertical'}\"></span>\n                        </a>\n                        <div class=\"ui-megamenu-panel ui-widget-content ui-menu-list ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow\">\n                            <div class=\"ui-g\">\n                                <ng-template ngFor let-column [ngForOf]=\"category.items\">\n                                    <div [class]=\"getColumnClass(category)\">\n                                        <ng-template ngFor let-submenu [ngForOf]=\"column\">\n                                            <ul class=\"ui-menu-list ui-helper-reset\">\n                                                <li class=\"ui-widget-header ui-corner-all\"><h3>{{submenu.label}}</h3></li>\n                                                <ng-template ngFor let-item [ngForOf]=\"submenu.items\">\n                                                    <li *ngIf=\"item.separator\" class=\"ui-menu-separator ui-widget-content\">\n                                                    <li *ngIf=\"!item.separator\" class=\"ui-menuitem ui-widget ui-corner-all\">\n                                                        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\" [attr.title]=\"item.title\"\n                                                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                                                            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n                                                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                                                        </a>\n                                                        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\" [routerLinkActive]=\"'ui-state-active'\" \n                                                            [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" \n                                                             [attr.target]=\"item.target\" [attr.title]=\"item.title\"\n                                                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                                                            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n                                                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                                                        </a>\n                                                    </li>\n                                                </ng-template>\n                                            </ul>\n                                        </ng-template>\n                                    </div>\n                                </ng-template>\n                            </div>\n                        </div>\n                    </li>\n                </ng-template>\n                <li class=\"ui-menuitem ui-menuitem-custom ui-widget ui-corner-all\" *ngIf=\"orientation === 'horizontal'\">\n                    <ng-content></ng-content>\n                </li>\n            </ul>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2])
@@ -13274,7 +13740,7 @@ __decorate([
 MenuItemContent = __decorate([
     core_1.Component({
         selector: '[pMenuItemContent]',
-        template: "\n        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\" [attr.title]=\"item.title\"\n            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"menu.itemClick($event, item)\">\n            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n        </a>\n        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [routerLinkActive]=\"'ui-state-active'\" \n            [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\"\n             [attr.title]=\"item.title\" [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"menu.itemClick($event, item)\">\n            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n        </a>\n    "
+        template: "\n        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\" [attr.title]=\"item.title\"\n            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"menu.itemClick($event, item)\">\n            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n        </a>\n        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\" [routerLinkActive]=\"'ui-state-active'\" \n            [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\"\n             [attr.title]=\"item.title\" [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"menu.itemClick($event, item)\">\n            <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"item.icon\" [ngClass]=\"item.icon\"></span>\n            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n        </a>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return Menu; }))),
     __metadata("design:paramtypes", [Menu])
@@ -13496,7 +13962,7 @@ __decorate([
 MenubarSub = __decorate([
     core_1.Component({
         selector: 'p-menubarSub',
-        template: "\n        <ul [ngClass]=\"{'ui-menubar-root-list ui-helper-clearfix':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}\" class=\"ui-menu-list\"\n            (click)=\"listClick($event)\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #listItem [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem}\"\n                    (mouseenter)=\"onItemMouseEnter($event,listItem,child)\" (mouseleave)=\"onItemMouseLeave($event)\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" [attr.target]=\"child.target\" [attr.title]=\"child.title\" (click)=\"itemClick($event, child)\"\n                         [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                        <span class=\"ui-submenu-icon fa fa-fw\" *ngIf=\"child.items\" [ngClass]=\"{'fa-caret-down':root,'fa-caret-right':!root}\"></span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" \n                        [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        (click)=\"itemClick($event, child)\" [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                        <span class=\"ui-submenu-icon fa fa-fw\" *ngIf=\"child.items\" [ngClass]=\"{'fa-caret-down':root,'fa-caret-right':!root}\"></span>\n                    </a>\n                    <p-menubarSub class=\"ui-submenu\" [item]=\"child\" *ngIf=\"child.items\"></p-menubarSub>\n                </li>\n            </ng-template>\n            <li class=\"ui-menuitem ui-menuitem-custom ui-widget ui-corner-all\">\n                <ng-content></ng-content>\n            </li>\n        </ul>\n    ",
+        template: "\n        <ul [ngClass]=\"{'ui-menubar-root-list ui-helper-clearfix':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}\" class=\"ui-menu-list\"\n            (click)=\"listClick($event)\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\" [ngClass]=\"{'ui-helper-hidden': child.visible === false}\">\n                <li *ngIf=\"!child.separator\" #listItem [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,\n                        'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem,'ui-helper-hidden': child.visible === false}\"\n                        (mouseenter)=\"onItemMouseEnter($event,listItem,child)\" (mouseleave)=\"onItemMouseLeave($event)\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" [attr.target]=\"child.target\" [attr.title]=\"child.title\" (click)=\"itemClick($event, child)\"\n                         [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                        <span class=\"ui-submenu-icon fa fa-fw\" *ngIf=\"child.items\" [ngClass]=\"{'fa-caret-down':root,'fa-caret-right':!root}\"></span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [queryParams]=\"child.queryParams\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" \n                        [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        (click)=\"itemClick($event, child)\" [ngClass]=\"{'ui-menuitem-link ui-corner-all':true,'ui-state-disabled':child.disabled}\" [ngStyle]=\"child.style\" [class]=\"child.styleClass\">\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                        <span class=\"ui-submenu-icon fa fa-fw\" *ngIf=\"child.items\" [ngClass]=\"{'fa-caret-down':root,'fa-caret-right':!root}\"></span>\n                    </a>\n                    <p-menubarSub class=\"ui-submenu\" [item]=\"child\" *ngIf=\"child.items\"></p-menubarSub>\n                </li>\n            </ng-template>\n            <li class=\"ui-menuitem ui-menuitem-custom ui-widget ui-corner-all\">\n                <ng-content></ng-content>\n            </li>\n        </ul>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [domhandler_1.DomHandler])
@@ -13548,6 +14014,90 @@ exports.MenubarModule = MenubarModule;
 
 /***/ }),
 
+/***/ "../../../../primeng/components/message/message.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
+var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
+var UIMessage = (function () {
+    function UIMessage() {
+    }
+    Object.defineProperty(UIMessage.prototype, "icon", {
+        get: function () {
+            var icon = null;
+            if (this.severity) {
+                switch (this.severity) {
+                    case 'success':
+                        icon = 'fa fa-check';
+                        break;
+                    case 'info':
+                        icon = 'fa fa-info-circle';
+                        break;
+                    case 'error':
+                        icon = 'fa fa-close';
+                        break;
+                    case 'warn':
+                        icon = 'fa fa-warning';
+                        break;
+                    case 'success':
+                        icon = 'fa fa-check';
+                        break;
+                    default:
+                        icon = 'fa fa-info-circle';
+                        break;
+                }
+            }
+            return icon;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return UIMessage;
+}());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], UIMessage.prototype, "severity", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], UIMessage.prototype, "text", void 0);
+UIMessage = __decorate([
+    core_1.Component({
+        selector: 'p-message',
+        template: "\n        <div aria-live=\"polite\" class=\"ui-message ui-widget ui-corner-all\" *ngIf=\"severity\"\n        [ngClass]=\"{'ui-messages-info': (severity === 'info'),\n                'ui-messages-warn': (severity === 'warn'),\n                'ui-messages-error': (severity === 'error'),\n                'ui-messages-success': (severity === 'success')}\">\n            <span class=\"ui-message-icon\" [ngClass]=\"icon\"></span>\n            <span class=\"ui-message-text\">{{text}}</span>\n        </div>\n    "
+    })
+], UIMessage);
+exports.UIMessage = UIMessage;
+var MessageModule = (function () {
+    function MessageModule() {
+    }
+    return MessageModule;
+}());
+MessageModule = __decorate([
+    core_1.NgModule({
+        imports: [common_1.CommonModule],
+        exports: [UIMessage],
+        declarations: [UIMessage]
+    })
+], MessageModule);
+exports.MessageModule = MessageModule;
+//# sourceMappingURL=message.js.map
+
+/***/ }),
+
 /***/ "../../../../primeng/components/messages/messages.js":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -13579,9 +14129,9 @@ var Messages = (function () {
             this.subscription = messageService.messageObserver.subscribe(function (messages) {
                 if (messages) {
                     if (messages instanceof Array)
-                        _this.value = messages;
+                        _this.value = _this.value ? _this.value.concat(messages) : messages.slice();
                     else
-                        _this.value = [messages];
+                        _this.value = _this.value ? _this.value.concat([messages]) : [messages];
                 }
                 else {
                     _this.value = null;
@@ -13653,7 +14203,7 @@ __decorate([
 Messages = __decorate([
     core_1.Component({
         selector: 'p-messages',
-        template: "\n        <div *ngIf=\"hasMessages()\" class=\"ui-messages ui-widget ui-corner-all\" style=\"display:block\"\n                    [ngClass]=\"{'ui-messages-info':(value[0].severity === 'info'),\n                    'ui-messages-warn':(value[0].severity === 'warn'),\n                    'ui-messages-error':(value[0].severity === 'error'),\n                    'ui-messages-success':(value[0].severity === 'success')}\">\n            <a href=\"#\" class=\"ui-messages-close\" (click)=\"clear($event)\" *ngIf=\"closable\">\n                <i class=\"fa fa-close\"></i>\n            </a>\n            <span class=\"ui-messages-icon fa fa-fw fa-2x\" [ngClass]=\"icon\"></span>\n            <ul>\n                <li *ngFor=\"let msg of value\">\n                    <span class=\"ui-messages-summary\" [innerHTML]=\"msg.summary\"></span>\n                    <span class=\"ui-messages-detail\" [innerHTML]=\"msg.detail\"></span>\n                </li>\n            </ul>\n        </div>\n    "
+        template: "\n        <div *ngIf=\"hasMessages()\" class=\"ui-messages ui-widget ui-corner-all\" style=\"display:block\"\n                    [ngClass]=\"{'ui-messages-info':(value[0].severity === 'info'),\n                    'ui-messages-warn':(value[0].severity === 'warn'),\n                    'ui-messages-error':(value[0].severity === 'error'),\n                    'ui-messages-success':(value[0].severity === 'success')}\">\n            <a href=\"#\" class=\"ui-messages-close\" (click)=\"clear($event)\" *ngIf=\"closable\">\n                <i class=\"fa fa-close\"></i>\n            </a>\n            <span class=\"ui-messages-icon fa fa-fw fa-2x\" [ngClass]=\"icon\"></span>\n            <ul>\n                <li *ngFor=\"let msg of value\">\n                    <span *ngIf=\"msg.summary\" class=\"ui-messages-summary\" [innerHTML]=\"msg.summary\"></span>\n                    <span *ngIf=\"msg.detail\" class=\"ui-messages-detail\" [innerHTML]=\"msg.detail\"></span>\n                </li>\n            </ul>\n        </div>\n    "
     }),
     __param(0, core_1.Optional()),
     __metadata("design:paramtypes", [messageservice_1.MessageService])
@@ -13703,14 +14253,12 @@ exports.MULTISELECT_VALUE_ACCESSOR = {
     multi: true
 };
 var MultiSelect = (function () {
-    function MultiSelect(el, domHandler, renderer, differs, objectUtils, cd) {
+    function MultiSelect(el, domHandler, renderer, objectUtils, cd) {
         this.el = el;
         this.domHandler = domHandler;
         this.renderer = renderer;
         this.objectUtils = objectUtils;
         this.cd = cd;
-        this.onChange = new core_1.EventEmitter();
-        this.onBlur = new core_1.EventEmitter();
         this.scrollHeight = '200px';
         this.defaultLabel = 'Choose';
         this.filter = true;
@@ -13718,11 +14266,28 @@ var MultiSelect = (function () {
         this.maxSelectedLabels = 3;
         this.selectedItemsLabel = '{0} items selected';
         this.showToggleAll = true;
+        this.resetFilterOnHide = false;
+        this.dropdownIcon = 'fa fa-fw fa-caret-down';
+        this.onChange = new core_1.EventEmitter();
+        this.onFocus = new core_1.EventEmitter();
+        this.onBlur = new core_1.EventEmitter();
+        this.onPanelShow = new core_1.EventEmitter();
+        this.onPanelHide = new core_1.EventEmitter();
         this.onModelChange = function () { };
         this.onModelTouched = function () { };
-        this.valueDiffer = differs.find([]).create(null);
-        this.optionsDiffer = differs.find([]).create(null);
     }
+    Object.defineProperty(MultiSelect.prototype, "options", {
+        get: function () {
+            return this._options;
+        },
+        set: function (val) {
+            var opts = this.optionLabel ? this.objectUtils.generateSelectItems(val, this.optionLabel) : val;
+            this._options = opts;
+            this.updateLabel();
+        },
+        enumerable: true,
+        configurable: true
+    });
     MultiSelect.prototype.ngOnInit = function () {
         this.updateLabel();
     };
@@ -13761,13 +14326,6 @@ var MultiSelect = (function () {
             this.filtered = false;
         }
     };
-    MultiSelect.prototype.ngDoCheck = function () {
-        var valueChanges = this.valueDiffer.diff(this.value);
-        var optionChanges = this.optionsDiffer.diff(this.options);
-        if (valueChanges || optionChanges) {
-            this.updateLabel();
-        }
-    };
     MultiSelect.prototype.writeValue = function (value) {
         this.value = value;
         this.updateLabel();
@@ -13790,6 +14348,7 @@ var MultiSelect = (function () {
             this.value = (this.value || []).concat([value]);
         this.onModelChange(this.value);
         this.onChange.emit({ originalEvent: event, value: this.value });
+        this.updateLabel();
     };
     MultiSelect.prototype.isSelected = function (value) {
         return this.findSelectionIndex(value) != -1;
@@ -13822,6 +14381,7 @@ var MultiSelect = (function () {
         checkbox.checked = !checkbox.checked;
         this.onModelChange(this.value);
         this.onChange.emit({ originalEvent: event, value: this.value });
+        this.updateLabel();
     };
     MultiSelect.prototype.isAllChecked = function () {
         if (this.filterValue && this.filterValue.trim().length)
@@ -13838,10 +14398,16 @@ var MultiSelect = (function () {
         else
             this.domHandler.relativePosition(this.panel, this.container);
         this.domHandler.fadeIn(this.panel, 250);
+        this.onPanelShow.emit();
     };
     MultiSelect.prototype.hide = function () {
         this.overlayVisible = false;
         this.unbindDocumentClickListener();
+        if (this.resetFilterOnHide) {
+            this.filterValue = null;
+            this.filterInputChild.nativeElement.value = null;
+        }
+        this.onPanelHide.emit();
     };
     MultiSelect.prototype.close = function (event) {
         this.hide();
@@ -13863,8 +14429,9 @@ var MultiSelect = (function () {
         }
         this.selfClick = true;
     };
-    MultiSelect.prototype.onFocus = function (event) {
+    MultiSelect.prototype.onInputFocus = function (event) {
         this.focus = true;
+        this.onFocus.emit({ originalEvent: event });
     };
     MultiSelect.prototype.onInputBlur = function (event) {
         this.focus = false;
@@ -13973,18 +14540,6 @@ var MultiSelect = (function () {
 }());
 __decorate([
     core_1.Input(),
-    __metadata("design:type", Array)
-], MultiSelect.prototype, "options", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", core_1.EventEmitter)
-], MultiSelect.prototype, "onChange", void 0);
-__decorate([
-    core_1.Output(),
-    __metadata("design:type", core_1.EventEmitter)
-], MultiSelect.prototype, "onBlur", void 0);
-__decorate([
-    core_1.Input(),
     __metadata("design:type", String)
 ], MultiSelect.prototype, "scrollHeight", void 0);
 __decorate([
@@ -14052,6 +14607,18 @@ __decorate([
     __metadata("design:type", Boolean)
 ], MultiSelect.prototype, "showToggleAll", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], MultiSelect.prototype, "resetFilterOnHide", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], MultiSelect.prototype, "dropdownIcon", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], MultiSelect.prototype, "optionLabel", void 0);
+__decorate([
     core_1.ViewChild('container'),
     __metadata("design:type", core_1.ElementRef)
 ], MultiSelect.prototype, "containerViewChild", void 0);
@@ -14060,16 +14627,45 @@ __decorate([
     __metadata("design:type", core_1.ElementRef)
 ], MultiSelect.prototype, "panelViewChild", void 0);
 __decorate([
+    core_1.ViewChild('filterInput'),
+    __metadata("design:type", core_1.ElementRef)
+], MultiSelect.prototype, "filterInputChild", void 0);
+__decorate([
     core_1.ContentChildren(shared_1.PrimeTemplate),
     __metadata("design:type", core_1.QueryList)
 ], MultiSelect.prototype, "templates", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], MultiSelect.prototype, "onChange", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], MultiSelect.prototype, "onFocus", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], MultiSelect.prototype, "onBlur", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], MultiSelect.prototype, "onPanelShow", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], MultiSelect.prototype, "onPanelHide", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array),
+    __metadata("design:paramtypes", [Array])
+], MultiSelect.prototype, "options", null);
 MultiSelect = __decorate([
     core_1.Component({
         selector: 'p-multiSelect',
-        template: "\n        <div #container [ngClass]=\"{'ui-multiselect ui-widget ui-state-default ui-corner-all':true,'ui-state-focus':focus,'ui-state-disabled': disabled}\" [ngStyle]=\"style\" [class]=\"styleClass\"\n            (click)=\"onMouseclick($event,in)\">\n            <div class=\"ui-helper-hidden-accessible\">\n                <input #in type=\"text\" readonly=\"readonly\" [attr.id]=\"inputId\" (focus)=\"onFocus($event)\" (blur)=\"onInputBlur($event)\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\">\n            </div>\n            <div class=\"ui-multiselect-label-container\" [title]=\"valuesAsString\">\n                <label class=\"ui-multiselect-label ui-corner-all\">{{valuesAsString}}</label>\n            </div>\n            <div [ngClass]=\"{'ui-multiselect-trigger ui-state-default ui-corner-right':true}\">\n                <span class=\"fa fa-fw fa-caret-down ui-clickable\"></span>\n            </div>\n            <div #panel [ngClass]=\"['ui-multiselect-panel ui-widget ui-widget-content ui-corner-all ui-shadow', panelStyleClass||'']\" [ngStyle]=\"panelStyle\"\n                [style.display]=\"overlayVisible ? 'block' : 'none'\" (click)=\"panelClick=true\">\n                <div class=\"ui-widget-header ui-corner-all ui-multiselect-header ui-helper-clearfix\" [ngClass]=\"{'ui-multiselect-header-no-toggleall': !showToggleAll}\">\n                    <div class=\"ui-chkbox ui-widget\" *ngIf=\"showToggleAll\">\n                        <div class=\"ui-helper-hidden-accessible\">\n                            <input #cb type=\"checkbox\" readonly=\"readonly\" [checked]=\"isAllChecked()\">\n                        </div>\n                        <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':isAllChecked()}\" (click)=\"toggleAll($event,cb)\">\n                            <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':isAllChecked()}\"></span>\n                        </div>\n                    </div>\n                    <div class=\"ui-multiselect-filter-container\" *ngIf=\"filter\">\n                        <input type=\"text\" role=\"textbox\" (input)=\"onFilter($event)\"\n                                    class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\">\n                        <span class=\"fa fa-fw fa-search\"></span>\n                    </div>\n                    <a class=\"ui-multiselect-close ui-corner-all\" href=\"#\" (click)=\"close($event)\">\n                        <span class=\"fa fa-close\"></span>\n                    </a>\n                </div>\n                <div class=\"ui-multiselect-items-wrapper\">\n                    <ul class=\"ui-multiselect-items ui-multiselect-list ui-widget-content ui-widget ui-corner-all ui-helper-reset\" [style.max-height]=\"scrollHeight||'auto'\">\n                        <li *ngFor=\"let option of options; let index = i\" class=\"ui-multiselect-item ui-corner-all\" (click)=\"onItemClick($event,option.value)\" \n                            [style.display]=\"isItemVisible(option) ? 'block' : 'none'\" [ngClass]=\"{'ui-state-highlight':isSelected(option.value)}\">\n                            <div class=\"ui-chkbox ui-widget\">\n                                <div class=\"ui-helper-hidden-accessible\">\n                                    <input type=\"checkbox\" readonly=\"readonly\" [checked]=\"isSelected(option.value)\">\n                                </div>\n                                <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':isSelected(option.value)}\">\n                                    <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':isSelected(option.value)}\"></span>\n                                </div>\n                            </div>\n                            <label *ngIf=\"!itemTemplate\">{{option.label}}</label>\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"option\" [index]=\"i\" *ngIf=\"itemTemplate\"></ng-template>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n    ",
+        template: "\n        <div #container [ngClass]=\"{'ui-multiselect ui-widget ui-state-default ui-corner-all':true,'ui-state-focus':focus,'ui-state-disabled': disabled}\" [ngStyle]=\"style\" [class]=\"styleClass\"\n            (click)=\"onMouseclick($event,in)\">\n            <div class=\"ui-helper-hidden-accessible\">\n                <input #in type=\"text\" readonly=\"readonly\" [attr.id]=\"inputId\" (focus)=\"onInputFocus($event)\" (blur)=\"onInputBlur($event)\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\">\n            </div>\n            <div class=\"ui-multiselect-label-container\" [title]=\"valuesAsString\">\n                <label class=\"ui-multiselect-label ui-corner-all\">{{valuesAsString}}</label>\n            </div>\n            <div [ngClass]=\"{'ui-multiselect-trigger ui-state-default ui-corner-right':true}\">\n                <span class=\"ui-clickable\" [ngClass]=\"dropdownIcon\"></span>\n            </div>\n            <div #panel [ngClass]=\"['ui-multiselect-panel ui-widget ui-widget-content ui-corner-all ui-shadow', panelStyleClass||'']\" [ngStyle]=\"panelStyle\"\n                [style.display]=\"overlayVisible ? 'block' : 'none'\" (click)=\"panelClick=true\">\n                <div class=\"ui-widget-header ui-corner-all ui-multiselect-header ui-helper-clearfix\" [ngClass]=\"{'ui-multiselect-header-no-toggleall': !showToggleAll}\">\n                    <div class=\"ui-chkbox ui-widget\" *ngIf=\"showToggleAll\">\n                        <div class=\"ui-helper-hidden-accessible\">\n                            <input #cb type=\"checkbox\" readonly=\"readonly\" [checked]=\"isAllChecked()\">\n                        </div>\n                        <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':isAllChecked()}\" (click)=\"toggleAll($event,cb)\">\n                            <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':isAllChecked()}\"></span>\n                        </div>\n                    </div>\n                    <div class=\"ui-multiselect-filter-container\" *ngIf=\"filter\">\n                        <input #filterInput type=\"text\" role=\"textbox\" (input)=\"onFilter($event)\"\n                                    class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\">\n                        <span class=\"fa fa-fw fa-search\"></span>\n                    </div>\n                    <a class=\"ui-multiselect-close ui-corner-all\" href=\"#\" (click)=\"close($event)\">\n                        <span class=\"fa fa-close\"></span>\n                    </a>\n                </div>\n                <div class=\"ui-multiselect-items-wrapper\">\n                    <ul class=\"ui-multiselect-items ui-multiselect-list ui-widget-content ui-widget ui-corner-all ui-helper-reset\" [style.max-height]=\"scrollHeight||'auto'\">\n                        <li *ngFor=\"let option of options; let index = i\" class=\"ui-multiselect-item ui-corner-all\" (click)=\"onItemClick($event,option.value)\" \n                            [style.display]=\"isItemVisible(option) ? 'block' : 'none'\" [ngClass]=\"{'ui-state-highlight':isSelected(option.value)}\">\n                            <div class=\"ui-chkbox ui-widget\">\n                                <div class=\"ui-helper-hidden-accessible\">\n                                    <input type=\"checkbox\" readonly=\"readonly\" [checked]=\"isSelected(option.value)\">\n                                </div>\n                                <div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\" [ngClass]=\"{'ui-state-active':isSelected(option.value)}\">\n                                    <span class=\"ui-chkbox-icon ui-clickable\" [ngClass]=\"{'fa fa-check':isSelected(option.value)}\"></span>\n                                </div>\n                            </div>\n                            <label *ngIf=\"!itemTemplate\">{{option.label}}</label>\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"option\" [index]=\"i\" *ngIf=\"itemTemplate\"></ng-template>\n                        </li>\n                    </ul>\n                </div>\n            </div>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler, objectutils_1.ObjectUtils, exports.MULTISELECT_VALUE_ACCESSOR]
     }),
-    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2, core_1.IterableDiffers, objectutils_1.ObjectUtils, core_1.ChangeDetectorRef])
+    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2, objectutils_1.ObjectUtils, core_1.ChangeDetectorRef])
 ], MultiSelect);
 exports.MultiSelect = MultiSelect;
 var MultiSelectModule = (function () {
@@ -14140,11 +14736,13 @@ var OrderList = (function () {
         if (this.movedUp || this.movedDown) {
             var listItems = this.domHandler.find(this.listContainer, 'li.ui-state-highlight');
             var listItem = void 0;
-            if (this.movedUp)
-                listItem = listItems[0];
-            else
-                listItem = listItems[listItems.length - 1];
-            this.domHandler.scrollInView(this.listContainer, listItem);
+            if (listItems.length > 0) {
+                if (this.movedUp)
+                    listItem = listItems[0];
+                else
+                    listItem = listItems[listItems.length - 1];
+                this.domHandler.scrollInView(this.listContainer, listItem);
+            }
             this.movedUp = false;
             this.movedDown = false;
         }
@@ -14323,6 +14921,8 @@ var OrderList = (function () {
         var dropIndex = (this.draggedItemIndex > index) ? index : (index === 0) ? 0 : index - 1;
         this.objectUtils.reorderArray(this.value, this.draggedItemIndex, dropIndex);
         this.dragOverItemIndex = null;
+        this.onReorder.emit(event);
+        event.preventDefault();
     };
     OrderList.prototype.onDragEnd = function (event) {
         this.dragging = false;
@@ -14408,7 +15008,7 @@ __decorate([
 OrderList = __decorate([
     core_1.Component({
         selector: 'p-orderList',
-        template: "\n        <div [ngClass]=\"{'ui-orderlist ui-widget':true,'ui-orderlist-responsive':responsive}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-orderlist-controls\">\n                <button type=\"button\" pButton icon=\"fa-angle-up\" (click)=\"moveUp($event,listelement)\"></button>\n                <button type=\"button\" pButton icon=\"fa-angle-double-up\" (click)=\"moveTop($event,listelement)\"></button>\n                <button type=\"button\" pButton icon=\"fa-angle-down\" (click)=\"moveDown($event,listelement)\"></button>\n                <button type=\"button\" pButton icon=\"fa-angle-double-down\" (click)=\"moveBottom($event,listelement)\"></button>\n            </div>\n            <div class=\"ui-orderlist-list-container\">\n                <div class=\"ui-orderlist-caption ui-widget-header ui-corner-top\" *ngIf=\"header\">{{header}}</div>\n                <div class=\"ui-orderlist-filter-container ui-widget-content\" *ngIf=\"filterBy\">\n                    <input type=\"text\" role=\"textbox\" (keyup)=\"onFilterKeyup($event)\" class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\" [attr.placeholder]=\"filterPlaceholder\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <ul #listelement class=\"ui-widget-content ui-orderlist-list ui-corner-bottom\" [ngStyle]=\"listStyle\" (dragover)=\"onListMouseMove($event)\">\n                    <ng-template ngFor let-item [ngForOf]=\"value\" let-i=\"index\" let-l=\"last\">\n                        <li class=\"ui-orderlist-droppoint\" *ngIf=\"dragdrop && isItemVisible(item)\" (dragover)=\"onDragOver($event, i)\" (drop)=\"onDrop($event, i)\" (dragleave)=\"onDragLeave($event)\" \n                            [ngClass]=\"{'ui-state-highlight': (i === dragOverItemIndex)}\"></li>\n                        <li class=\"ui-orderlist-item\"\n                            [ngClass]=\"{'ui-state-highlight':isSelected(item)}\" \n                            (click)=\"onItemClick($event,item)\" (touchend)=\"onItemTouchEnd($event)\"\n                            [style.display]=\"isItemVisible(item) ? 'block' : 'none'\"\n                            [draggable]=\"dragdrop\" (dragstart)=\"onDragStart($event, i)\" (dragend)=\"onDragEnd($event)\">\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\"></ng-template>\n                        </li>\n                        <li class=\"ui-orderlist-droppoint\" *ngIf=\"dragdrop && l\" (dragover)=\"onDragOver($event, i + 1)\" (drop)=\"onDrop($event, i + 1)\" (dragleave)=\"onDragLeave($event)\" \n                            [ngClass]=\"{'ui-state-highlight': (i + 1 === dragOverItemIndex)}\"></li>\n                    </ng-template>\n                </ul>\n            </div>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"{'ui-orderlist ui-widget':true,'ui-orderlist-responsive':responsive}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-orderlist-controls\">\n                <button type=\"button\" pButton icon=\"fa-angle-up\" (click)=\"moveUp($event,listelement)\"></button>\n                <button type=\"button\" pButton icon=\"fa-angle-double-up\" (click)=\"moveTop($event,listelement)\"></button>\n                <button type=\"button\" pButton icon=\"fa-angle-down\" (click)=\"moveDown($event,listelement)\"></button>\n                <button type=\"button\" pButton icon=\"fa-angle-double-down\" (click)=\"moveBottom($event,listelement)\"></button>\n            </div>\n            <div class=\"ui-orderlist-list-container\">\n                <div class=\"ui-orderlist-caption ui-widget-header ui-corner-top\" *ngIf=\"header\">{{header}}</div>\n                <div class=\"ui-orderlist-filter-container ui-widget-content\" *ngIf=\"filterBy\">\n                    <input type=\"text\" role=\"textbox\" (keyup)=\"onFilterKeyup($event)\" class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\" [attr.placeholder]=\"filterPlaceholder\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <ul #listelement class=\"ui-widget-content ui-orderlist-list ui-corner-bottom\" [ngStyle]=\"listStyle\" (dragover)=\"onListMouseMove($event)\">\n                    <ng-template ngFor let-item [ngForOf]=\"value\" let-i=\"index\" let-l=\"last\">\n                        <li class=\"ui-orderlist-droppoint\" *ngIf=\"dragdrop && isItemVisible(item)\" (dragover)=\"onDragOver($event, i)\" (drop)=\"onDrop($event, i)\" (dragleave)=\"onDragLeave($event)\" \n                            [ngClass]=\"{'ui-state-highlight': (i === dragOverItemIndex)}\"></li>\n                        <li class=\"ui-orderlist-item\"\n                            [ngClass]=\"{'ui-state-highlight':isSelected(item)}\" \n                            (click)=\"onItemClick($event,item)\" (touchend)=\"onItemTouchEnd($event)\"\n                            [style.display]=\"isItemVisible(item) ? 'block' : 'none'\"\n                            [draggable]=\"dragdrop\" (dragstart)=\"onDragStart($event, i)\" (dragend)=\"onDragEnd($event)\">\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\" [index]=\"i\"></ng-template>\n                        </li>\n                        <li class=\"ui-orderlist-droppoint\" *ngIf=\"dragdrop && l\" (dragover)=\"onDragOver($event, i + 1)\" (drop)=\"onDrop($event, i + 1)\" (dragleave)=\"onDragLeave($event)\" \n                            [ngClass]=\"{'ui-state-highlight': (i + 1 === dragOverItemIndex)}\"></li>\n                    </ng-template>\n                </ul>\n            </div>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler, objectutils_1.ObjectUtils]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, objectutils_1.ObjectUtils])
@@ -14718,6 +15318,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
 var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
 var domhandler_1 = __webpack_require__("../../../../primeng/components/dom/domhandler.js");
+var animations_1 = __webpack_require__("../../../animations/@angular/animations.es5.js");
 var OverlayPanel = (function () {
     function OverlayPanel(el, domHandler, renderer, cd) {
         this.el = el;
@@ -14731,19 +15332,6 @@ var OverlayPanel = (function () {
         this.onAfterHide = new core_1.EventEmitter();
         this.visible = false;
     }
-    OverlayPanel.prototype.ngOnInit = function () {
-        var _this = this;
-        if (this.dismissable) {
-            this.documentClickListener = this.renderer.listen('document', 'click', function () {
-                if (!_this.selfClick && !_this.targetEvent) {
-                    _this.hide();
-                }
-                _this.selfClick = false;
-                _this.targetEvent = false;
-                _this.cd.markForCheck();
-            });
-        }
-    };
     OverlayPanel.prototype.ngAfterViewInit = function () {
         this.container = this.el.nativeElement.children[0];
         if (this.appendTo) {
@@ -14753,9 +15341,39 @@ var OverlayPanel = (function () {
                 this.domHandler.appendChild(this.container, this.appendTo);
         }
     };
+    OverlayPanel.prototype.ngAfterViewChecked = function () {
+        if (this.willShow) {
+            this.domHandler.absolutePosition(this.container, this.target);
+            this.bindDocumentClickListener();
+            this.onAfterShow.emit(null);
+            this.willShow = false;
+        }
+        if (this.willHide) {
+            this.onAfterHide.emit(null);
+            this.willHide = false;
+        }
+    };
+    OverlayPanel.prototype.bindDocumentClickListener = function () {
+        var _this = this;
+        if (!this.documentClickListener && this.dismissable) {
+            this.documentClickListener = this.renderer.listen('document', 'click', function () {
+                if (!_this.selfClick && !_this.targetClickEvent) {
+                    _this.hide();
+                }
+                _this.selfClick = false;
+                _this.targetClickEvent = false;
+                _this.cd.markForCheck();
+            });
+        }
+    };
+    OverlayPanel.prototype.unbindDocumentClickListener = function () {
+        if (this.documentClickListener) {
+            this.documentClickListener();
+            this.documentClickListener = null;
+        }
+    };
     OverlayPanel.prototype.toggle = function (event, target) {
-        var currentTarget = (target || event.currentTarget || event.target);
-        if (!this.target || this.target == currentTarget) {
+        if (!this.target || this.target === (target || event.currentTarget || event.target)) {
             if (this.visible)
                 this.hide();
             else
@@ -14764,51 +15382,42 @@ var OverlayPanel = (function () {
         else {
             this.show(event, target);
         }
-        if (this.dismissable) {
-            this.targetEvent = true;
-        }
-        this.target = currentTarget;
     };
     OverlayPanel.prototype.show = function (event, target) {
-        if (this.dismissable) {
-            this.targetEvent = true;
-        }
         this.onBeforeShow.emit(null);
-        var elementTarget = target || event.currentTarget || event.target;
+        this.target = target || event.currentTarget || event.target;
         this.container.style.zIndex = ++domhandler_1.DomHandler.zindex;
-        if (this.visible) {
-            this.domHandler.absolutePosition(this.container, elementTarget);
+        this.visible = true;
+        this.willShow = true;
+        if (event.type === 'click') {
+            this.targetClickEvent = true;
         }
-        else {
-            this.visible = true;
-            this.domHandler.absolutePosition(this.container, elementTarget);
-            this.domHandler.fadeIn(this.container, 250);
-        }
-        this.onAfterShow.emit(null);
     };
     OverlayPanel.prototype.hide = function () {
         if (this.visible) {
             this.onBeforeHide.emit(null);
+            this.willHide = true;
             this.visible = false;
-            this.onAfterHide.emit(null);
+            this.selfClick = false;
+            this.targetClickEvent = false;
+            this.unbindDocumentClickListener();
         }
     };
-    OverlayPanel.prototype.onPanelClick = function () {
-        if (this.dismissable) {
+    OverlayPanel.prototype.onPanelClick = function (event) {
+        if (this.closeClick) {
+            this.hide();
+            this.closeClick = false;
+        }
+        else if (this.dismissable) {
             this.selfClick = true;
         }
     };
     OverlayPanel.prototype.onCloseClick = function (event) {
-        this.hide();
-        if (this.dismissable) {
-            this.selfClick = true;
-        }
+        this.closeClick = true;
         event.preventDefault();
     };
     OverlayPanel.prototype.ngOnDestroy = function () {
-        if (this.documentClickListener) {
-            this.documentClickListener();
-        }
+        this.unbindDocumentClickListener();
         if (this.appendTo) {
             this.el.nativeElement.appendChild(this.container);
         }
@@ -14855,7 +15464,19 @@ __decorate([
 OverlayPanel = __decorate([
     core_1.Component({
         selector: 'p-overlayPanel',
-        template: "\n        <div [ngClass]=\"'ui-overlaypanel ui-widget ui-widget-content ui-corner-all ui-shadow'\" [ngStyle]=\"style\" [class]=\"styleClass\"\n            [style.display]=\"visible ? 'block' : 'none'\" (click)=\"onPanelClick()\">\n            <div class=\"ui-overlaypanel-content\">\n                <ng-content></ng-content>\n            </div>\n            <a href=\"#\" *ngIf=\"showCloseIcon\" class=\"ui-overlaypanel-close ui-state-default\" (click)=\"onCloseClick($event)\">\n                <span class=\"fa fa-fw fa-close\"></span>\n            </a>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"'ui-overlaypanel ui-widget ui-widget-content ui-corner-all ui-shadow'\" [ngStyle]=\"style\" [class]=\"styleClass\"\n            [style.display]=\"visible ? 'block' : 'none'\" (click)=\"onPanelClick($event)\" [@panelState]=\"visible ? 'visible' : 'hidden'\">\n            <div class=\"ui-overlaypanel-content\">\n                <ng-content></ng-content>\n            </div>\n            <a href=\"#\" *ngIf=\"showCloseIcon\" class=\"ui-overlaypanel-close ui-state-default\" (click)=\"onCloseClick($event)\">\n                <span class=\"fa fa-fw fa-close\"></span>\n            </a>\n        </div>\n    ",
+        animations: [
+            animations_1.trigger('panelState', [
+                animations_1.state('hidden', animations_1.style({
+                    opacity: 0
+                })),
+                animations_1.state('visible', animations_1.style({
+                    opacity: 1
+                })),
+                animations_1.transition('visible => hidden', animations_1.animate('400ms ease-in')),
+                animations_1.transition('hidden => visible', animations_1.animate('400ms ease-out'))
+            ])
+        ],
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2, core_1.ChangeDetectorRef])
@@ -14895,6 +15516,8 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
 var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
+var forms_1 = __webpack_require__("../../../forms/@angular/forms.es5.js");
+var dropdown_1 = __webpack_require__("../../../../primeng/components/dropdown/dropdown.js");
 var Paginator = (function () {
     function Paginator() {
         this.pageLinkSize = 5;
@@ -14933,6 +15556,23 @@ var Paginator = (function () {
         set: function (val) {
             this._rows = val;
             this.updatePageLinks();
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Paginator.prototype, "rowsPerPageOptions", {
+        get: function () {
+            return this._rowsPerPageOptions;
+        },
+        set: function (val) {
+            this._rowsPerPageOptions = val;
+            if (this._rowsPerPageOptions) {
+                this.rowsPerPageItems = [];
+                for (var _i = 0, _a = this._rowsPerPageOptions; _i < _a.length; _i++) {
+                    var opt = _a[_i];
+                    this.rowsPerPageItems.push({ label: String(opt), value: opt });
+                }
+            }
         },
         enumerable: true,
         configurable: true
@@ -15004,7 +15644,6 @@ var Paginator = (function () {
         event.preventDefault();
     };
     Paginator.prototype.onRppChange = function (event) {
-        this.rows = this.rowsPerPageOptions[event.target.selectedIndex];
         this.changePage(this.getPage());
     };
     return Paginator;
@@ -15027,10 +15666,6 @@ __decorate([
 ], Paginator.prototype, "styleClass", void 0);
 __decorate([
     core_1.Input(),
-    __metadata("design:type", Array)
-], Paginator.prototype, "rowsPerPageOptions", void 0);
-__decorate([
-    core_1.Input(),
     __metadata("design:type", Boolean)
 ], Paginator.prototype, "alwaysShow", void 0);
 __decorate([
@@ -15048,10 +15683,15 @@ __decorate([
     __metadata("design:type", Number),
     __metadata("design:paramtypes", [Number])
 ], Paginator.prototype, "rows", null);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array),
+    __metadata("design:paramtypes", [Array])
+], Paginator.prototype, "rowsPerPageOptions", null);
 Paginator = __decorate([
     core_1.Component({
         selector: 'p-paginator',
-        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"'ui-paginator ui-widget ui-widget-header ui-unselectable-text'\"\n            *ngIf=\"alwaysShow ? true : (pageLinks && pageLinks.length > 1)\">\n            <a href=\"#\" class=\"ui-paginator-first ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToFirst($event)\" [ngClass]=\"{'ui-state-disabled':isFirstPage()}\" [tabindex]=\"isFirstPage() ? -1 : null\">\n                <span class=\"fa fa-step-backward\"></span>\n            </a>\n            <a href=\"#\" class=\"ui-paginator-prev ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToPrev($event)\" [ngClass]=\"{'ui-state-disabled':isFirstPage()}\" [tabindex]=\"isFirstPage() ? -1 : null\">\n                <span class=\"fa fa-backward\"></span>\n            </a>\n            <span class=\"ui-paginator-pages\">\n                <a href=\"#\" *ngFor=\"let pageLink of pageLinks\" class=\"ui-paginator-page ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"onPageLinkClick($event, pageLink - 1)\" [ngClass]=\"{'ui-state-active': (pageLink-1 == getPage())}\">{{pageLink}}</a>\n            </span>\n            <a href=\"#\" class=\"ui-paginator-next ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToNext($event)\" [ngClass]=\"{'ui-state-disabled':isLastPage()}\" [tabindex]=\"isLastPage() ? -1 : null\">\n                <span class=\"fa fa-forward\"></span>\n            </a>\n            <a href=\"#\" class=\"ui-paginator-last ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToLast($event)\" [ngClass]=\"{'ui-state-disabled':isLastPage()}\" [tabindex]=\"isLastPage() ? -1 : null\">\n                <span class=\"fa fa-step-forward\"></span>\n            </a>\n            <select class=\"ui-paginator-rpp-options ui-widget ui-state-default\" *ngIf=\"rowsPerPageOptions\" (change)=\"onRppChange($event)\">\n                <option *ngFor=\"let opt of rowsPerPageOptions\" [value]=\"opt\" [selected]=\"rows == opt\">{{opt}}</option>\n            </select>\n        </div>\n    "
+        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"'ui-paginator ui-widget ui-widget-header ui-unselectable-text'\"\n            *ngIf=\"alwaysShow ? true : (pageLinks && pageLinks.length > 1)\">\n            <a href=\"#\" class=\"ui-paginator-first ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToFirst($event)\" [ngClass]=\"{'ui-state-disabled':isFirstPage()}\" [tabindex]=\"isFirstPage() ? -1 : null\">\n                <span class=\"fa fa-step-backward\"></span>\n            </a>\n            <a href=\"#\" class=\"ui-paginator-prev ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToPrev($event)\" [ngClass]=\"{'ui-state-disabled':isFirstPage()}\" [tabindex]=\"isFirstPage() ? -1 : null\">\n                <span class=\"fa fa-backward\"></span>\n            </a>\n            <span class=\"ui-paginator-pages\">\n                <a href=\"#\" *ngFor=\"let pageLink of pageLinks\" class=\"ui-paginator-page ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"onPageLinkClick($event, pageLink - 1)\" [ngClass]=\"{'ui-state-active': (pageLink-1 == getPage())}\">{{pageLink}}</a>\n            </span>\n            <a href=\"#\" class=\"ui-paginator-next ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToNext($event)\" [ngClass]=\"{'ui-state-disabled':isLastPage()}\" [tabindex]=\"isLastPage() ? -1 : null\">\n                <span class=\"fa fa-forward\"></span>\n            </a>\n            <a href=\"#\" class=\"ui-paginator-last ui-paginator-element ui-state-default ui-corner-all\"\n                    (click)=\"changePageToLast($event)\" [ngClass]=\"{'ui-state-disabled':isLastPage()}\" [tabindex]=\"isLastPage() ? -1 : null\">\n                <span class=\"fa fa-step-forward\"></span>\n            </a>\n            <p-dropdown [options]=\"rowsPerPageItems\" [(ngModel)]=\"rows\" *ngIf=\"rowsPerPageOptions\" \n                (onChange)=\"onRppChange($event)\" [lazy]=\"false\" [autoWidth]=\"false\"></p-dropdown>\n        </div>\n    "
     })
 ], Paginator);
 exports.Paginator = Paginator;
@@ -15062,8 +15702,8 @@ var PaginatorModule = (function () {
 }());
 PaginatorModule = __decorate([
     core_1.NgModule({
-        imports: [common_1.CommonModule],
-        exports: [Paginator],
+        imports: [common_1.CommonModule, dropdown_1.DropdownModule, forms_1.FormsModule],
+        exports: [Paginator, dropdown_1.DropdownModule, forms_1.FormsModule],
         declarations: [Paginator]
     })
 ], PaginatorModule);
@@ -15097,6 +15737,7 @@ var Panel = (function () {
         this.collapsed = false;
         this.expandIcon = 'fa-plus';
         this.collapseIcon = 'fa-minus';
+        this.showHeader = true;
         this.collapsedChange = new core_1.EventEmitter();
         this.onBeforeToggle = new core_1.EventEmitter();
         this.onAfterToggle = new core_1.EventEmitter();
@@ -15161,6 +15802,10 @@ __decorate([
     __metadata("design:type", String)
 ], Panel.prototype, "collapseIcon", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Panel.prototype, "showHeader", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Panel.prototype, "collapsedChange", void 0);
@@ -15179,7 +15824,7 @@ __decorate([
 Panel = __decorate([
     core_1.Component({
         selector: 'p-panel',
-        template: "\n        <div [ngClass]=\"'ui-panel ui-widget ui-widget-content ui-corner-all'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-panel-titlebar ui-widget-header ui-helper-clearfix ui-corner-all\">\n                <span class=\"ui-panel-title\" *ngIf=\"header\">{{header}}</span>\n                <ng-content select=\"p-header\"></ng-content>\n                <a *ngIf=\"toggleable\" class=\"ui-panel-titlebar-icon ui-panel-titlebar-toggler ui-corner-all ui-state-default\" href=\"#\"\n                    (click)=\"toggle($event)\">\n                    <span [class]=\"collapsed ? 'fa fa-fw ' + expandIcon : 'fa fa-fw ' + collapseIcon\"></span>\n                </a>\n            </div>\n            <div class=\"ui-panel-content-wrapper\" [@panelContent]=\"collapsed ? 'hidden' : 'visible'\" (@panelContent.done)=\"onToggleDone($event)\"\n                [ngClass]=\"{'ui-panel-content-wrapper-overflown': collapsed||animating}\">\n                <div class=\"ui-panel-content ui-widget-content\">\n                    <ng-content></ng-content>\n                </div>\n                \n                <div class=\"ui-panel-footer ui-widget-content\" *ngIf=\"footerFacet\">\n                    <ng-content select=\"p-footer\"></ng-content>\n                </div>\n            </div>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"'ui-panel ui-widget ui-widget-content ui-corner-all'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-panel-titlebar ui-widget-header ui-helper-clearfix ui-corner-all\" *ngIf=\"showHeader\">\n                <span class=\"ui-panel-title\" *ngIf=\"header\">{{header}}</span>\n                <ng-content select=\"p-header\"></ng-content>\n                <a *ngIf=\"toggleable\" class=\"ui-panel-titlebar-icon ui-panel-titlebar-toggler ui-corner-all ui-state-default\" href=\"#\"\n                    (click)=\"toggle($event)\">\n                    <span [class]=\"collapsed ? 'fa fa-fw ' + expandIcon : 'fa fa-fw ' + collapseIcon\"></span>\n                </a>\n            </div>\n            <div class=\"ui-panel-content-wrapper\" [@panelContent]=\"collapsed ? 'hidden' : 'visible'\" (@panelContent.done)=\"onToggleDone($event)\"\n                [ngClass]=\"{'ui-panel-content-wrapper-overflown': collapsed||animating}\">\n                <div class=\"ui-panel-content ui-widget-content\">\n                    <ng-content></ng-content>\n                </div>\n                \n                <div class=\"ui-panel-footer ui-widget-content\" *ngIf=\"footerFacet\">\n                    <ng-content select=\"p-footer\"></ng-content>\n                </div>\n            </div>\n        </div>\n    ",
         animations: [
             animations_1.trigger('panelContent', [
                 animations_1.state('hidden', animations_1.style({
@@ -15281,7 +15926,7 @@ __decorate([
 PanelMenuSub = __decorate([
     core_1.Component({
         selector: 'p-panelMenuSub',
-        template: "\n        <ul class=\"ui-menu-list ui-helper-reset\" [@submenu]=\"expanded ? 'visible' : 'hidden'\">\n            <ng-template ngFor let-child [ngForOf]=\"item.items\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" class=\"ui-menuitem ui-corner-all\" [ngClass]=\"{'ui-menu-parent':child.items}\" [class]=\"child.styleClass\" [ngStyle]=\"child.style\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.tabindex]=\"item.expanded ? null : '-1'\"\n                        [ngClass]=\"{'ui-menuitem-link-hasicon':child.icon&&child.items,'ui-state-disabled':child.disabled}\" \n                        (click)=\"handleClick($event,child)\" [attr.target]=\"child.target\" [attr.title]=\"child.title\">\n                        <span class=\"ui-panelmenu-icon fa fa-fw\" [ngClass]=\"{'fa-caret-right':!child.expanded,'fa-caret-down':child.expanded}\" *ngIf=\"child.items\"></span\n                        ><span class=\"ui-menuitem-icon fa fa-fw\" [ngClass]=\"child.icon\" *ngIf=\"child.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" \n                        [ngClass]=\"{'ui-menuitem-link-hasicon':child.icon&&child.items,'ui-state-disabled':child.disabled}\" [attr.tabindex]=\"item.expanded ? null : '-1'\" \n                        (click)=\"handleClick($event,child)\" [attr.target]=\"child.target\" [attr.title]=\"child.title\">\n                        <span class=\"ui-panelmenu-icon fa fa-fw\" [ngClass]=\"{'fa-caret-right':!child.expanded,'fa-caret-down':child.expanded}\" *ngIf=\"child.items\"></span\n                        ><span class=\"ui-menuitem-icon fa fa-fw\" [ngClass]=\"child.icon\" *ngIf=\"child.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-panelMenuSub [item]=\"child\" [expanded]=\"child.expanded\" *ngIf=\"child.items\"></p-panelMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    ",
+        template: "\n        <ul class=\"ui-menu-list ui-helper-reset\" [@submenu]=\"expanded ? 'visible' : 'hidden'\">\n            <ng-template ngFor let-child [ngForOf]=\"item.items\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" class=\"ui-menuitem ui-corner-all\" [ngClass]=\"{'ui-menu-parent':child.items}\" [class]=\"child.styleClass\" [ngStyle]=\"child.style\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.tabindex]=\"item.expanded ? null : '-1'\"\n                        [ngClass]=\"{'ui-menuitem-link-hasicon':child.icon&&child.items,'ui-state-disabled':child.disabled}\" \n                        (click)=\"handleClick($event,child)\" [attr.target]=\"child.target\" [attr.title]=\"child.title\">\n                        <span class=\"ui-panelmenu-icon fa fa-fw\" [ngClass]=\"{'fa-caret-right':!child.expanded,'fa-caret-down':child.expanded}\" *ngIf=\"child.items\"></span\n                        ><span class=\"ui-menuitem-icon fa fa-fw\" [ngClass]=\"child.icon\" *ngIf=\"child.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [queryParams]=\"child.queryParams\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" \n                        [ngClass]=\"{'ui-menuitem-link-hasicon':child.icon&&child.items,'ui-state-disabled':child.disabled}\" [attr.tabindex]=\"item.expanded ? null : '-1'\" \n                        (click)=\"handleClick($event,child)\" [attr.target]=\"child.target\" [attr.title]=\"child.title\">\n                        <span class=\"ui-panelmenu-icon fa fa-fw\" [ngClass]=\"{'fa-caret-right':!child.expanded,'fa-caret-down':child.expanded}\" *ngIf=\"child.items\"></span\n                        ><span class=\"ui-menuitem-icon fa fa-fw\" [ngClass]=\"child.icon\" *ngIf=\"child.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-panelMenuSub [item]=\"child\" [expanded]=\"child.expanded\" *ngIf=\"child.items\"></p-panelMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    ",
         animations: [
             animations_1.trigger('submenu', [
                 animations_1.state('hidden', animations_1.style({
@@ -15300,9 +15945,27 @@ exports.PanelMenuSub = PanelMenuSub;
 var PanelMenu = (function (_super) {
     __extends(PanelMenu, _super);
     function PanelMenu() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.multiple = true;
+        return _this;
     }
+    PanelMenu.prototype.collapseAll = function () {
+        for (var _i = 0, _a = this.model; _i < _a.length; _i++) {
+            var item = _a[_i];
+            if (item.expanded) {
+                item.expanded = false;
+            }
+        }
+    };
     PanelMenu.prototype.handleClick = function (event, item) {
+        if (!this.multiple) {
+            for (var _i = 0, _a = this.model; _i < _a.length; _i++) {
+                var modelItem = _a[_i];
+                if (item !== modelItem && modelItem.expanded) {
+                    modelItem.expanded = false;
+                }
+            }
+        }
         this.animating = true;
         _super.prototype.handleClick.call(this, event, item);
     };
@@ -15323,10 +15986,14 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", String)
 ], PanelMenu.prototype, "styleClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], PanelMenu.prototype, "multiple", void 0);
 PanelMenu = __decorate([
     core_1.Component({
         selector: 'p-panelMenu',
-        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"'ui-panelmenu ui-widget'\">\n            <div *ngFor=\"let item of model;let f=first;let l=last;\" class=\"ui-panelmenu-panel\">\n                <div [ngClass]=\"{'ui-widget ui-panelmenu-header ui-state-default':true,'ui-corner-top':f,'ui-corner-bottom':l&&!item.expanded,\n                    'ui-state-active':item.expanded,'ui-state-disabled':item.disabled}\" [class]=\"item.styleClass\" [ngStyle]=\"item.style\">\n                    <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" [ngClass]=\"{'ui-panelmenu-headerlink-hasicon':item.icon}\" (click)=\"handleClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span *ngIf=\"item.items\" class=\"ui-panelmenu-icon fa\" [ngClass]=\"{'fa-caret-right':!item.expanded,'fa-caret-down':item.expanded}\"></span\n                        ><span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\" *ngIf=\"item.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                    <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" [ngClass]=\"{'ui-panelmenu-headerlink-hasicon':item.icon}\" (click)=\"handleClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span *ngIf=\"item.items\" class=\"ui-panelmenu-icon fa\" [ngClass]=\"{'fa-caret-right':!item.expanded,'fa-caret-down':item.expanded}\"></span\n                        ><span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\" *ngIf=\"item.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                </div>\n                <div *ngIf=\"item.items\" class=\"ui-panelmenu-content-wrapper\" [@rootItem]=\"item.expanded ? 'visible' : 'hidden'\"  (@rootItem.done)=\"onToggleDone($event)\"\n                    [ngClass]=\"{'ui-panelmenu-content-wrapper-overflown': !item.expanded||animating}\">\n                    <div class=\"ui-panelmenu-content ui-widget-content\">\n                        <p-panelMenuSub [item]=\"item\" [expanded]=\"true\"></p-panelMenuSub>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ",
+        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"'ui-panelmenu ui-widget'\">\n            <div *ngFor=\"let item of model;let f=first;let l=last;\" class=\"ui-panelmenu-panel\">\n                <div [ngClass]=\"{'ui-widget ui-panelmenu-header ui-state-default':true,'ui-corner-top':f,'ui-corner-bottom':l&&!item.expanded,\n                    'ui-state-active':item.expanded,'ui-state-disabled':item.disabled}\" [class]=\"item.styleClass\" [ngStyle]=\"item.style\">\n                    <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" [ngClass]=\"{'ui-panelmenu-headerlink-hasicon':item.icon}\" (click)=\"handleClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span *ngIf=\"item.items\" class=\"ui-panelmenu-icon fa\" [ngClass]=\"{'fa-caret-right':!item.expanded,'fa-caret-down':item.expanded}\"></span\n                        ><span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\" *ngIf=\"item.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                    <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" [ngClass]=\"{'ui-panelmenu-headerlink-hasicon':item.icon}\" (click)=\"handleClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span *ngIf=\"item.items\" class=\"ui-panelmenu-icon fa\" [ngClass]=\"{'fa-caret-right':!item.expanded,'fa-caret-down':item.expanded}\"></span\n                        ><span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\" *ngIf=\"item.icon\"></span\n                        ><span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                </div>\n                <div *ngIf=\"item.items\" class=\"ui-panelmenu-content-wrapper\" [@rootItem]=\"item.expanded ? 'visible' : 'hidden'\"  (@rootItem.done)=\"onToggleDone($event)\"\n                    [ngClass]=\"{'ui-panelmenu-content-wrapper-overflown': !item.expanded||animating}\">\n                    <div class=\"ui-panelmenu-content ui-widget-content\">\n                        <p-panelMenuSub [item]=\"item\" [expanded]=\"true\"></p-panelMenuSub>\n                    </div>\n                </div>\n            </div>\n        </div>\n    ",
         animations: [
             animations_1.trigger('rootItem', [
                 animations_1.state('hidden', animations_1.style({
@@ -15589,12 +16256,15 @@ var PickList = (function () {
         this.metaKeySelection = true;
         this.showSourceControls = true;
         this.showTargetControls = true;
+        this.disabled = false;
         this.onMoveToSource = new core_1.EventEmitter();
         this.onMoveAllToSource = new core_1.EventEmitter();
         this.onMoveAllToTarget = new core_1.EventEmitter();
         this.onMoveToTarget = new core_1.EventEmitter();
         this.onSourceReorder = new core_1.EventEmitter();
         this.onTargetReorder = new core_1.EventEmitter();
+        this.onSourceSelect = new core_1.EventEmitter();
+        this.onTargetSelect = new core_1.EventEmitter();
         this.selectedItemsSource = [];
         this.selectedItemsTarget = [];
     }
@@ -15625,7 +16295,10 @@ var PickList = (function () {
             this.reorderedListElement = null;
         }
     };
-    PickList.prototype.onItemClick = function (event, item, selectedItems) {
+    PickList.prototype.onItemClick = function (event, item, selectedItems, callback) {
+        if (this.disabled) {
+            return;
+        }
         var index = this.findIndexInSelection(item, selectedItems);
         var selected = (index != -1);
         var metaSelection = this.itemTouched ? false : this.metaKeySelection;
@@ -15647,12 +16320,19 @@ var PickList = (function () {
             else
                 selectedItems.push(item);
         }
+        callback.emit({ originalEvent: event, items: selectedItems });
         this.itemTouched = false;
     };
     PickList.prototype.onSourceItemDblClick = function () {
+        if (this.disabled) {
+            return;
+        }
         this.moveRight();
     };
     PickList.prototype.onTargetItemDblClick = function () {
+        if (this.disabled) {
+            return;
+        }
         this.moveLeft();
     };
     PickList.prototype.onFilter = function (event, data, listType) {
@@ -15689,6 +16369,9 @@ var PickList = (function () {
         }
     };
     PickList.prototype.onItemTouchEnd = function (event) {
+        if (this.disabled) {
+            return;
+        }
         this.itemTouched = true;
     };
     PickList.prototype.moveUp = function (listElement, list, selectedItems, callback) {
@@ -15886,14 +16569,14 @@ var PickList = (function () {
         if (this.onListItemDroppoint) {
             if (listType === -1) {
                 if (this.fromListType === 1)
-                    this.insert(this.draggedItemIndexTarget, this.target, index, this.source);
+                    this.insert(this.draggedItemIndexTarget, this.target, index, this.source, this.onMoveToSource);
                 else
                     this.objectUtils.reorderArray(this.source, this.draggedItemIndexSource, (this.draggedItemIndexSource > index) ? index : (index === 0) ? 0 : index - 1);
                 this.dragOverItemIndexSource = null;
             }
             else {
                 if (this.fromListType === -1)
-                    this.insert(this.draggedItemIndexSource, this.source, index, this.target);
+                    this.insert(this.draggedItemIndexSource, this.source, index, this.target, this.onMoveToTarget);
                 else
                     this.objectUtils.reorderArray(this.target, this.draggedItemIndexTarget, (this.draggedItemIndexTarget > index) ? index : (index === 0) ? 0 : index - 1);
                 this.dragOverItemIndexTarget = null;
@@ -15910,22 +16593,26 @@ var PickList = (function () {
         if (!this.onListItemDroppoint) {
             if (listType === -1) {
                 if (this.fromListType === 1)
-                    this.insert(this.draggedItemIndexTarget, this.target, null, this.source);
+                    this.insert(this.draggedItemIndexTarget, this.target, null, this.source, this.onMoveToSource);
             }
             else {
                 if (this.fromListType === -1)
-                    this.insert(this.draggedItemIndexSource, this.source, null, this.target);
+                    this.insert(this.draggedItemIndexSource, this.source, null, this.target, this.onMoveToTarget);
             }
             this.listHighlightTarget = false;
             this.listHighlightSource = false;
             event.preventDefault();
         }
     };
-    PickList.prototype.insert = function (fromIndex, fromList, toIndex, toList) {
+    PickList.prototype.insert = function (fromIndex, fromList, toIndex, toList, callback) {
+        var elementtomove = fromList[fromIndex];
         if (toIndex === null)
             toList.push(fromList.splice(fromIndex, 1)[0]);
         else
             toList.splice(toIndex, 0, fromList.splice(fromIndex, 1)[0]);
+        callback.emit({
+            items: [elementtomove]
+        });
     };
     PickList.prototype.onListMouseMove = function (event, listType) {
         if (this.dragging) {
@@ -16023,6 +16710,10 @@ __decorate([
     __metadata("design:type", String)
 ], PickList.prototype, "targetFilterPlaceholder", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], PickList.prototype, "disabled", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], PickList.prototype, "onMoveToSource", void 0);
@@ -16047,6 +16738,14 @@ __decorate([
     __metadata("design:type", core_1.EventEmitter)
 ], PickList.prototype, "onTargetReorder", void 0);
 __decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], PickList.prototype, "onSourceSelect", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], PickList.prototype, "onTargetSelect", void 0);
+__decorate([
     core_1.ViewChild('sourcelist'),
     __metadata("design:type", core_1.ElementRef)
 ], PickList.prototype, "listViewSourceChild", void 0);
@@ -16061,7 +16760,7 @@ __decorate([
 PickList = __decorate([
     core_1.Component({
         selector: 'p-pickList',
-        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"{'ui-picklist ui-widget ui-helper-clearfix': true,'ui-picklist-responsive': responsive}\">\n            <div class=\"ui-picklist-source-controls ui-picklist-buttons\" *ngIf=\"showSourceControls\">\n                <div class=\"ui-picklist-buttons-cell\">\n                    <button type=\"button\" pButton icon=\"fa-angle-up\" (click)=\"moveUp(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-up\" (click)=\"moveTop(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-down\" (click)=\"moveDown(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-down\" (click)=\"moveBottom(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                </div>\n            </div>\n            <div class=\"ui-picklist-listwrapper ui-picklist-source-wrapper\" [ngClass]=\"{'ui-picklist-listwrapper-nocontrols':!showSourceControls}\">\n                <div class=\"ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr\" *ngIf=\"sourceHeader\">{{sourceHeader}}</div>\n                <div class=\"ui-picklist-filter-container ui-widget-content\" *ngIf=\"filterBy\">\n                    <input type=\"text\" role=\"textbox\" (keyup)=\"onFilter($event,source,-1)\" class=\"ui-picklist-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\" [attr.placeholder]=\"sourceFilterPlaceholder\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <ul #sourcelist class=\"ui-widget-content ui-picklist-list ui-picklist-source ui-corner-bottom\" [ngClass]=\"{'ui-picklist-highlight': listHighlightSource}\" [ngStyle]=\"sourceStyle\" (dragover)=\"onListMouseMove($event,-1)\" (dragleave)=\"onListDragLeave()\" (drop)=\"onListDrop($event, -1)\">\n                    <ng-template ngFor let-item [ngForOf]=\"source\" let-i=\"index\" let-l=\"last\">\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop\" (dragover)=\"onDragOver($event, i, -1)\" (drop)=\"onDrop($event, i, -1)\" (dragleave)=\"onDragLeave($event, -1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i === dragOverItemIndexSource)}\" [style.display]=\"isItemVisible(item, -1) ? 'block' : 'none'\"></li>\n                        <li [ngClass]=\"{'ui-picklist-item':true,'ui-state-highlight':isSelected(item,selectedItemsSource)}\"\n                            (click)=\"onItemClick($event,item,selectedItemsSource)\" (dblclick)=\"onSourceItemDblClick()\" (touchend)=\"onItemTouchEnd($event)\"\n                            [style.display]=\"isItemVisible(item, -1) ? 'block' : 'none'\"\n                            [draggable]=\"dragdrop\" (dragstart)=\"onDragStart($event, i, -1)\" (dragend)=\"onDragEnd($event)\">\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\"></ng-template>\n                        </li>\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop&&l\" (dragover)=\"onDragOver($event, i + 1, -1)\" (drop)=\"onDrop($event, i + 1, -1)\" (dragleave)=\"onDragLeave($event, -1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i + 1 === dragOverItemIndexSource)}\"></li>\n                    </ng-template>\n                </ul>\n            </div>\n            <div class=\"ui-picklist-buttons\">\n                <div class=\"ui-picklist-buttons-cell\">\n                    <button type=\"button\" pButton icon=\"fa-angle-right\" (click)=\"moveRight()\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-right\" (click)=\"moveAllRight()\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-left\" (click)=\"moveLeft()\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-left\" (click)=\"moveAllLeft()\"></button>\n                </div>\n            </div>\n            <div class=\"ui-picklist-listwrapper ui-picklist-target-wrapper\" [ngClass]=\"{'ui-picklist-listwrapper-nocontrols':!showTargetControls}\">\n                <div class=\"ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr\" *ngIf=\"targetHeader\">{{targetHeader}}</div>\n                <div class=\"ui-picklist-filter-container ui-widget-content\" *ngIf=\"filterBy\">\n                    <input type=\"text\" role=\"textbox\" (keyup)=\"onFilter($event,target,1)\" class=\"ui-picklist-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\" [attr.placeholder]=\"targetFilterPlaceholder\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <ul #targetlist class=\"ui-widget-content ui-picklist-list ui-picklist-target ui-corner-bottom\" [ngClass]=\"{'ui-picklist-highlight': listHighlightTarget}\" [ngStyle]=\"targetStyle\" (dragover)=\"onListMouseMove($event,1)\" (dragleave)=\"onListDragLeave()\" (drop)=\"onListDrop($event,1)\">\n                    <ng-template ngFor let-item [ngForOf]=\"target\" let-i=\"index\" let-l=\"last\">\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop\" (dragover)=\"onDragOver($event, i, 1)\" (drop)=\"onDrop($event, i, 1)\" (dragleave)=\"onDragLeave($event, 1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i === dragOverItemIndexTarget)}\" [style.display]=\"isItemVisible(item, 1) ? 'block' : 'none'\"></li>\n                        <li [ngClass]=\"{'ui-picklist-item':true,'ui-state-highlight':isSelected(item,selectedItemsTarget)}\"\n                            (click)=\"onItemClick($event,item,selectedItemsTarget)\" (dblclick)=\"onTargetItemDblClick()\" (touchend)=\"onItemTouchEnd($event)\"\n                            [style.display]=\"isItemVisible(item, 1) ? 'block' : 'none'\"\n                            [draggable]=\"dragdrop\" (dragstart)=\"onDragStart($event, i, 1)\" (dragend)=\"onDragEnd($event)\">\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\"></ng-template>\n                        </li>\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop&&l\" (dragover)=\"onDragOver($event, i + 1, 1)\" (drop)=\"onDrop($event, i + 1, 1)\" (dragleave)=\"onDragLeave($event, 1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i + 1 === dragOverItemIndexTarget)}\"></li>\n                    </ng-template>\n                </ul>\n            </div>\n            <div class=\"ui-picklist-target-controls ui-picklist-buttons\" *ngIf=\"showTargetControls\">\n                <div class=\"ui-picklist-buttons-cell\">\n                    <button type=\"button\" pButton icon=\"fa-angle-up\" (click)=\"moveUp(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-up\" (click)=\"moveTop(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-down\" (click)=\"moveDown(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-down\" (click)=\"moveBottom(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                </div>\n            </div>\n        </div>\n    ",
+        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" [ngClass]=\"{'ui-picklist ui-widget ui-helper-clearfix': true,'ui-picklist-responsive': responsive}\">\n            <div class=\"ui-picklist-source-controls ui-picklist-buttons\" *ngIf=\"showSourceControls\">\n                <div class=\"ui-picklist-buttons-cell\">\n                    <button type=\"button\" pButton icon=\"fa-angle-up\" [disabled]=\"disabled\" (click)=\"moveUp(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-up\" [disabled]=\"disabled\" (click)=\"moveTop(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-down\" [disabled]=\"disabled\" (click)=\"moveDown(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-down\" [disabled]=\"disabled\" (click)=\"moveBottom(sourcelist,source,selectedItemsSource,onSourceReorder)\"></button>\n                </div>\n            </div>\n            <div class=\"ui-picklist-listwrapper ui-picklist-source-wrapper\" [ngClass]=\"{'ui-picklist-listwrapper-nocontrols':!showSourceControls}\">\n                <div class=\"ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr\" *ngIf=\"sourceHeader\">{{sourceHeader}}</div>\n                <div class=\"ui-picklist-filter-container ui-widget-content\" *ngIf=\"filterBy\">\n                    <input type=\"text\" role=\"textbox\" (keyup)=\"onFilter($event,source,-1)\" class=\"ui-picklist-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\" [attr.placeholder]=\"sourceFilterPlaceholder\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <ul #sourcelist class=\"ui-widget-content ui-picklist-list ui-picklist-source ui-corner-bottom\" [ngClass]=\"{'ui-picklist-highlight': listHighlightSource}\" [ngStyle]=\"sourceStyle\" (dragover)=\"onListMouseMove($event,-1)\" (dragleave)=\"onListDragLeave()\" (drop)=\"onListDrop($event, -1)\">\n                    <ng-template ngFor let-item [ngForOf]=\"source\" let-i=\"index\" let-l=\"last\">\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop\" (dragover)=\"onDragOver($event, i, -1)\" (drop)=\"onDrop($event, i, -1)\" (dragleave)=\"onDragLeave($event, -1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i === dragOverItemIndexSource)}\" [style.display]=\"isItemVisible(item, -1) ? 'block' : 'none'\"></li>\n                        <li [ngClass]=\"{'ui-picklist-item':true,'ui-state-highlight':isSelected(item,selectedItemsSource), 'ui-state-disabled': disabled}\"\n                            (click)=\"onItemClick($event,item,selectedItemsSource,onSourceSelect)\" (dblclick)=\"onSourceItemDblClick()\" (touchend)=\"onItemTouchEnd($event)\"\n                            [style.display]=\"isItemVisible(item, -1) ? 'block' : 'none'\"\n                            [draggable]=\"dragdrop\" (dragstart)=\"onDragStart($event, i, -1)\" (dragend)=\"onDragEnd($event)\">\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\" [index]=\"i\"></ng-template>\n                        </li>\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop&&l\" (dragover)=\"onDragOver($event, i + 1, -1)\" (drop)=\"onDrop($event, i + 1, -1)\" (dragleave)=\"onDragLeave($event, -1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i + 1 === dragOverItemIndexSource)}\"></li>\n                    </ng-template>\n                </ul>\n            </div>\n            <div class=\"ui-picklist-buttons\">\n                <div class=\"ui-picklist-buttons-cell\">\n                    <button type=\"button\" pButton icon=\"fa-angle-right\" [disabled]=\"disabled\" (click)=\"moveRight()\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-right\" [disabled]=\"disabled\" (click)=\"moveAllRight()\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-left\" [disabled]=\"disabled\" (click)=\"moveLeft()\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-left\" [disabled]=\"disabled\" (click)=\"moveAllLeft()\"></button>\n                </div>\n            </div>\n            <div class=\"ui-picklist-listwrapper ui-picklist-target-wrapper\" [ngClass]=\"{'ui-picklist-listwrapper-nocontrols':!showTargetControls}\">\n                <div class=\"ui-picklist-caption ui-widget-header ui-corner-tl ui-corner-tr\" *ngIf=\"targetHeader\">{{targetHeader}}</div>\n                <div class=\"ui-picklist-filter-container ui-widget-content\" *ngIf=\"filterBy\">\n                    <input type=\"text\" role=\"textbox\" (keyup)=\"onFilter($event,target,1)\" class=\"ui-picklist-filter ui-inputtext ui-widget ui-state-default ui-corner-all\" [disabled]=\"disabled\" [attr.placeholder]=\"targetFilterPlaceholder\">\n                    <span class=\"fa fa-search\"></span>\n                </div>\n                <ul #targetlist class=\"ui-widget-content ui-picklist-list ui-picklist-target ui-corner-bottom\" [ngClass]=\"{'ui-picklist-highlight': listHighlightTarget}\" [ngStyle]=\"targetStyle\" (dragover)=\"onListMouseMove($event,1)\" (dragleave)=\"onListDragLeave()\" (drop)=\"onListDrop($event,1)\">\n                    <ng-template ngFor let-item [ngForOf]=\"target\" let-i=\"index\" let-l=\"last\">\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop\" (dragover)=\"onDragOver($event, i, 1)\" (drop)=\"onDrop($event, i, 1)\" (dragleave)=\"onDragLeave($event, 1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i === dragOverItemIndexTarget)}\" [style.display]=\"isItemVisible(item, 1) ? 'block' : 'none'\"></li>\n                        <li [ngClass]=\"{'ui-picklist-item':true,'ui-state-highlight':isSelected(item,selectedItemsTarget), 'ui-state-disabled': disabled}\"\n                            (click)=\"onItemClick($event,item,selectedItemsTarget,onTargetSelect)\" (dblclick)=\"onTargetItemDblClick()\" (touchend)=\"onItemTouchEnd($event)\"\n                            [style.display]=\"isItemVisible(item, 1) ? 'block' : 'none'\"\n                            [draggable]=\"dragdrop\" (dragstart)=\"onDragStart($event, i, 1)\" (dragend)=\"onDragEnd($event)\">\n                            <ng-template [pTemplateWrapper]=\"itemTemplate\" [item]=\"item\" [index]=\"i\"></ng-template>\n                        </li>\n                        <li class=\"ui-picklist-droppoint\" *ngIf=\"dragdrop&&l\" (dragover)=\"onDragOver($event, i + 1, 1)\" (drop)=\"onDrop($event, i + 1, 1)\" (dragleave)=\"onDragLeave($event, 1)\" \n                        [ngClass]=\"{'ui-picklist-droppoint-highlight': (i + 1 === dragOverItemIndexTarget)}\"></li>\n                    </ng-template>\n                </ul>\n            </div>\n            <div class=\"ui-picklist-target-controls ui-picklist-buttons\" *ngIf=\"showTargetControls\">\n                <div class=\"ui-picklist-buttons-cell\">\n                    <button type=\"button\" pButton icon=\"fa-angle-up\" [disabled]=\"disabled\" (click)=\"moveUp(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-up\" [disabled]=\"disabled\" (click)=\"moveTop(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-down\" [disabled]=\"disabled\" (click)=\"moveDown(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                    <button type=\"button\" pButton icon=\"fa-angle-double-down\" [disabled]=\"disabled\" (click)=\"moveBottom(targetlist,target,selectedItemsTarget,onTargetReorder)\"></button>\n                </div>\n            </div>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler, objectutils_1.ObjectUtils]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, objectutils_1.ObjectUtils])
@@ -16105,6 +16804,7 @@ var ProgressBar = (function () {
     function ProgressBar() {
         this.showValue = true;
         this.unit = '%';
+        this.mode = 'determinate';
     }
     return ProgressBar;
 }());
@@ -16118,12 +16818,24 @@ __decorate([
 ], ProgressBar.prototype, "showValue", void 0);
 __decorate([
     core_1.Input(),
+    __metadata("design:type", Object)
+], ProgressBar.prototype, "style", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], ProgressBar.prototype, "styleClass", void 0);
+__decorate([
+    core_1.Input(),
     __metadata("design:type", String)
 ], ProgressBar.prototype, "unit", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], ProgressBar.prototype, "mode", void 0);
 ProgressBar = __decorate([
     core_1.Component({
         selector: 'p-progressBar',
-        template: "\n        <div class=\"ui-progressbar ui-widget ui-widget-content ui-corner-all\" role=\"progressbar\" aria-valuemin=\"0\" [attr.aria-valuenow]=\"value\" aria-valuemax=\"100\">\n            <div class=\"ui-progressbar-value ui-progressbar-value-animate ui-widget-header ui-corner-all\" [style.width]=\"value + '%'\" style=\"display:block\"></div>\n            <div class=\"ui-progressbar-label\" [style.display]=\"value ? 'block' : 'none'\" *ngIf=\"showValue\">{{value}}{{unit}}</div>\n        </div>\n    "
+        template: "\n        <div [class]=\"styleClass\" [ngStyle]=\"style\" role=\"progressbar\" aria-valuemin=\"0\" [attr.aria-valuenow]=\"value\" aria-valuemax=\"100\"\n            [ngClass]=\"{'ui-progressbar ui-widget ui-widget-content ui-corner-all': true, 'ui-progressbar-determinate': (mode === 'determinate'), 'ui-progressbar-indeterminate': (mode === 'indeterminate')}\">\n            <div class=\"ui-progressbar-value ui-progressbar-value-animate ui-widget-header ui-corner-all\" [style.width]=\"value + '%'\" style=\"display:block\"></div>\n            <div class=\"ui-progressbar-label\" [style.display]=\"value ? 'block' : 'none'\" *ngIf=\"showValue\">{{value}}{{unit}}</div>\n        </div>\n    "
     })
 ], ProgressBar);
 exports.ProgressBar = ProgressBar;
@@ -16141,6 +16853,75 @@ ProgressBarModule = __decorate([
 ], ProgressBarModule);
 exports.ProgressBarModule = ProgressBarModule;
 //# sourceMappingURL=progressbar.js.map
+
+/***/ }),
+
+/***/ "../../../../primeng/components/progressspinner/progressspinner.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
+var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
+var ProgressSpinner = (function () {
+    function ProgressSpinner() {
+        this.strokeWidth = "2";
+        this.fill = "none";
+        this.animationDuration = "2s";
+    }
+    return ProgressSpinner;
+}());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], ProgressSpinner.prototype, "style", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], ProgressSpinner.prototype, "styleClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], ProgressSpinner.prototype, "strokeWidth", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], ProgressSpinner.prototype, "fill", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], ProgressSpinner.prototype, "animationDuration", void 0);
+ProgressSpinner = __decorate([
+    core_1.Component({
+        selector: 'p-progressSpinner',
+        template: "\n        <div class=\"ui-progress-spinner\" [ngStyle]=\"style\" [ngClass]=\"styleClass\">\n            <svg class=\"ui-progress-spinner-svg\" viewBox=\"25 25 50 50\" [style.animation-duration]=\"animationDuration\">\n                <circle class=\"ui-progress-spinner-circle\" cx=\"50\" cy=\"50\" r=\"20\" [attr.fill]=\"fill\" [attr.stroke-width]=\"strokeWidth\" stroke-miterlimit=\"10\"/>\n            </svg>\n        </div>\n    "
+    })
+], ProgressSpinner);
+exports.ProgressSpinner = ProgressSpinner;
+var ProgressSpinnerModule = (function () {
+    function ProgressSpinnerModule() {
+    }
+    return ProgressSpinnerModule;
+}());
+ProgressSpinnerModule = __decorate([
+    core_1.NgModule({
+        imports: [common_1.CommonModule],
+        exports: [ProgressSpinner],
+        declarations: [ProgressSpinner]
+    })
+], ProgressSpinnerModule);
+exports.ProgressSpinnerModule = ProgressSpinnerModule;
+//# sourceMappingURL=progressspinner.js.map
 
 /***/ }),
 
@@ -16308,6 +17089,9 @@ var Rating = (function () {
     function Rating() {
         this.stars = 5;
         this.cancel = true;
+        this.iconOnClass = 'fa-star';
+        this.iconOffClass = 'fa-star-o';
+        this.iconCancelClass = 'fa-ban';
         this.onRate = new core_1.EventEmitter();
         this.onCancel = new core_1.EventEmitter();
         this.onModelChange = function () { };
@@ -16371,6 +17155,30 @@ __decorate([
     __metadata("design:type", Boolean)
 ], Rating.prototype, "cancel", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Rating.prototype, "iconOnClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Rating.prototype, "iconOnStyle", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Rating.prototype, "iconOffClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Rating.prototype, "iconOffStyle", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Rating.prototype, "iconCancelClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Rating.prototype, "iconCancelStyle", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], Rating.prototype, "onRate", void 0);
@@ -16381,7 +17189,7 @@ __decorate([
 Rating = __decorate([
     core_1.Component({
         selector: 'p-rating',
-        template: "\n        <div class=\"ui-rating\" [ngClass]=\"{'ui-state-disabled': disabled}\">\n            <a href=\"#\" *ngIf=\"cancel\" (click)=\"clear($event)\">\n                <span class=\"fa fa-ban\"></span>\n            </a>\n            <a href=\"#\" *ngFor=\"let star of starsArray;let i=index\" (click)=\"rate($event,i)\">\n                <span class=\"fa\" [ngClass]=\"{'fa-star-o': (!value || i >= value), 'fa-star':(i < value)}\"></span>\n            </a>\n        </div>\n    ",
+        template: "\n        <div class=\"ui-rating\" [ngClass]=\"{'ui-state-disabled': disabled}\">\n            <a href=\"#\" *ngIf=\"cancel\" (click)=\"clear($event)\">\n                <span class=\"fa\" [ngClass]=\"iconCancelClass\" [ngStyle]=\"iconCancelStyle\"></span>\n            </a>\n            <a href=\"#\" *ngFor=\"let star of starsArray;let i=index\" (click)=\"rate($event,i)\">\n                <span class=\"fa\" \n                    [ngClass]=\"(!value || i >= value) ? iconOffClass : iconOnClass\"\n                    [ngStyle]=\"(!value || i >= value) ? iconOffStyle : iconOnStyle\"\n                ></span>\n            </a>\n        </div>\n    ",
         providers: [exports.RATING_VALUE_ACCESSOR]
     })
 ], Rating);
@@ -16494,6 +17302,7 @@ var Schedule = (function () {
             eventConstraint: this.eventConstraint,
             eventRender: this.eventRender,
             dayRender: this.dayRender,
+            navLinks: this.navLinks,
             dayClick: function (date, jsEvent, view) {
                 _this.onDayClick.emit({
                     'date': date,
@@ -16853,6 +17662,10 @@ __decorate([
 ], Schedule.prototype, "dayRender", void 0);
 __decorate([
     core_1.Input(),
+    __metadata("design:type", Boolean)
+], Schedule.prototype, "navLinks", void 0);
+__decorate([
+    core_1.Input(),
     __metadata("design:type", Object)
 ], Schedule.prototype, "options", void 0);
 __decorate([
@@ -16949,6 +17762,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
 var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
+var objectutils_1 = __webpack_require__("../../../../primeng/components/utils/objectutils.js");
 var forms_1 = __webpack_require__("../../../forms/@angular/forms.es5.js");
 exports.SELECTBUTTON_VALUE_ACCESSOR = {
     provide: forms_1.NG_VALUE_ACCESSOR,
@@ -16956,12 +17770,24 @@ exports.SELECTBUTTON_VALUE_ACCESSOR = {
     multi: true
 };
 var SelectButton = (function () {
-    function SelectButton() {
+    function SelectButton(objectUtils) {
+        this.objectUtils = objectUtils;
         this.onOptionClick = new core_1.EventEmitter();
         this.onChange = new core_1.EventEmitter();
         this.onModelChange = function () { };
         this.onModelTouched = function () { };
     }
+    Object.defineProperty(SelectButton.prototype, "options", {
+        get: function () {
+            return this._options;
+        },
+        set: function (val) {
+            var opts = this.optionLabel ? this.objectUtils.generateSelectItems(val, this.optionLabel) : val;
+            this._options = opts;
+        },
+        enumerable: true,
+        configurable: true
+    });
     SelectButton.prototype.writeValue = function (value) {
         this.value = value;
     };
@@ -17029,10 +17855,6 @@ var SelectButton = (function () {
 }());
 __decorate([
     core_1.Input(),
-    __metadata("design:type", Array)
-], SelectButton.prototype, "options", void 0);
-__decorate([
-    core_1.Input(),
     __metadata("design:type", Number)
 ], SelectButton.prototype, "tabindex", void 0);
 __decorate([
@@ -17052,6 +17874,10 @@ __decorate([
     __metadata("design:type", Boolean)
 ], SelectButton.prototype, "disabled", void 0);
 __decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], SelectButton.prototype, "optionLabel", void 0);
+__decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], SelectButton.prototype, "onOptionClick", void 0);
@@ -17059,12 +17885,18 @@ __decorate([
     core_1.Output(),
     __metadata("design:type", core_1.EventEmitter)
 ], SelectButton.prototype, "onChange", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Array),
+    __metadata("design:paramtypes", [Array])
+], SelectButton.prototype, "options", null);
 SelectButton = __decorate([
     core_1.Component({
         selector: 'p-selectButton',
         template: "\n        <div [ngClass]=\"'ui-selectbutton ui-buttonset ui-widget ui-corner-all ui-buttonset-' + options.length\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div *ngFor=\"let option of options; let i = index\" class=\"ui-button ui-widget ui-state-default ui-button-text-only {{option.styleClass}}\"\n                [ngClass]=\"{'ui-state-active':isSelected(option), 'ui-state-disabled':disabled, 'ui-state-focus': cbox == focusedItem}\" (click)=\"onItemClick($event,option,cbox,i)\">\n                <span class=\"ui-button-text ui-clickable\">{{option.label}}</span>\n                <div class=\"ui-helper-hidden-accessible\">\n                    <input #cbox type=\"checkbox\" [checked]=\"isSelected(option)\" (focus)=\"onFocus($event)\" (blur)=\"onBlur($event)\" [attr.tabindex]=\"tabindex\" [attr.disabled]=\"disabled\">\n                </div>\n            </div>\n        </div>\n    ",
-        providers: [exports.SELECTBUTTON_VALUE_ACCESSOR]
-    })
+        providers: [objectutils_1.ObjectUtils, exports.SELECTBUTTON_VALUE_ACCESSOR]
+    }),
+    __metadata("design:paramtypes", [objectutils_1.ObjectUtils])
 ], SelectButton);
 exports.SelectButton = SelectButton;
 var SelectButtonModule = (function () {
@@ -17081,6 +17913,227 @@ SelectButtonModule = __decorate([
 ], SelectButtonModule);
 exports.SelectButtonModule = SelectButtonModule;
 //# sourceMappingURL=selectbutton.js.map
+
+/***/ }),
+
+/***/ "../../../../primeng/components/sidebar/sidebar.js":
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
+var animations_1 = __webpack_require__("../../../animations/@angular/animations.es5.js");
+var common_1 = __webpack_require__("../../../common/@angular/common.es5.js");
+var domhandler_1 = __webpack_require__("../../../../primeng/components/dom/domhandler.js");
+var Sidebar = (function () {
+    function Sidebar(el, domHandler, renderer) {
+        this.el = el;
+        this.domHandler = domHandler;
+        this.renderer = renderer;
+        this.position = 'left';
+        this.blockScroll = false;
+        this.autoZIndex = true;
+        this.baseZIndex = 0;
+        this.onShow = new core_1.EventEmitter();
+        this.onHide = new core_1.EventEmitter();
+        this.visibleChange = new core_1.EventEmitter();
+    }
+    Sidebar.prototype.ngAfterViewInit = function () {
+        this.initialized = true;
+        if (this.appendTo) {
+            if (this.appendTo === 'body')
+                document.body.appendChild(this.containerViewChild.nativeElement);
+            else
+                this.domHandler.appendChild(this.containerViewChild.nativeElement, this.appendTo);
+        }
+        if (this.visible) {
+            this.show();
+        }
+    };
+    Object.defineProperty(Sidebar.prototype, "visible", {
+        get: function () {
+            return this._visible;
+        },
+        set: function (val) {
+            this._visible = val;
+            if (this.initialized && this.containerViewChild && this.containerViewChild.nativeElement) {
+                if (this._visible)
+                    this.show();
+                else {
+                    if (this.preventVisibleChangePropagation)
+                        this.preventVisibleChangePropagation = false;
+                    else
+                        this.hide();
+                }
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Sidebar.prototype.ngAfterViewChecked = function () {
+        if (this.executePostDisplayActions) {
+            this.onShow.emit({});
+            this.executePostDisplayActions = false;
+        }
+    };
+    Sidebar.prototype.show = function () {
+        this.executePostDisplayActions = true;
+        if (this.autoZIndex) {
+            this.containerViewChild.nativeElement.style.zIndex = String(this.baseZIndex + (++domhandler_1.DomHandler.zindex));
+        }
+        this.enableModality();
+    };
+    Sidebar.prototype.hide = function () {
+        this.onHide.emit({});
+        this.disableModality();
+    };
+    Sidebar.prototype.close = function (event) {
+        this.preventVisibleChangePropagation = true;
+        this.hide();
+        this.visibleChange.emit(false);
+        event.preventDefault();
+    };
+    Sidebar.prototype.enableModality = function () {
+        var _this = this;
+        if (!this.mask) {
+            this.mask = document.createElement('div');
+            this.mask.style.zIndex = String(parseInt(this.containerViewChild.nativeElement.style.zIndex) - 1);
+            this.domHandler.addMultipleClasses(this.mask, 'ui-widget-overlay ui-sidebar-mask');
+            this.maskClickListener = this.renderer.listen(this.mask, 'click', function (event) {
+                _this.close(event);
+            });
+            document.body.appendChild(this.mask);
+            if (this.blockScroll) {
+                this.domHandler.addClass(document.body, 'ui-overflow-hidden');
+            }
+        }
+    };
+    Sidebar.prototype.disableModality = function () {
+        if (this.mask) {
+            this.unbindMaskClickListener();
+            document.body.removeChild(this.mask);
+            if (this.blockScroll) {
+                this.domHandler.removeClass(document.body, 'ui-overflow-hidden');
+            }
+            this.mask = null;
+        }
+    };
+    Sidebar.prototype.unbindMaskClickListener = function () {
+        if (this.maskClickListener) {
+            this.maskClickListener();
+            this.maskClickListener = null;
+        }
+    };
+    Sidebar.prototype.ngOnDestroy = function () {
+        this.initialized = false;
+        if (this.visible) {
+            this.hide();
+        }
+        if (this.appendTo) {
+            this.el.nativeElement.appendChild(this.containerViewChild.nativeElement);
+        }
+        this.unbindMaskClickListener();
+    };
+    return Sidebar;
+}());
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Sidebar.prototype, "position", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Sidebar.prototype, "fullScreen", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Sidebar.prototype, "appendTo", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Sidebar.prototype, "blockScroll", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Object)
+], Sidebar.prototype, "style", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", String)
+], Sidebar.prototype, "styleClass", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean)
+], Sidebar.prototype, "autoZIndex", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Number)
+], Sidebar.prototype, "baseZIndex", void 0);
+__decorate([
+    core_1.ViewChild('container'),
+    __metadata("design:type", core_1.ElementRef)
+], Sidebar.prototype, "containerViewChild", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], Sidebar.prototype, "onShow", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], Sidebar.prototype, "onHide", void 0);
+__decorate([
+    core_1.Output(),
+    __metadata("design:type", core_1.EventEmitter)
+], Sidebar.prototype, "visibleChange", void 0);
+__decorate([
+    core_1.Input(),
+    __metadata("design:type", Boolean),
+    __metadata("design:paramtypes", [Boolean])
+], Sidebar.prototype, "visible", null);
+Sidebar = __decorate([
+    core_1.Component({
+        selector: 'p-sidebar',
+        template: "\n        <div #container [ngClass]=\"{'ui-sidebar ui-widget ui-widget-content ui-shadow':true, 'ui-sidebar-active': visible, \n            'ui-sidebar-left': (position === 'left'), 'ui-sidebar-right': (position === 'right'),\n            'ui-sidebar-top': (position === 'top'), 'ui-sidebar-bottom': (position === 'bottom'), \n            'ui-sidebar-full': fullScreen}\"\n            [@panelState]=\"visible ? 'visible' : 'hidden'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <a [ngClass]=\"{'ui-sidebar-close ui-corner-all':true}\" href=\"#\" role=\"button\" (click)=\"close($event)\">\n                <span class=\"fa fa-fw fa-close\"></span>\n            </a>\n            <ng-content></ng-content>\n        </div>\n    ",
+        animations: [
+            animations_1.trigger('panelState', [
+                animations_1.state('hidden', animations_1.style({
+                    opacity: 0
+                })),
+                animations_1.state('visible', animations_1.style({
+                    opacity: 1
+                })),
+                animations_1.transition('visible => hidden', animations_1.animate('300ms ease-in')),
+                animations_1.transition('hidden => visible', animations_1.animate('300ms ease-out'))
+            ])
+        ],
+        providers: [domhandler_1.DomHandler]
+    }),
+    __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.Renderer2])
+], Sidebar);
+exports.Sidebar = Sidebar;
+var SidebarModule = (function () {
+    function SidebarModule() {
+    }
+    return SidebarModule;
+}());
+SidebarModule = __decorate([
+    core_1.NgModule({
+        imports: [common_1.CommonModule],
+        exports: [Sidebar],
+        declarations: [Sidebar]
+    })
+], SidebarModule);
+exports.SidebarModule = SidebarModule;
+//# sourceMappingURL=sidebar.js.map
 
 /***/ }),
 
@@ -17166,7 +18219,7 @@ __decorate([
 SlideMenuSub = __decorate([
     core_1.Component({
         selector: 'p-slideMenuSub',
-        template: "\n        <ul [ngClass]=\"{'ui-helper-reset ui-menu-rootlist':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child':!root}\" class=\"ui-menu-list\"\n            [style.width.px]=\"menuWidth\" [style.left.px]=\"root ? slideMenu.left : slideMenu.menuWidth\" \n            [style.transitionProperty]=\"root ? 'left' : 'none'\" [style.transitionDuration]=\"effectDuration + 'ms'\" [style.transitionTimingFunction]=\"easing\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #listitem [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-slidemenuitem-active':listitem==activeItem}\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-menuitem-link-parent':child.items,'ui-state-disabled':child.disabled}\" \n                        (click)=\"itemClick($event, child, listitem)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [routerLinkActive]=\"'ui-state-active'\" \n                        [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" \n                        [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-menuitem-link-parent':child.items,'ui-state-disabled':child.disabled}\" \n                        (click)=\"itemClick($event, child, listitem)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-slideMenuSub class=\"ui-submenu\" [item]=\"child\" [menuWidth]=\"menuWidth\" *ngIf=\"child.items\"></p-slideMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    "
+        template: "\n        <ul [ngClass]=\"{'ui-helper-reset ui-menu-rootlist':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child':!root}\" class=\"ui-menu-list\"\n            [style.width.px]=\"menuWidth\" [style.left.px]=\"root ? slideMenu.left : slideMenu.menuWidth\" \n            [style.transitionProperty]=\"root ? 'left' : 'none'\" [style.transitionDuration]=\"effectDuration + 'ms'\" [style.transitionTimingFunction]=\"easing\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #listitem [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-slidemenuitem-active':listitem==activeItem}\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-menuitem-link-parent':child.items,'ui-state-disabled':child.disabled}\" \n                        (click)=\"itemClick($event, child, listitem)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [queryParams]=\"child.queryParams\" [routerLinkActive]=\"'ui-state-active'\" \n                        [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" \n                        [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-menuitem-link-parent':child.items,'ui-state-disabled':child.disabled}\" \n                        (click)=\"itemClick($event, child, listitem)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-slideMenuSub class=\"ui-submenu\" [item]=\"child\" [menuWidth]=\"menuWidth\" *ngIf=\"child.items\"></p-slideMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return SlideMenu; }))),
     __metadata("design:paramtypes", [SlideMenu])
@@ -17355,6 +18408,7 @@ var Slider = (function () {
         this.handleValues = [];
         this.onModelChange = function () { };
         this.onModelTouched = function () { };
+        this.handleIndex = 0;
     }
     Slider.prototype.onMouseDown = function (event, index) {
         if (this.disabled) {
@@ -17423,12 +18477,14 @@ var Slider = (function () {
                 _this.mouseupListener = _this.renderer.listen('document', 'mouseup', function (event) {
                     if (_this.dragging) {
                         _this.dragging = false;
-                        if (_this.range) {
-                            _this.onSlideEnd.emit({ originalEvent: event, values: _this.values });
-                        }
-                        else {
-                            _this.onSlideEnd.emit({ originalEvent: event, value: _this.value });
-                        }
+                        _this.ngZone.run(function () {
+                            if (_this.range) {
+                                _this.onSlideEnd.emit({ originalEvent: event, values: _this.values });
+                            }
+                            else {
+                                _this.onSlideEnd.emit({ originalEvent: event, value: _this.value });
+                            }
+                        });
                     }
                 });
             }
@@ -17465,16 +18521,15 @@ var Slider = (function () {
     };
     Slider.prototype.handleStepChange = function (newValue, oldValue) {
         var diff = (newValue - oldValue);
-        if (diff < 0 && (-1 * diff) >= this.step / 2) {
-            newValue = oldValue - this.step;
-            this.updateValue(newValue);
-            this.updateHandleValue();
+        var val = oldValue;
+        if (diff < 0) {
+            val = oldValue + Math.ceil((newValue - oldValue) / this.step) * this.step;
         }
-        else if (diff > 0 && diff >= this.step / 2) {
-            newValue = oldValue + this.step;
-            this.updateValue(newValue);
-            this.updateHandleValue();
+        else if (diff > 0) {
+            val = oldValue + Math.floor((newValue - oldValue) / this.step) * this.step;
         }
+        this.updateValue(val);
+        this.updateHandleValue();
     };
     Slider.prototype.writeValue = function (value) {
         if (this.range)
@@ -17532,9 +18587,9 @@ var Slider = (function () {
     };
     Slider.prototype.calculateHandleValue = function (event) {
         if (this.orientation === 'horizontal')
-            return Math.floor(((event.pageX - this.initX) * 100) / (this.barWidth));
+            return ((event.pageX - this.initX) * 100) / (this.barWidth);
         else
-            return Math.floor((((this.initY + this.barHeight) - event.pageY) * 100) / (this.barHeight));
+            return (((this.initY + this.barHeight) - event.pageY) * 100) / (this.barHeight);
     };
     Slider.prototype.updateHandleValue = function () {
         if (this.range) {
@@ -17750,9 +18805,9 @@ var Spinner = (function () {
         var power = Math.pow(10, precision || 0);
         return String(Math.round(value * power) / power);
     };
-    Spinner.prototype.onUpButtonMousedown = function (event, input) {
+    Spinner.prototype.onUpButtonMousedown = function (event) {
         if (!this.disabled) {
-            input.focus();
+            this.inputfieldViewChild.nativeElement.focus();
             this.repeat(event, null, 1);
             this.updateFilledState();
         }
@@ -17767,9 +18822,9 @@ var Spinner = (function () {
             this.clearTimer();
         }
     };
-    Spinner.prototype.onDownButtonMousedown = function (event, input) {
+    Spinner.prototype.onDownButtonMousedown = function (event) {
         if (!this.disabled) {
-            input.focus();
+            this.inputfieldViewChild.nativeElement.focus();
             this.repeat(event, null, -1);
             this.updateFilledState();
         }
@@ -17800,8 +18855,8 @@ var Spinner = (function () {
             event.preventDefault();
         }
     };
-    Spinner.prototype.onInput = function (event, inputValue) {
-        this.value = this.parseValue(inputValue);
+    Spinner.prototype.onInputKeyup = function (event) {
+        this.value = this.parseValue(event.target.value);
         this.formatValue();
         this.onModelChange(this.value);
         this.updateFilledState();
@@ -17855,6 +18910,7 @@ var Spinner = (function () {
         else {
             this.valueAsString = '';
         }
+        this.inputfieldViewChild.nativeElement.value = this.valueAsString;
     };
     Spinner.prototype.handleChange = function (event) {
         this.onChange.emit(event);
@@ -17955,10 +19011,14 @@ __decorate([
     core_1.Input(),
     __metadata("design:type", Boolean)
 ], Spinner.prototype, "required", void 0);
+__decorate([
+    core_1.ViewChild('inputfield'),
+    __metadata("design:type", core_1.ElementRef)
+], Spinner.prototype, "inputfieldViewChild", void 0);
 Spinner = __decorate([
     core_1.Component({
         selector: 'p-spinner',
-        template: "\n        <span class=\"ui-spinner ui-widget ui-corner-all\">\n            <input #in [attr.type]=\"type\" [attr.id]=\"inputId\" class=\"ui-spinner-input\" [value]=\"valueAsString\" class=\"ui-inputtext ui-widget ui-state-default ui-corner-all\"\n            [attr.size]=\"size\" [attr.maxlength]=\"maxlength\" [attr.tabindex]=\"tabindex\" [attr.placeholder]=\"placeholder\" [disabled]=\"disabled\" [readonly]=\"readonly\" [attr.required]=\"required\"\n            (keydown)=\"onInputKeydown($event)\" (keyup)=\"onInput($event,in.value)\" (keypress)=\"onInputKeyPress($event)\" (blur)=\"onInputBlur($event)\" (change)=\"handleChange($event)\" (focus)=\"onInputFocus($event)\">\n            <button type=\"button\" [ngClass]=\"{'ui-spinner-button ui-spinner-up ui-corner-tr ui-button ui-widget ui-state-default':true,'ui-state-disabled':disabled}\" [disabled]=\"disabled\"\n                (mouseleave)=\"onUpButtonMouseleave($event)\" (mousedown)=\"onUpButtonMousedown($event,in)\" (mouseup)=\"onUpButtonMouseup($event)\">\n                <span class=\"fa fa-caret-up ui-clickable\"></span>\n            </button>\n            <button type=\"button\" [ngClass]=\"{'ui-spinner-button ui-spinner-down ui-corner-br ui-button ui-widget ui-state-default':true,'ui-state-disabled':disabled}\" [disabled]=\"disabled\"\n                (mouseleave)=\"onDownButtonMouseleave($event)\" (mousedown)=\"onDownButtonMousedown($event,in)\" (mouseup)=\"onDownButtonMouseup($event)\">\n                <span class=\"fa fa-caret-down ui-clickable\"></span>\n            </button>\n        </span>\n    ",
+        template: "\n        <span class=\"ui-spinner ui-widget ui-corner-all\">\n            <input #inputfield [attr.type]=\"type\" [attr.id]=\"inputId\" [value]=\"valueAsString\" class=\"ui-spinner-input ui-inputtext ui-widget ui-state-default ui-corner-all\"\n            [attr.size]=\"size\" [attr.maxlength]=\"maxlength\" [attr.tabindex]=\"tabindex\" [attr.placeholder]=\"placeholder\" [disabled]=\"disabled\" [attr.readonly]=\"readonly\" [attr.required]=\"required\"\n            (keydown)=\"onInputKeydown($event)\" (keyup)=\"onInputKeyup($event)\" (keypress)=\"onInputKeyPress($event)\" (blur)=\"onInputBlur($event)\" (change)=\"handleChange($event)\" (focus)=\"onInputFocus($event)\">\n            <button type=\"button\" [ngClass]=\"{'ui-spinner-button ui-spinner-up ui-corner-tr ui-button ui-widget ui-state-default':true,'ui-state-disabled':disabled}\" [disabled]=\"disabled\" [attr.readonly]=\"readonly\"\n                (mouseleave)=\"onUpButtonMouseleave($event)\" (mousedown)=\"onUpButtonMousedown($event)\" (mouseup)=\"onUpButtonMouseup($event)\">\n                <span class=\"fa fa-caret-up ui-clickable\"></span>\n            </button>\n            <button type=\"button\" [ngClass]=\"{'ui-spinner-button ui-spinner-down ui-corner-br ui-button ui-widget ui-state-default':true,'ui-state-disabled':disabled}\" [disabled]=\"disabled\" [attr.readonly]=\"readonly\"\n                (mouseleave)=\"onDownButtonMouseleave($event)\" (mousedown)=\"onDownButtonMousedown($event)\" (mouseup)=\"onDownButtonMouseup($event)\">\n                <span class=\"fa fa-caret-down ui-clickable\"></span>\n            </button>\n        </span>\n    ",
         host: {
             '[class.ui-inputwrapper-filled]': 'filled',
             '[class.ui-inputwrapper-focus]': 'focus'
@@ -18162,7 +19222,7 @@ __decorate([
 SplitButton = __decorate([
     core_1.Component({
         selector: 'p-splitButton',
-        template: "\n        <div #container [ngClass]=\"{'ui-splitbutton ui-buttonset ui-widget':true,'ui-state-disabled':disabled}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <button #defaultbtn type=\"button\" pButton [icon]=\"icon\" [iconPos]=\"iconPos\" [label]=\"label\" cornerStyleClass=\"ui-corner-left\" (click)=\"onDefaultButtonClick($event)\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\">\n            </button><button type=\"button\" pButton class=\"ui-splitbutton-menubutton\" icon=\"fa-caret-down\" cornerStyleClass=\"ui-corner-right\" (click)=\"onDropdownButtonClick($event)\" [disabled]=\"disabled\"></button>\n            <div #overlay [ngClass]=\"'ui-menu ui-menu-dynamic ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow'\" [style.display]=\"menuVisible ? 'block' : 'none'\"\n                    [ngStyle]=\"menuStyle\" [class]=\"menuStyleClass\" [@overlayState]=\"menuVisible ? 'visible' : 'hidden'\">\n                <ul class=\"ui-menu-list ui-helper-reset\">\n                    <li class=\"ui-menuitem ui-widget ui-corner-all\" role=\"menuitem\" *ngFor=\"let item of model\">\n                        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\"\n                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                            <span [ngClass]=\"'ui-menuitem-icon fa fa-fw'\" [class]=\"item.icon\" *ngIf=\"item.icon\"></span>\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\"\n                            class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\" [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                            <span [ngClass]=\"'ui-menuitem-icon fa fa-fw'\" [class]=\"item.icon\" *ngIf=\"item.icon\"></span>\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                    </li>\n                </ul>\n            </div>\n        </div>\n    ",
+        template: "\n        <div #container [ngClass]=\"{'ui-splitbutton ui-buttonset ui-widget':true,'ui-state-disabled':disabled}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <button #defaultbtn type=\"button\" pButton [icon]=\"icon\" [iconPos]=\"iconPos\" [label]=\"label\" cornerStyleClass=\"ui-corner-left\" (click)=\"onDefaultButtonClick($event)\" [disabled]=\"disabled\" [attr.tabindex]=\"tabindex\">\n            </button><button type=\"button\" pButton class=\"ui-splitbutton-menubutton\" icon=\"fa-caret-down\" cornerStyleClass=\"ui-corner-right\" (click)=\"onDropdownButtonClick($event)\" [disabled]=\"disabled\"></button>\n            <div #overlay [ngClass]=\"'ui-menu ui-menu-dynamic ui-widget ui-widget-content ui-corner-all ui-helper-clearfix ui-shadow'\" [style.display]=\"menuVisible ? 'block' : 'none'\"\n                    [ngStyle]=\"menuStyle\" [class]=\"menuStyleClass\" [@overlayState]=\"menuVisible ? 'visible' : 'hidden'\">\n                <ul class=\"ui-menu-list ui-helper-reset\">\n                    <li class=\"ui-menuitem ui-widget ui-corner-all\" role=\"menuitem\" *ngFor=\"let item of model\">\n                        <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\"\n                            [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                            <span [ngClass]=\"'ui-menuitem-icon fa fa-fw'\" [class]=\"item.icon\" *ngIf=\"item.icon\"></span>\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                        <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\"\n                            class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"item.target\" [ngClass]=\"{'ui-state-disabled':item.disabled}\" (click)=\"itemClick($event, item)\">\n                            <span [ngClass]=\"'ui-menuitem-icon fa fa-fw'\" [class]=\"item.icon\" *ngIf=\"item.icon\"></span>\n                            <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                        </a>\n                    </li>\n                </ul>\n            </div>\n        </div>\n    ",
         animations: [
             animations_1.trigger('overlayState', [
                 animations_1.state('hidden', animations_1.style({
@@ -18267,7 +19327,7 @@ __decorate([
 Steps = __decorate([
     core_1.Component({
         selector: 'p-steps',
-        template: "\n        <div [ngClass]=\"{'ui-steps ui-widget ui-helper-clearfix':true,'ui-steps-readonly':readonly}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ul role=\"tablist\">\n                <li *ngFor=\"let item of model; let i = index\" class=\"ui-steps-item\" #menuitem\n                    [ngClass]=\"{'ui-state-highlight':(i === activeIndex),'ui-state-default':(i !== activeIndex),\n                        'ui-state-disabled':item.disabled||(i !== activeIndex && readonly)}\">\n                    <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item, i)\" [attr.target]=\"item.target\">\n                        <span class=\"ui-steps-number\">{{i + 1}}</span>\n                        <span class=\"ui-steps-title\">{{item.label}}</span>\n                    </a>\n                    <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item, i)\" [attr.target]=\"item.target\">\n                        <span class=\"ui-steps-number\">{{i + 1}}</span>\n                        <span class=\"ui-steps-title\">{{item.label}}</span>\n                    </a>\n                </li>\n            </ul>\n        </div>\n    "
+        template: "\n        <div [ngClass]=\"{'ui-steps ui-widget ui-helper-clearfix':true,'ui-steps-readonly':readonly}\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ul role=\"tablist\">\n                <li *ngFor=\"let item of model; let i = index\" class=\"ui-steps-item\" #menuitem\n                    [ngClass]=\"{'ui-state-highlight':(i === activeIndex),'ui-state-default':(i !== activeIndex),\n                        'ui-state-disabled':item.disabled||(i !== activeIndex && readonly)}\">\n                    <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item, i)\" [attr.target]=\"item.target\">\n                        <span class=\"ui-steps-number\">{{i + 1}}</span>\n                        <span class=\"ui-steps-title\">{{item.label}}</span>\n                    </a>\n                    <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\" [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link\" (click)=\"itemClick($event, item, i)\" [attr.target]=\"item.target\">\n                        <span class=\"ui-steps-number\">{{i + 1}}</span>\n                        <span class=\"ui-steps-title\">{{item.label}}</span>\n                    </a>\n                </li>\n            </ul>\n        </div>\n    "
     })
 ], Steps);
 exports.Steps = Steps;
@@ -18310,11 +19370,6 @@ var router_1 = __webpack_require__("../../../router/@angular/router.es5.js");
 var TabMenu = (function () {
     function TabMenu() {
     }
-    TabMenu.prototype.ngOnInit = function () {
-        if (!this.activeItem && this.model && this.model.length) {
-            this.activeItem = this.model[0];
-        }
-    };
     TabMenu.prototype.itemClick = function (event, item) {
         if (item.disabled) {
             event.preventDefault();
@@ -18356,7 +19411,7 @@ __decorate([
 TabMenu = __decorate([
     core_1.Component({
         selector: 'p-tabMenu',
-        template: "\n        <div [ngClass]=\"'ui-tabmenu ui-widget ui-widget-content ui-corner-all'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ul class=\"ui-tabmenu-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all\" role=\"tablist\">\n                <li *ngFor=\"let item of model\" \n                    [ngClass]=\"{'ui-tabmenuitem ui-state-default ui-corner-top':true,'ui-state-disabled':item.disabled,\n                        'ui-tabmenuitem-hasicon':item.icon,'ui-state-active':activeItem==item}\">\n                    <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" (click)=\"itemClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                    <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [routerLinkActive]=\"'ui-state-active'\"  [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\" class=\"ui-menuitem-link ui-corner-all\" (click)=\"itemClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                </li>\n            </ul>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"'ui-tabmenu ui-widget ui-widget-content ui-corner-all'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <ul class=\"ui-tabmenu-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all\" role=\"tablist\">\n                <li *ngFor=\"let item of model\" \n                    [ngClass]=\"{'ui-tabmenuitem ui-state-default ui-corner-top':true,'ui-state-disabled':item.disabled,\n                        'ui-tabmenuitem-hasicon':item.icon,'ui-state-active':activeItem==item,'ui-helper-hidden': item.visible === false}\"\n                        [routerLinkActive]=\"'ui-state-active'\" [routerLinkActiveOptions]=\"item.routerLinkActiveOptions||{exact:false}\">\n                    <a *ngIf=\"!item.routerLink\" [href]=\"item.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" (click)=\"itemClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\" *ngIf=\"item.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                    <a *ngIf=\"item.routerLink\" [routerLink]=\"item.routerLink\" [queryParams]=\"item.queryParams\" class=\"ui-menuitem-link ui-corner-all\" (click)=\"itemClick($event,item)\"\n                        [attr.target]=\"item.target\" [attr.title]=\"item.title\">\n                        <span class=\"ui-menuitem-icon fa\" [ngClass]=\"item.icon\" *ngIf=\"item.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{item.label}}</span>\n                    </a>\n                </li>\n            </ul>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler]
     })
 ], TabMenu);
@@ -18851,7 +19906,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var core_1 = __webpack_require__("../../../core/@angular/core.es5.js");
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
+var Subject_1 = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
 var TerminalService = (function () {
     function TerminalService() {
         this.commandSource = new Subject_1.Subject();
@@ -18949,7 +20004,7 @@ __decorate([
 TieredMenuSub = __decorate([
     core_1.Component({
         selector: 'p-tieredMenuSub',
-        template: "\n        <ul [ngClass]=\"{'ui-helper-reset':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}\" class=\"ui-menu-list\"\n            (click)=\"listClick($event)\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #listItem [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem}\"\n                    (mouseenter)=\"onItemMouseEnter($event, listItem, child)\" (mouseleave)=\"onItemMouseLeave($event)\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-state-disabled':child.disabled}\" (click)=\"itemClick($event, child)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [routerLinkActive]=\"'ui-state-active'\" \n                        [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" [href]=\"child.url||'#'\" \n                        class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-state-disabled':child.disabled}\" (click)=\"itemClick($event, child)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-tieredMenuSub class=\"ui-submenu\" [item]=\"child\" *ngIf=\"child.items\"></p-tieredMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    ",
+        template: "\n        <ul [ngClass]=\"{'ui-helper-reset':root, 'ui-widget-content ui-corner-all ui-helper-clearfix ui-menu-child ui-shadow':!root}\" class=\"ui-menu-list\"\n            (click)=\"listClick($event)\">\n            <ng-template ngFor let-child [ngForOf]=\"(root ? item : item.items)\">\n                <li *ngIf=\"child.separator\" class=\"ui-menu-separator ui-widget-content\">\n                <li *ngIf=\"!child.separator\" #listItem [ngClass]=\"{'ui-menuitem ui-widget ui-corner-all':true,'ui-menu-parent':child.items,'ui-menuitem-active':listItem==activeItem}\"\n                    (mouseenter)=\"onItemMouseEnter($event, listItem, child)\" (mouseleave)=\"onItemMouseLeave($event)\">\n                    <a *ngIf=\"!child.routerLink\" [href]=\"child.url||'#'\" class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-state-disabled':child.disabled}\" (click)=\"itemClick($event, child)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <a *ngIf=\"child.routerLink\" [routerLink]=\"child.routerLink\" [queryParams]=\"child.queryParams\" [routerLinkActive]=\"'ui-state-active'\" \n                        [routerLinkActiveOptions]=\"child.routerLinkActiveOptions||{exact:false}\" [href]=\"child.url||'#'\" \n                        class=\"ui-menuitem-link ui-corner-all\" [attr.target]=\"child.target\" [attr.title]=\"child.title\"\n                        [ngClass]=\"{'ui-state-disabled':child.disabled}\" (click)=\"itemClick($event, child)\">\n                        <span class=\"ui-submenu-icon fa fa-fw fa-caret-right\" *ngIf=\"child.items\"></span>\n                        <span class=\"ui-menuitem-icon fa fa-fw\" *ngIf=\"child.icon\" [ngClass]=\"child.icon\"></span>\n                        <span class=\"ui-menuitem-text\">{{child.label}}</span>\n                    </a>\n                    <p-tieredMenuSub class=\"ui-submenu\" [item]=\"child\" *ngIf=\"child.items\"></p-tieredMenuSub>\n                </li>\n            </ng-template>\n        </ul>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [domhandler_1.DomHandler])
@@ -19007,8 +20062,10 @@ var TieredMenu = (function () {
         }
     };
     TieredMenu.prototype.ngOnDestroy = function () {
-        if (this.popup && this.documentClickListener) {
-            this.unbindDocumentClickListener();
+        if (this.popup) {
+            if (this.documentClickListener) {
+                this.unbindDocumentClickListener();
+            }
             if (this.appendTo) {
                 this.el.nativeElement.appendChild(this.container);
             }
@@ -19325,6 +20382,11 @@ var Tooltip = (function () {
             this.deactivate(true);
         }
     };
+    Tooltip.prototype.onClick = function (e) {
+        if (this.tooltipEvent === 'hover') {
+            this.deactivate(true);
+        }
+    };
     Tooltip.prototype.activate = function () {
         var _this = this;
         this.active = true;
@@ -19615,6 +20677,12 @@ __decorate([
     __metadata("design:paramtypes", [Event]),
     __metadata("design:returntype", void 0)
 ], Tooltip.prototype, "onBlur", null);
+__decorate([
+    core_1.HostListener('click', ['$event']),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Event]),
+    __metadata("design:returntype", void 0)
+], Tooltip.prototype, "onClick", null);
 __decorate([
     core_1.Input('pTooltip'),
     __metadata("design:type", String),
@@ -20463,7 +21531,7 @@ __decorate([
 UITreeRow = __decorate([
     core_1.Component({
         selector: '[pTreeRow]',
-        template: "\n        <div class=\"ui-treetable-row\" [ngClass]=\"{'ui-state-highlight':isSelected(),'ui-treetable-row-selectable':treeTable.selectionMode && node.selectable !== false}\">\n            <td *ngFor=\"let col of treeTable.columns; let i=index\" [ngStyle]=\"col.style\" [class]=\"col.styleClass\" (click)=\"onRowClick($event)\" (dblclick)=\"rowDblClick($event)\" (touchend)=\"onRowTouchEnd()\" (contextmenu)=\"onRowRightClick($event)\">\n                <a href=\"#\" *ngIf=\"i == treeTable.toggleColumnIndex\" class=\"ui-treetable-toggler fa fa-fw ui-clickable\" [ngClass]=\"node.expanded ? treeTable.expandedIcon : treeTable.collapsedIcon\"\n                    [ngStyle]=\"{'margin-left':level*16 + 'px','visibility': isLeaf() ? 'hidden' : 'visible'}\"\n                    (click)=\"toggle($event)\"\n                    [title]=\"node.expanded ? labelCollapse : labelExpand\">\n                </a>\n                <div class=\"ui-chkbox ui-treetable-checkbox\" *ngIf=\"treeTable.selectionMode == 'checkbox' && i==0\"><div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\">\n                    <span class=\"ui-chkbox-icon ui-clickable fa\" \n                        [ngClass]=\"{'fa-check':isSelected(),'fa-minus':node.partialSelected}\"></span></div></div\n                ><span *ngIf=\"!col.template\">{{resolveFieldData(node.data,col.field)}}</span>\n                <p-columnBodyTemplateLoader [column]=\"col\" [rowData]=\"node\" *ngIf=\"col.template\"></p-columnBodyTemplateLoader>\n            </td>\n        </div>\n        <div *ngIf=\"node.children && node.expanded\" class=\"ui-treetable-row\" style=\"display:table-row\">\n            <td [attr.colspan]=\"treeTable.columns.length\" class=\"ui-treetable-child-table-container\">\n                <table [class]=\"treeTable.tableStyleClass\" [ngStyle]=\"treeTable.tableStyle\">\n                    <tbody pTreeRow *ngFor=\"let childNode of node.children\" [node]=\"childNode\" [level]=\"level+1\" [labelExpand]=\"labelExpand\" [labelCollapse]=\"labelCollapse\" [parentNode]=\"node\"></tbody>\n                </table>\n            </td>\n        </div>\n    "
+        template: "\n        <div [class]=\"node.styleClass\" [ngClass]=\"{'ui-treetable-row': true, 'ui-state-highlight':isSelected(),'ui-treetable-row-selectable':treeTable.selectionMode && node.selectable !== false}\">\n            <td *ngFor=\"let col of treeTable.columns; let i=index\" [ngStyle]=\"col.bodyStyle||col.style\" [class]=\"col.bodyStyleClass||col.styleClass\" (click)=\"onRowClick($event)\" (dblclick)=\"rowDblClick($event)\" (touchend)=\"onRowTouchEnd()\" (contextmenu)=\"onRowRightClick($event)\">\n                <a href=\"#\" *ngIf=\"i == treeTable.toggleColumnIndex\" class=\"ui-treetable-toggler fa fa-fw ui-clickable\" [ngClass]=\"node.expanded ? treeTable.expandedIcon : treeTable.collapsedIcon\"\n                    [ngStyle]=\"{'margin-left':level*16 + 'px','visibility': isLeaf() ? 'hidden' : 'visible'}\"\n                    (click)=\"toggle($event)\"\n                    [title]=\"node.expanded ? labelCollapse : labelExpand\">\n                </a>\n                <div class=\"ui-chkbox ui-treetable-checkbox\" *ngIf=\"treeTable.selectionMode == 'checkbox' && i==0\"><div class=\"ui-chkbox-box ui-widget ui-corner-all ui-state-default\">\n                    <span class=\"ui-chkbox-icon ui-clickable fa\" \n                        [ngClass]=\"{'fa-check':isSelected(),'fa-minus':node.partialSelected}\"></span></div></div\n                ><span *ngIf=\"!col.template\">{{resolveFieldData(node.data,col.field)}}</span>\n                <p-columnBodyTemplateLoader [column]=\"col\" [rowData]=\"node\" *ngIf=\"col.template\"></p-columnBodyTemplateLoader>\n            </td>\n        </div>\n        <div *ngIf=\"node.children && node.expanded\" class=\"ui-treetable-row\" style=\"display:table-row\">\n            <td [attr.colspan]=\"treeTable.columns.length\" class=\"ui-treetable-child-table-container\">\n                <table [class]=\"treeTable.tableStyleClass\" [ngStyle]=\"treeTable.tableStyle\">\n                    <tbody pTreeRow *ngFor=\"let childNode of node.children\" [node]=\"childNode\" [level]=\"level+1\" [labelExpand]=\"labelExpand\" [labelCollapse]=\"labelCollapse\" [parentNode]=\"node\"></tbody>\n                </table>\n            </td>\n        </div>\n    "
     }),
     __param(0, core_1.Inject(core_1.forwardRef(function () { return TreeTable; }))),
     __metadata("design:paramtypes", [TreeTable])
@@ -20799,7 +21867,7 @@ __decorate([
 TreeTable = __decorate([
     core_1.Component({
         selector: 'p-treeTable',
-        template: "\n        <div [ngClass]=\"'ui-treetable ui-widget'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-treetable-header ui-widget-header\" *ngIf=\"header\">\n                <ng-content select=\"p-header\"></ng-content>\n            </div>\n            <div class=\"ui-treetable-tablewrapper\">\n                <table #tbl class=\"ui-widget-content\" [class]=\"tableStyleClass\" [ngStyle]=\"tableStyle\">\n                    <thead>\n                        <tr class=\"ui-state-default\">\n                            <th #headerCell *ngFor=\"let col of columns; let lastCol=last \"  [ngStyle]=\"col.style\" [class]=\"col.styleClass\" \n                                [ngClass]=\"'ui-state-default ui-unselectable-text'\">\n                                <span class=\"ui-column-title\" *ngIf=\"!col.headerTemplate\">{{col.header}}</span>\n                                <span class=\"ui-column-title\" *ngIf=\"col.headerTemplate\">\n                                    <p-columnHeaderTemplateLoader [column]=\"col\"></p-columnHeaderTemplateLoader>\n                                </span>\n                            </th>\n                        </tr>\n                    </thead>\n                    <tfoot *ngIf=\"hasFooter()\">\n                        <tr>\n                            <td *ngFor=\"let col of columns\" [ngStyle]=\"col.style\" [class]=\"col.styleClass\" [ngClass]=\"{'ui-state-default':true}\">\n                                <span class=\"ui-column-footer\" *ngIf=\"!col.footerTemplate\">{{col.footer}}</span>\n                                <span class=\"ui-column-footer\" *ngIf=\"col.footerTemplate\">\n                                    <p-columnFooterTemplateLoader [column]=\"col\"></p-columnFooterTemplateLoader>\n                                </span>\n                            </td>\n                        </tr>\n                    </tfoot>\n                    <tbody pTreeRow *ngFor=\"let node of value\" class=\"ui-treetable-data ui-widget-content\" [node]=\"node\" [level]=\"0\" [labelExpand]=\"labelExpand\" [labelCollapse]=\"labelCollapse\"></tbody>\n                </table>\n            </div>\n            \n            <div class=\"ui-treetable-footer ui-widget-header\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </div>\n    ",
+        template: "\n        <div [ngClass]=\"'ui-treetable ui-widget'\" [ngStyle]=\"style\" [class]=\"styleClass\">\n            <div class=\"ui-treetable-header ui-widget-header\" *ngIf=\"header\">\n                <ng-content select=\"p-header\"></ng-content>\n            </div>\n            <div class=\"ui-treetable-tablewrapper\">\n                <table #tbl class=\"ui-widget-content\" [class]=\"tableStyleClass\" [ngStyle]=\"tableStyle\">\n                    <thead>\n                        <tr class=\"ui-state-default\">\n                            <th #headerCell *ngFor=\"let col of columns; let lastCol=last \"  [ngStyle]=\"col.headerStyle||col.style\" [class]=\"col.headerStyleClass||col.styleClass\" \n                                [ngClass]=\"'ui-state-default ui-unselectable-text'\">\n                                <span class=\"ui-column-title\" *ngIf=\"!col.headerTemplate\">{{col.header}}</span>\n                                <span class=\"ui-column-title\" *ngIf=\"col.headerTemplate\">\n                                    <p-columnHeaderTemplateLoader [column]=\"col\"></p-columnHeaderTemplateLoader>\n                                </span>\n                            </th>\n                        </tr>\n                    </thead>\n                    <tfoot *ngIf=\"hasFooter()\">\n                        <tr>\n                            <td *ngFor=\"let col of columns\" [ngStyle]=\"col.footerStyle||col.style\" [class]=\"col.footerStyleClass||col.styleClass\" [ngClass]=\"{'ui-state-default':true}\">\n                                <span class=\"ui-column-footer\" *ngIf=\"!col.footerTemplate\">{{col.footer}}</span>\n                                <span class=\"ui-column-footer\" *ngIf=\"col.footerTemplate\">\n                                    <p-columnFooterTemplateLoader [column]=\"col\"></p-columnFooterTemplateLoader>\n                                </span>\n                            </td>\n                        </tr>\n                    </tfoot>\n                    <tbody pTreeRow *ngFor=\"let node of value\" class=\"ui-treetable-data ui-widget-content\" [node]=\"node\" [level]=\"0\" [labelExpand]=\"labelExpand\" [labelCollapse]=\"labelCollapse\"></tbody>\n                </table>\n            </div>\n            \n            <div class=\"ui-treetable-footer ui-widget-header\" *ngIf=\"footer\">\n                <ng-content select=\"p-footer\"></ng-content>\n            </div>\n        </div>\n    ",
         providers: [domhandler_1.DomHandler]
     }),
     __metadata("design:paramtypes", [core_1.ElementRef, domhandler_1.DomHandler, core_1.ChangeDetectorRef, core_1.Renderer2])
@@ -21073,6 +22141,17 @@ var ObjectUtils = (function () {
             value.splice(to, 0, value.splice(from, 1)[0]);
         }
     };
+    ObjectUtils.prototype.generateSelectItems = function (val, field) {
+        var selectItems;
+        if (val && val.length) {
+            selectItems = [];
+            for (var _i = 0, val_1 = val; _i < val_1.length; _i++) {
+                var item = val_1[_i];
+                selectItems.push({ label: this.resolveFieldData(item, field), value: item });
+            }
+        }
+        return selectItems;
+    };
     return ObjectUtils;
 }());
 ObjectUtils = __decorate([
@@ -21135,6 +22214,7 @@ __export(__webpack_require__("../../../../primeng/components/megamenu/megamenu.j
 __export(__webpack_require__("../../../../primeng/components/menu/menu.js"));
 __export(__webpack_require__("../../../../primeng/components/menubar/menubar.js"));
 __export(__webpack_require__("../../../../primeng/components/messages/messages.js"));
+__export(__webpack_require__("../../../../primeng/components/message/message.js"));
 __export(__webpack_require__("../../../../primeng/components/multiselect/multiselect.js"));
 __export(__webpack_require__("../../../../primeng/components/orderlist/orderlist.js"));
 __export(__webpack_require__("../../../../primeng/components/organizationchart/organizationchart.js"));
@@ -21145,12 +22225,14 @@ __export(__webpack_require__("../../../../primeng/components/panelmenu/panelmenu
 __export(__webpack_require__("../../../../primeng/components/password/password.js"));
 __export(__webpack_require__("../../../../primeng/components/picklist/picklist.js"));
 __export(__webpack_require__("../../../../primeng/components/progressbar/progressbar.js"));
+__export(__webpack_require__("../../../../primeng/components/progressspinner/progressspinner.js"));
 __export(__webpack_require__("../../../../primeng/components/radiobutton/radiobutton.js"));
 __export(__webpack_require__("../../../../primeng/components/rating/rating.js"));
 __export(__webpack_require__("../../../../primeng/components/schedule/schedule.js"));
 __export(__webpack_require__("../../../../primeng/components/selectbutton/selectbutton.js"));
 __export(__webpack_require__("../../../../primeng/components/slidemenu/slidemenu.js"));
 __export(__webpack_require__("../../../../primeng/components/slider/slider.js"));
+__export(__webpack_require__("../../../../primeng/components/sidebar/sidebar.js"));
 __export(__webpack_require__("../../../../primeng/components/spinner/spinner.js"));
 __export(__webpack_require__("../../../../primeng/components/splitbutton/splitbutton.js"));
 __export(__webpack_require__("../../../../primeng/components/steps/steps.js"));
@@ -21167,22 +22249,27 @@ __export(__webpack_require__("../../../../primeng/components/tristatecheckbox/tr
 
 /***/ }),
 
-/***/ "../../../../rxjs/BehaviorSubject.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/BehaviorSubject.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return BehaviorSubject; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_ObjectUnsubscribedError__ = __webpack_require__("../../../../rxjs/_esm5/util/ObjectUnsubscribedError.js");
+/** PURE_IMPORTS_START ._Subject,._util_ObjectUnsubscribedError PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
-var ObjectUnsubscribedError_1 = __webpack_require__("../../../../rxjs/util/ObjectUnsubscribedError.js");
+
+
 /**
  * @class BehaviorSubject<T>
  */
-var BehaviorSubject = (function (_super) {
+var BehaviorSubject = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(BehaviorSubject, _super);
     function BehaviorSubject(_value) {
         _super.call(this);
@@ -21207,7 +22294,7 @@ var BehaviorSubject = (function (_super) {
             throw this.thrownError;
         }
         else if (this.closed) {
-            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            throw new __WEBPACK_IMPORTED_MODULE_1__util_ObjectUnsubscribedError__["a" /* ObjectUnsubscribedError */]();
         }
         else {
             return this._value;
@@ -21217,29 +22304,33 @@ var BehaviorSubject = (function (_super) {
         _super.prototype.next.call(this, this._value = value);
     };
     return BehaviorSubject;
-}(Subject_1.Subject));
-exports.BehaviorSubject = BehaviorSubject;
-//# sourceMappingURL=BehaviorSubject.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subject__["Subject"]));
+//# sourceMappingURL=BehaviorSubject.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/InnerSubscriber.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/InnerSubscriber.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return InnerSubscriber; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START ._Subscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var InnerSubscriber = (function (_super) {
+var InnerSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(InnerSubscriber, _super);
     function InnerSubscriber(parent, outerValue, outerIndex) {
         _super.call(this);
@@ -21260,18 +22351,20 @@ var InnerSubscriber = (function (_super) {
         this.unsubscribe();
     };
     return InnerSubscriber;
-}(Subscriber_1.Subscriber));
-exports.InnerSubscriber = InnerSubscriber;
-//# sourceMappingURL=InnerSubscriber.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=InnerSubscriber.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/Notification.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/Notification.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Notification; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/** PURE_IMPORTS_START ._Observable PURE_IMPORTS_END */
 
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
 /**
  * Represents a push-based event or value that an {@link Observable} can emit.
  * This class is particularly useful for operators that manage notifications,
@@ -21286,7 +22379,7 @@ var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
  *
  * @class Notification<T>
  */
-var Notification = (function () {
+var Notification = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function Notification(kind, value, error) {
         this.kind = kind;
         this.value = value;
@@ -21353,11 +22446,11 @@ var Notification = (function () {
         var kind = this.kind;
         switch (kind) {
             case 'N':
-                return Observable_1.Observable.of(this.value);
+                return __WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].of(this.value);
             case 'E':
-                return Observable_1.Observable.throw(this.error);
+                return __WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].throw(this.error);
             case 'C':
-                return Observable_1.Observable.empty();
+                return __WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].empty();
         }
         throw new Error('unexpected notification kind value');
     };
@@ -21395,26 +22488,32 @@ var Notification = (function () {
     Notification.undefinedValueNotification = new Notification('N', undefined);
     return Notification;
 }());
-exports.Notification = Notification;
-//# sourceMappingURL=Notification.js.map
+//# sourceMappingURL=Notification.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/Observable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/Observable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Observable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_toSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/util/toSubscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbol_observable__ = __webpack_require__("../../../../rxjs/_esm5/symbol/observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_pipe__ = __webpack_require__("../../../../rxjs/_esm5/util/pipe.js");
+/** PURE_IMPORTS_START ._util_root,._util_toSubscriber,._symbol_observable,._util_pipe PURE_IMPORTS_END */
 
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
-var toSubscriber_1 = __webpack_require__("../../../../rxjs/util/toSubscriber.js");
-var observable_1 = __webpack_require__("../../../../rxjs/symbol/observable.js");
+
+
+
 /**
  * A representation of any set of values over any amount of time. This is the most basic building block
  * of RxJS.
  *
  * @class Observable<T>
  */
-var Observable = (function () {
+var Observable = /*@__PURE__*/ (/*@__PURE__*/ function () {
     /**
      * @constructor
      * @param {Function} subscribe the function that is called when the Observable is
@@ -21557,7 +22656,7 @@ var Observable = (function () {
      */
     Observable.prototype.subscribe = function (observerOrNext, error, complete) {
         var operator = this.operator;
-        var sink = toSubscriber_1.toSubscriber(observerOrNext, error, complete);
+        var sink = Object(__WEBPACK_IMPORTED_MODULE_1__util_toSubscriber__["a" /* toSubscriber */])(observerOrNext, error, complete);
         if (operator) {
             operator.call(sink, this.source);
         }
@@ -21592,11 +22691,11 @@ var Observable = (function () {
     Observable.prototype.forEach = function (next, PromiseCtor) {
         var _this = this;
         if (!PromiseCtor) {
-            if (root_1.root.Rx && root_1.root.Rx.config && root_1.root.Rx.config.Promise) {
-                PromiseCtor = root_1.root.Rx.config.Promise;
+            if (__WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx && __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx.config && __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx.config.Promise) {
+                PromiseCtor = __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx.config.Promise;
             }
-            else if (root_1.root.Promise) {
-                PromiseCtor = root_1.root.Promise;
+            else if (__WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Promise) {
+                PromiseCtor = __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Promise;
             }
         }
         if (!PromiseCtor) {
@@ -21640,8 +22739,56 @@ var Observable = (function () {
      * @method Symbol.observable
      * @return {Observable} this instance of the observable
      */
-    Observable.prototype[observable_1.observable] = function () {
+    Observable.prototype[__WEBPACK_IMPORTED_MODULE_2__symbol_observable__["a" /* observable */]] = function () {
         return this;
+    };
+    /* tslint:enable:max-line-length */
+    /**
+     * Used to stitch together functional operators into a chain.
+     * @method pipe
+     * @return {Observable} the Observable result of all of the operators having
+     * been called in the order they were passed in.
+     *
+     * @example
+     *
+     * import { map, filter, scan } from 'rxjs/operators';
+     *
+     * Rx.Observable.interval(1000)
+     *   .pipe(
+     *     filter(x => x % 2 === 0),
+     *     map(x => x + x),
+     *     scan((acc, x) => acc + x)
+     *   )
+     *   .subscribe(x => console.log(x))
+     */
+    Observable.prototype.pipe = function () {
+        var operations = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            operations[_i - 0] = arguments[_i];
+        }
+        if (operations.length === 0) {
+            return this;
+        }
+        return Object(__WEBPACK_IMPORTED_MODULE_3__util_pipe__["b" /* pipeFromArray */])(operations)(this);
+    };
+    /* tslint:enable:max-line-length */
+    Observable.prototype.toPromise = function (PromiseCtor) {
+        var _this = this;
+        if (!PromiseCtor) {
+            if (__WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx && __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx.config && __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx.config.Promise) {
+                PromiseCtor = __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Rx.config.Promise;
+            }
+            else if (__WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Promise) {
+                PromiseCtor = __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Promise;
+            }
+        }
+        if (!PromiseCtor) {
+            throw new Error('no Promise impl found');
+        }
+        return new PromiseCtor(function (resolve, reject) {
+            var value;
+            _this.subscribe(function (x) { return value = x; }, function (err) { return reject(err); }, function () { return resolve(value); });
+        });
     };
     // HACK: Since TypeScript inherits static properties too, we have to
     // fight against TypeScript here so Subject can have a different static create signature
@@ -21658,43 +22805,49 @@ var Observable = (function () {
     };
     return Observable;
 }());
-exports.Observable = Observable;
-//# sourceMappingURL=Observable.js.map
+//# sourceMappingURL=Observable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/Observer.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/Observer.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
-exports.empty = {
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return empty; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+var empty = {
     closed: true,
     next: function (value) { },
     error: function (err) { throw err; },
     complete: function () { }
 };
-//# sourceMappingURL=Observer.js.map
+//# sourceMappingURL=Observer.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/OuterSubscriber.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/OuterSubscriber.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return OuterSubscriber; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START ._Subscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var OuterSubscriber = (function (_super) {
+var OuterSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(OuterSubscriber, _super);
     function OuterSubscriber() {
         _super.apply(this, arguments);
@@ -21709,44 +22862,55 @@ var OuterSubscriber = (function (_super) {
         this.destination.complete();
     };
     return OuterSubscriber;
-}(Subscriber_1.Subscriber));
-exports.OuterSubscriber = OuterSubscriber;
-//# sourceMappingURL=OuterSubscriber.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=OuterSubscriber.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/Subject.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/Subject.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SubjectSubscriber", function() { return SubjectSubscriber; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Subject", function() { return Subject; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AnonymousSubject", function() { return AnonymousSubject; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Subscription__ = __webpack_require__("../../../../rxjs/_esm5/Subscription.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_ObjectUnsubscribedError__ = __webpack_require__("../../../../rxjs/_esm5/util/ObjectUnsubscribedError.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__SubjectSubscription__ = __webpack_require__("../../../../rxjs/_esm5/SubjectSubscription.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__symbol_rxSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/symbol/rxSubscriber.js");
+/** PURE_IMPORTS_START ._Observable,._Subscriber,._Subscription,._util_ObjectUnsubscribedError,._SubjectSubscription,._symbol_rxSubscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
-var Subscription_1 = __webpack_require__("../../../../rxjs/Subscription.js");
-var ObjectUnsubscribedError_1 = __webpack_require__("../../../../rxjs/util/ObjectUnsubscribedError.js");
-var SubjectSubscription_1 = __webpack_require__("../../../../rxjs/SubjectSubscription.js");
-var rxSubscriber_1 = __webpack_require__("../../../../rxjs/symbol/rxSubscriber.js");
+
+
+
+
+
+
 /**
  * @class SubjectSubscriber<T>
  */
-var SubjectSubscriber = (function (_super) {
+var SubjectSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(SubjectSubscriber, _super);
     function SubjectSubscriber(destination) {
         _super.call(this, destination);
         this.destination = destination;
     }
     return SubjectSubscriber;
-}(Subscriber_1.Subscriber));
-exports.SubjectSubscriber = SubjectSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_1__Subscriber__["a" /* Subscriber */]));
 /**
  * @class Subject<T>
  */
-var Subject = (function (_super) {
+var Subject = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(Subject, _super);
     function Subject() {
         _super.call(this);
@@ -21756,7 +22920,7 @@ var Subject = (function (_super) {
         this.hasError = false;
         this.thrownError = null;
     }
-    Subject.prototype[rxSubscriber_1.rxSubscriber] = function () {
+    Subject.prototype[__WEBPACK_IMPORTED_MODULE_5__symbol_rxSubscriber__["a" /* rxSubscriber */]] = function () {
         return new SubjectSubscriber(this);
     };
     Subject.prototype.lift = function (operator) {
@@ -21766,7 +22930,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype.next = function (value) {
         if (this.closed) {
-            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            throw new __WEBPACK_IMPORTED_MODULE_3__util_ObjectUnsubscribedError__["a" /* ObjectUnsubscribedError */]();
         }
         if (!this.isStopped) {
             var observers = this.observers;
@@ -21779,7 +22943,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype.error = function (err) {
         if (this.closed) {
-            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            throw new __WEBPACK_IMPORTED_MODULE_3__util_ObjectUnsubscribedError__["a" /* ObjectUnsubscribedError */]();
         }
         this.hasError = true;
         this.thrownError = err;
@@ -21794,7 +22958,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype.complete = function () {
         if (this.closed) {
-            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            throw new __WEBPACK_IMPORTED_MODULE_3__util_ObjectUnsubscribedError__["a" /* ObjectUnsubscribedError */]();
         }
         this.isStopped = true;
         var observers = this.observers;
@@ -21812,7 +22976,7 @@ var Subject = (function (_super) {
     };
     Subject.prototype._trySubscribe = function (subscriber) {
         if (this.closed) {
-            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            throw new __WEBPACK_IMPORTED_MODULE_3__util_ObjectUnsubscribedError__["a" /* ObjectUnsubscribedError */]();
         }
         else {
             return _super.prototype._trySubscribe.call(this, subscriber);
@@ -21820,23 +22984,23 @@ var Subject = (function (_super) {
     };
     Subject.prototype._subscribe = function (subscriber) {
         if (this.closed) {
-            throw new ObjectUnsubscribedError_1.ObjectUnsubscribedError();
+            throw new __WEBPACK_IMPORTED_MODULE_3__util_ObjectUnsubscribedError__["a" /* ObjectUnsubscribedError */]();
         }
         else if (this.hasError) {
             subscriber.error(this.thrownError);
-            return Subscription_1.Subscription.EMPTY;
+            return __WEBPACK_IMPORTED_MODULE_2__Subscription__["a" /* Subscription */].EMPTY;
         }
         else if (this.isStopped) {
             subscriber.complete();
-            return Subscription_1.Subscription.EMPTY;
+            return __WEBPACK_IMPORTED_MODULE_2__Subscription__["a" /* Subscription */].EMPTY;
         }
         else {
             this.observers.push(subscriber);
-            return new SubjectSubscription_1.SubjectSubscription(this, subscriber);
+            return new __WEBPACK_IMPORTED_MODULE_4__SubjectSubscription__["a" /* SubjectSubscription */](this, subscriber);
         }
     };
     Subject.prototype.asObservable = function () {
-        var observable = new Observable_1.Observable();
+        var observable = new __WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]();
         observable.source = this;
         return observable;
     };
@@ -21844,12 +23008,11 @@ var Subject = (function (_super) {
         return new AnonymousSubject(destination, source);
     };
     return Subject;
-}(Observable_1.Observable));
-exports.Subject = Subject;
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
 /**
  * @class AnonymousSubject<T>
  */
-var AnonymousSubject = (function (_super) {
+var AnonymousSubject = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(AnonymousSubject, _super);
     function AnonymousSubject(destination, source) {
         _super.call(this);
@@ -21880,33 +23043,37 @@ var AnonymousSubject = (function (_super) {
             return this.source.subscribe(subscriber);
         }
         else {
-            return Subscription_1.Subscription.EMPTY;
+            return __WEBPACK_IMPORTED_MODULE_2__Subscription__["a" /* Subscription */].EMPTY;
         }
     };
     return AnonymousSubject;
 }(Subject));
-exports.AnonymousSubject = AnonymousSubject;
-//# sourceMappingURL=Subject.js.map
+//# sourceMappingURL=Subject.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/SubjectSubscription.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/SubjectSubscription.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SubjectSubscription; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscription__ = __webpack_require__("../../../../rxjs/_esm5/Subscription.js");
+/** PURE_IMPORTS_START ._Subscription PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscription_1 = __webpack_require__("../../../../rxjs/Subscription.js");
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var SubjectSubscription = (function (_super) {
+var SubjectSubscription = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(SubjectSubscription, _super);
     function SubjectSubscription(subject, subscriber) {
         _super.call(this);
@@ -21931,26 +23098,33 @@ var SubjectSubscription = (function (_super) {
         }
     };
     return SubjectSubscription;
-}(Subscription_1.Subscription));
-exports.SubjectSubscription = SubjectSubscription;
-//# sourceMappingURL=SubjectSubscription.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subscription__["a" /* Subscription */]));
+//# sourceMappingURL=SubjectSubscription.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/Subscriber.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/Subscriber.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Subscriber; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_isFunction__ = __webpack_require__("../../../../rxjs/_esm5/util/isFunction.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Subscription__ = __webpack_require__("../../../../rxjs/_esm5/Subscription.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Observer__ = __webpack_require__("../../../../rxjs/_esm5/Observer.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__symbol_rxSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/symbol/rxSubscriber.js");
+/** PURE_IMPORTS_START ._util_isFunction,._Subscription,._Observer,._symbol_rxSubscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var isFunction_1 = __webpack_require__("../../../../rxjs/util/isFunction.js");
-var Subscription_1 = __webpack_require__("../../../../rxjs/Subscription.js");
-var Observer_1 = __webpack_require__("../../../../rxjs/Observer.js");
-var rxSubscriber_1 = __webpack_require__("../../../../rxjs/symbol/rxSubscriber.js");
+
+
+
+
 /**
  * Implements the {@link Observer} interface and extends the
  * {@link Subscription} class. While the {@link Observer} is the public API for
@@ -21961,7 +23135,7 @@ var rxSubscriber_1 = __webpack_require__("../../../../rxjs/symbol/rxSubscriber.j
  *
  * @class Subscriber<T>
  */
-var Subscriber = (function (_super) {
+var Subscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(Subscriber, _super);
     /**
      * @param {Observer|function(value: T): void} [destinationOrNext] A partially
@@ -21979,11 +23153,11 @@ var Subscriber = (function (_super) {
         this.isStopped = false;
         switch (arguments.length) {
             case 0:
-                this.destination = Observer_1.empty;
+                this.destination = __WEBPACK_IMPORTED_MODULE_2__Observer__["a" /* empty */];
                 break;
             case 1:
                 if (!destinationOrNext) {
-                    this.destination = Observer_1.empty;
+                    this.destination = __WEBPACK_IMPORTED_MODULE_2__Observer__["a" /* empty */];
                     break;
                 }
                 if (typeof destinationOrNext === 'object') {
@@ -22003,7 +23177,7 @@ var Subscriber = (function (_super) {
                 break;
         }
     }
-    Subscriber.prototype[rxSubscriber_1.rxSubscriber] = function () { return this; };
+    Subscriber.prototype[__WEBPACK_IMPORTED_MODULE_3__symbol_rxSubscriber__["a" /* rxSubscriber */]] = function () { return this; };
     /**
      * A static factory for a Subscriber, given a (potentially partial) definition
      * of an Observer.
@@ -22087,30 +23261,29 @@ var Subscriber = (function (_super) {
         return this;
     };
     return Subscriber;
-}(Subscription_1.Subscription));
-exports.Subscriber = Subscriber;
+}(__WEBPACK_IMPORTED_MODULE_1__Subscription__["a" /* Subscription */]));
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var SafeSubscriber = (function (_super) {
+var SafeSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(SafeSubscriber, _super);
     function SafeSubscriber(_parentSubscriber, observerOrNext, error, complete) {
         _super.call(this);
         this._parentSubscriber = _parentSubscriber;
         var next;
         var context = this;
-        if (isFunction_1.isFunction(observerOrNext)) {
+        if (Object(__WEBPACK_IMPORTED_MODULE_0__util_isFunction__["a" /* isFunction */])(observerOrNext)) {
             next = observerOrNext;
         }
         else if (observerOrNext) {
             next = observerOrNext.next;
             error = observerOrNext.error;
             complete = observerOrNext.complete;
-            if (observerOrNext !== Observer_1.empty) {
+            if (observerOrNext !== __WEBPACK_IMPORTED_MODULE_2__Observer__["a" /* empty */]) {
                 context = Object.create(observerOrNext);
-                if (isFunction_1.isFunction(context.unsubscribe)) {
+                if (Object(__WEBPACK_IMPORTED_MODULE_0__util_isFunction__["a" /* isFunction */])(context.unsubscribe)) {
                     this.add(context.unsubscribe.bind(context));
                 }
                 context.unsubscribe = this.unsubscribe.bind(this);
@@ -22204,21 +23377,29 @@ var SafeSubscriber = (function (_super) {
     };
     return SafeSubscriber;
 }(Subscriber));
-//# sourceMappingURL=Subscriber.js.map
+//# sourceMappingURL=Subscriber.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/Subscription.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/Subscription.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Subscription; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_isArray__ = __webpack_require__("../../../../rxjs/_esm5/util/isArray.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_isObject__ = __webpack_require__("../../../../rxjs/_esm5/util/isObject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_isFunction__ = __webpack_require__("../../../../rxjs/_esm5/util/isFunction.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_tryCatch__ = __webpack_require__("../../../../rxjs/_esm5/util/tryCatch.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__util_errorObject__ = __webpack_require__("../../../../rxjs/_esm5/util/errorObject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__util_UnsubscriptionError__ = __webpack_require__("../../../../rxjs/_esm5/util/UnsubscriptionError.js");
+/** PURE_IMPORTS_START ._util_isArray,._util_isObject,._util_isFunction,._util_tryCatch,._util_errorObject,._util_UnsubscriptionError PURE_IMPORTS_END */
 
-var isArray_1 = __webpack_require__("../../../../rxjs/util/isArray.js");
-var isObject_1 = __webpack_require__("../../../../rxjs/util/isObject.js");
-var isFunction_1 = __webpack_require__("../../../../rxjs/util/isFunction.js");
-var tryCatch_1 = __webpack_require__("../../../../rxjs/util/tryCatch.js");
-var errorObject_1 = __webpack_require__("../../../../rxjs/util/errorObject.js");
-var UnsubscriptionError_1 = __webpack_require__("../../../../rxjs/util/UnsubscriptionError.js");
+
+
+
+
+
 /**
  * Represents a disposable resource, such as the execution of an Observable. A
  * Subscription has one important method, `unsubscribe`, that takes no argument
@@ -22231,7 +23412,7 @@ var UnsubscriptionError_1 = __webpack_require__("../../../../rxjs/util/Unsubscri
  *
  * @class Subscription
  */
-var Subscription = (function () {
+var Subscription = /*@__PURE__*/ (/*@__PURE__*/ function () {
     /**
      * @param {function(): void} [unsubscribe] A function describing how to
      * perform the disposal of resources when the `unsubscribe` method is called.
@@ -22278,26 +23459,26 @@ var Subscription = (function () {
             // then _parent is set to null, and the loop exits
             _parent = ++index < len && _parents[index] || null;
         }
-        if (isFunction_1.isFunction(_unsubscribe)) {
-            var trial = tryCatch_1.tryCatch(_unsubscribe).call(this);
-            if (trial === errorObject_1.errorObject) {
+        if (Object(__WEBPACK_IMPORTED_MODULE_2__util_isFunction__["a" /* isFunction */])(_unsubscribe)) {
+            var trial = Object(__WEBPACK_IMPORTED_MODULE_3__util_tryCatch__["a" /* tryCatch */])(_unsubscribe).call(this);
+            if (trial === __WEBPACK_IMPORTED_MODULE_4__util_errorObject__["a" /* errorObject */]) {
                 hasErrors = true;
-                errors = errors || (errorObject_1.errorObject.e instanceof UnsubscriptionError_1.UnsubscriptionError ?
-                    flattenUnsubscriptionErrors(errorObject_1.errorObject.e.errors) : [errorObject_1.errorObject.e]);
+                errors = errors || (__WEBPACK_IMPORTED_MODULE_4__util_errorObject__["a" /* errorObject */].e instanceof __WEBPACK_IMPORTED_MODULE_5__util_UnsubscriptionError__["a" /* UnsubscriptionError */] ?
+                    flattenUnsubscriptionErrors(__WEBPACK_IMPORTED_MODULE_4__util_errorObject__["a" /* errorObject */].e.errors) : [__WEBPACK_IMPORTED_MODULE_4__util_errorObject__["a" /* errorObject */].e]);
             }
         }
-        if (isArray_1.isArray(_subscriptions)) {
+        if (Object(__WEBPACK_IMPORTED_MODULE_0__util_isArray__["a" /* isArray */])(_subscriptions)) {
             index = -1;
             len = _subscriptions.length;
             while (++index < len) {
                 var sub = _subscriptions[index];
-                if (isObject_1.isObject(sub)) {
-                    var trial = tryCatch_1.tryCatch(sub.unsubscribe).call(sub);
-                    if (trial === errorObject_1.errorObject) {
+                if (Object(__WEBPACK_IMPORTED_MODULE_1__util_isObject__["a" /* isObject */])(sub)) {
+                    var trial = Object(__WEBPACK_IMPORTED_MODULE_3__util_tryCatch__["a" /* tryCatch */])(sub.unsubscribe).call(sub);
+                    if (trial === __WEBPACK_IMPORTED_MODULE_4__util_errorObject__["a" /* errorObject */]) {
                         hasErrors = true;
                         errors = errors || [];
-                        var err = errorObject_1.errorObject.e;
-                        if (err instanceof UnsubscriptionError_1.UnsubscriptionError) {
+                        var err = __WEBPACK_IMPORTED_MODULE_4__util_errorObject__["a" /* errorObject */].e;
+                        if (err instanceof __WEBPACK_IMPORTED_MODULE_5__util_UnsubscriptionError__["a" /* UnsubscriptionError */]) {
                             errors = errors.concat(flattenUnsubscriptionErrors(err.errors));
                         }
                         else {
@@ -22308,7 +23489,7 @@ var Subscription = (function () {
             }
         }
         if (hasErrors) {
-            throw new UnsubscriptionError_1.UnsubscriptionError(errors);
+            throw new __WEBPACK_IMPORTED_MODULE_5__util_UnsubscriptionError__["a" /* UnsubscriptionError */](errors);
         }
     };
     /**
@@ -22400,70 +23581,85 @@ var Subscription = (function () {
     }(new Subscription()));
     return Subscription;
 }());
-exports.Subscription = Subscription;
 function flattenUnsubscriptionErrors(errors) {
-    return errors.reduce(function (errs, err) { return errs.concat((err instanceof UnsubscriptionError_1.UnsubscriptionError) ? err.errors : err); }, []);
+    return errors.reduce(function (errs, err) { return errs.concat((err instanceof __WEBPACK_IMPORTED_MODULE_5__util_UnsubscriptionError__["a" /* UnsubscriptionError */]) ? err.errors : err); }, []);
 }
-//# sourceMappingURL=Subscription.js.map
+//# sourceMappingURL=Subscription.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/add/observable/throw.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/add/observable/throw.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__observable_throw__ = __webpack_require__("../../../../rxjs/_esm5/observable/throw.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._observable_throw PURE_IMPORTS_END */
 
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var throw_1 = __webpack_require__("../../../../rxjs/observable/throw.js");
-Observable_1.Observable.throw = throw_1._throw;
-//# sourceMappingURL=throw.js.map
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].throw = __WEBPACK_IMPORTED_MODULE_1__observable_throw__["a" /* _throw */];
+//# sourceMappingURL=throw.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/add/operator/catch.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/add/operator/catch.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_catch__ = __webpack_require__("../../../../rxjs/_esm5/operator/catch.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_catch PURE_IMPORTS_END */
 
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var catch_1 = __webpack_require__("../../../../rxjs/operator/catch.js");
-Observable_1.Observable.prototype.catch = catch_1._catch;
-Observable_1.Observable.prototype._catch = catch_1._catch;
-//# sourceMappingURL=catch.js.map
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.catch = __WEBPACK_IMPORTED_MODULE_1__operator_catch__["a" /* _catch */];
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype._catch = __WEBPACK_IMPORTED_MODULE_1__operator_catch__["a" /* _catch */];
+//# sourceMappingURL=catch.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/add/operator/map.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/add/operator/map.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__operator_map__ = __webpack_require__("../../../../rxjs/_esm5/operator/map.js");
+/** PURE_IMPORTS_START .._.._Observable,.._.._operator_map PURE_IMPORTS_END */
 
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var map_1 = __webpack_require__("../../../../rxjs/operator/map.js");
-Observable_1.Observable.prototype.map = map_1.map;
-//# sourceMappingURL=map.js.map
+
+__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */].prototype.map = __WEBPACK_IMPORTED_MODULE_1__operator_map__["a" /* map */];
+//# sourceMappingURL=map.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/ArrayLikeObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/ArrayLikeObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArrayLikeObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ScalarObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ScalarObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EmptyObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/EmptyObservable.js");
+/** PURE_IMPORTS_START .._Observable,._ScalarObservable,._EmptyObservable PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var ScalarObservable_1 = __webpack_require__("../../../../rxjs/observable/ScalarObservable.js");
-var EmptyObservable_1 = __webpack_require__("../../../../rxjs/observable/EmptyObservable.js");
+
+
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var ArrayLikeObservable = (function (_super) {
+var ArrayLikeObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ArrayLikeObservable, _super);
     function ArrayLikeObservable(arrayLike, scheduler) {
         _super.call(this);
@@ -22477,10 +23673,10 @@ var ArrayLikeObservable = (function (_super) {
     ArrayLikeObservable.create = function (arrayLike, scheduler) {
         var length = arrayLike.length;
         if (length === 0) {
-            return new EmptyObservable_1.EmptyObservable();
+            return new __WEBPACK_IMPORTED_MODULE_2__EmptyObservable__["a" /* EmptyObservable */]();
         }
         else if (length === 1) {
-            return new ScalarObservable_1.ScalarObservable(arrayLike[0], scheduler);
+            return new __WEBPACK_IMPORTED_MODULE_1__ScalarObservable__["a" /* ScalarObservable */](arrayLike[0], scheduler);
         }
         else {
             return new ArrayLikeObservable(arrayLike, scheduler);
@@ -22516,32 +23712,39 @@ var ArrayLikeObservable = (function (_super) {
         }
     };
     return ArrayLikeObservable;
-}(Observable_1.Observable));
-exports.ArrayLikeObservable = ArrayLikeObservable;
-//# sourceMappingURL=ArrayLikeObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
+//# sourceMappingURL=ArrayLikeObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/ArrayObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/ArrayObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArrayObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ScalarObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ScalarObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__EmptyObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/EmptyObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_isScheduler__ = __webpack_require__("../../../../rxjs/_esm5/util/isScheduler.js");
+/** PURE_IMPORTS_START .._Observable,._ScalarObservable,._EmptyObservable,.._util_isScheduler PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var ScalarObservable_1 = __webpack_require__("../../../../rxjs/observable/ScalarObservable.js");
-var EmptyObservable_1 = __webpack_require__("../../../../rxjs/observable/EmptyObservable.js");
-var isScheduler_1 = __webpack_require__("../../../../rxjs/util/isScheduler.js");
+
+
+
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var ArrayObservable = (function (_super) {
+var ArrayObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ArrayObservable, _super);
     function ArrayObservable(array, scheduler) {
         _super.call(this);
@@ -22597,7 +23800,7 @@ var ArrayObservable = (function (_super) {
             array[_i - 0] = arguments[_i];
         }
         var scheduler = array[array.length - 1];
-        if (isScheduler_1.isScheduler(scheduler)) {
+        if (Object(__WEBPACK_IMPORTED_MODULE_3__util_isScheduler__["a" /* isScheduler */])(scheduler)) {
             array.pop();
         }
         else {
@@ -22608,10 +23811,10 @@ var ArrayObservable = (function (_super) {
             return new ArrayObservable(array, scheduler);
         }
         else if (len === 1) {
-            return new ScalarObservable_1.ScalarObservable(array[0], scheduler);
+            return new __WEBPACK_IMPORTED_MODULE_1__ScalarObservable__["a" /* ScalarObservable */](array[0], scheduler);
         }
         else {
-            return new EmptyObservable_1.EmptyObservable(scheduler);
+            return new __WEBPACK_IMPORTED_MODULE_2__EmptyObservable__["a" /* EmptyObservable */](scheduler);
         }
     };
     ArrayObservable.dispatch = function (state) {
@@ -22645,30 +23848,40 @@ var ArrayObservable = (function (_super) {
         }
     };
     return ArrayObservable;
-}(Observable_1.Observable));
-exports.ArrayObservable = ArrayObservable;
-//# sourceMappingURL=ArrayObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
+//# sourceMappingURL=ArrayObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/ConnectableObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/ConnectableObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* unused harmony export ConnectableObservable */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return connectableObservableDescriptor; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Subscription__ = __webpack_require__("../../../../rxjs/_esm5/Subscription.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__operators_refCount__ = __webpack_require__("../../../../rxjs/_esm5/operators/refCount.js");
+/** PURE_IMPORTS_START .._Subject,.._Observable,.._Subscriber,.._Subscription,.._operators_refCount PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
-var Subscription_1 = __webpack_require__("../../../../rxjs/Subscription.js");
+
+
+
+
+
 /**
  * @class ConnectableObservable<T>
  */
-var ConnectableObservable = (function (_super) {
+var ConnectableObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ConnectableObservable, _super);
     function ConnectableObservable(source, subjectFactory) {
         _super.call(this);
@@ -22691,12 +23904,12 @@ var ConnectableObservable = (function (_super) {
         var connection = this._connection;
         if (!connection) {
             this._isComplete = false;
-            connection = this._connection = new Subscription_1.Subscription();
+            connection = this._connection = new __WEBPACK_IMPORTED_MODULE_3__Subscription__["a" /* Subscription */]();
             connection.add(this.source
                 .subscribe(new ConnectableSubscriber(this.getSubject(), this)));
             if (connection.closed) {
                 this._connection = null;
-                connection = Subscription_1.Subscription.EMPTY;
+                connection = __WEBPACK_IMPORTED_MODULE_3__Subscription__["a" /* Subscription */].EMPTY;
             }
             else {
                 this._connection = connection;
@@ -22705,13 +23918,12 @@ var ConnectableObservable = (function (_super) {
         return connection;
     };
     ConnectableObservable.prototype.refCount = function () {
-        return this.lift(new RefCountOperator(this));
+        return Object(__WEBPACK_IMPORTED_MODULE_4__operators_refCount__["a" /* refCount */])()(this);
     };
     return ConnectableObservable;
-}(Observable_1.Observable));
-exports.ConnectableObservable = ConnectableObservable;
+}(__WEBPACK_IMPORTED_MODULE_1__Observable__["a" /* Observable */]));
 var connectableProto = ConnectableObservable.prototype;
-exports.connectableObservableDescriptor = {
+var connectableObservableDescriptor = {
     operator: { value: null },
     _refCount: { value: 0, writable: true },
     _subject: { value: null, writable: true },
@@ -22722,7 +23934,7 @@ exports.connectableObservableDescriptor = {
     connect: { value: connectableProto.connect },
     refCount: { value: connectableProto.refCount }
 };
-var ConnectableSubscriber = (function (_super) {
+var ConnectableSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ConnectableSubscriber, _super);
     function ConnectableSubscriber(destination, connectable) {
         _super.call(this, destination);
@@ -22751,8 +23963,8 @@ var ConnectableSubscriber = (function (_super) {
         }
     };
     return ConnectableSubscriber;
-}(Subject_1.SubjectSubscriber));
-var RefCountOperator = (function () {
+}(__WEBPACK_IMPORTED_MODULE_0__Subject__["SubjectSubscriber"]));
+var RefCountOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function RefCountOperator(connectable) {
         this.connectable = connectable;
     }
@@ -22768,7 +23980,7 @@ var RefCountOperator = (function () {
     };
     return RefCountOperator;
 }());
-var RefCountSubscriber = (function (_super) {
+var RefCountSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(RefCountSubscriber, _super);
     function RefCountSubscriber(destination, connectable) {
         _super.call(this, destination);
@@ -22822,28 +24034,33 @@ var RefCountSubscriber = (function (_super) {
         }
     };
     return RefCountSubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=ConnectableObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_2__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=ConnectableObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/EmptyObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/EmptyObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return EmptyObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/** PURE_IMPORTS_START .._Observable PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var EmptyObservable = (function (_super) {
+var EmptyObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(EmptyObservable, _super);
     function EmptyObservable(scheduler) {
         _super.call(this);
@@ -22909,29 +24126,33 @@ var EmptyObservable = (function (_super) {
         }
     };
     return EmptyObservable;
-}(Observable_1.Observable));
-exports.EmptyObservable = EmptyObservable;
-//# sourceMappingURL=EmptyObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
+//# sourceMappingURL=EmptyObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/ErrorObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/ErrorObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ErrorObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/** PURE_IMPORTS_START .._Observable PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var ErrorObservable = (function (_super) {
+var ErrorObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ErrorObservable, _super);
     function ErrorObservable(error, scheduler) {
         _super.call(this);
@@ -22999,33 +24220,41 @@ var ErrorObservable = (function (_super) {
         }
     };
     return ErrorObservable;
-}(Observable_1.Observable));
-exports.ErrorObservable = ErrorObservable;
-//# sourceMappingURL=ErrorObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
+//# sourceMappingURL=ErrorObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/ForkJoinObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/ForkJoinObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ForkJoinObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__EmptyObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/EmptyObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_isArray__ = __webpack_require__("../../../../rxjs/_esm5/util/isArray.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_subscribeToResult__ = __webpack_require__("../../../../rxjs/_esm5/util/subscribeToResult.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__OuterSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/OuterSubscriber.js");
+/** PURE_IMPORTS_START .._Observable,._EmptyObservable,.._util_isArray,.._util_subscribeToResult,.._OuterSubscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var EmptyObservable_1 = __webpack_require__("../../../../rxjs/observable/EmptyObservable.js");
-var isArray_1 = __webpack_require__("../../../../rxjs/util/isArray.js");
-var subscribeToResult_1 = __webpack_require__("../../../../rxjs/util/subscribeToResult.js");
-var OuterSubscriber_1 = __webpack_require__("../../../../rxjs/OuterSubscriber.js");
+
+
+
+
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var ForkJoinObservable = (function (_super) {
+var ForkJoinObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ForkJoinObservable, _super);
     function ForkJoinObservable(sources, resultSelector) {
         _super.call(this);
@@ -23034,8 +24263,98 @@ var ForkJoinObservable = (function (_super) {
     }
     /* tslint:enable:max-line-length */
     /**
-     * @param sources
-     * @return {any}
+     * Joins last values emitted by passed Observables.
+     *
+     * <span class="informal">Wait for Observables to complete and then combine last values they emitted.</span>
+     *
+     * <img src="./img/forkJoin.png" width="100%">
+     *
+     * `forkJoin` is an operator that takes any number of Observables which can be passed either as an array
+     * or directly as arguments. If no input Observables are provided, resulting stream will complete
+     * immediately.
+     *
+     * `forkJoin` will wait for all passed Observables to complete and then it will emit an array with last
+     * values from corresponding Observables. So if you pass `n` Observables to the operator, resulting
+     * array will have `n` values, where first value is the last thing emitted by the first Observable,
+     * second value is the last thing emitted by the second Observable and so on. That means `forkJoin` will
+     * not emit more than once and it will complete after that. If you need to emit combined values not only
+     * at the end of lifecycle of passed Observables, but also throughout it, try out {@link combineLatest}
+     * or {@link zip} instead.
+     *
+     * In order for resulting array to have the same length as the number of input Observables, whenever any of
+     * that Observables completes without emitting any value, `forkJoin` will complete at that moment as well
+     * and it will not emit anything either, even if it already has some last values from other Observables.
+     * Conversely, if there is an Observable that never completes, `forkJoin` will never complete as well,
+     * unless at any point some other Observable completes without emitting value, which brings us back to
+     * the previous case. Overall, in order for `forkJoin` to emit a value, all Observables passed as arguments
+     * have to emit something at least once and complete.
+     *
+     * If any input Observable errors at some point, `forkJoin` will error as well and all other Observables
+     * will be immediately unsubscribed.
+     *
+     * Optionally `forkJoin` accepts project function, that will be called with values which normally
+     * would land in emitted array. Whatever is returned by project function, will appear in output
+     * Observable instead. This means that default project can be thought of as a function that takes
+     * all its arguments and puts them into an array. Note that project function will be called only
+     * when output Observable is supposed to emit a result.
+     *
+     * @example <caption>Use forkJoin with operator emitting immediately</caption>
+     * const observable = Rx.Observable.forkJoin(
+     *   Rx.Observable.of(1, 2, 3, 4),
+     *   Rx.Observable.of(5, 6, 7, 8)
+     * );
+     * observable.subscribe(
+     *   value => console.log(value),
+     *   err => {},
+     *   () => console.log('This is how it ends!')
+     * );
+     *
+     * // Logs:
+     * // [4, 8]
+     * // "This is how it ends!"
+     *
+     *
+     * @example <caption>Use forkJoin with operator emitting after some time</caption>
+     * const observable = Rx.Observable.forkJoin(
+     *   Rx.Observable.interval(1000).take(3), // emit 0, 1, 2 every second and complete
+     *   Rx.Observable.interval(500).take(4) // emit 0, 1, 2, 3 every half a second and complete
+     * );
+     * observable.subscribe(
+     *   value => console.log(value),
+     *   err => {},
+     *   () => console.log('This is how it ends!')
+     * );
+     *
+     * // Logs:
+     * // [2, 3] after 3 seconds
+     * // "This is how it ends!" immediately after
+     *
+     *
+     * @example <caption>Use forkJoin with project function</caption>
+     * const observable = Rx.Observable.forkJoin(
+     *   Rx.Observable.interval(1000).take(3), // emit 0, 1, 2 every second and complete
+     *   Rx.Observable.interval(500).take(4), // emit 0, 1, 2, 3 every half a second and complete
+     *   (n, m) => n + m
+     * );
+     * observable.subscribe(
+     *   value => console.log(value),
+     *   err => {},
+     *   () => console.log('This is how it ends!')
+     * );
+     *
+     * // Logs:
+     * // 5 after 3 seconds
+     * // "This is how it ends!" immediately after
+     *
+     * @see {@link combineLatest}
+     * @see {@link zip}
+     *
+     * @param {...SubscribableOrPromise} sources Any number of Observables provided either as an array or as an arguments
+     * passed directly to the operator.
+     * @param {function} [project] Function that takes values emitted by input Observables and returns value
+     * that will appear in resulting Observable instead of default array.
+     * @return {Observable} Observable emitting either an array of last values emitted by passed Observables
+     * or value from project function.
      * @static true
      * @name forkJoin
      * @owner Observable
@@ -23046,7 +24365,7 @@ var ForkJoinObservable = (function (_super) {
             sources[_i - 0] = arguments[_i];
         }
         if (sources === null || arguments.length === 0) {
-            return new EmptyObservable_1.EmptyObservable();
+            return new __WEBPACK_IMPORTED_MODULE_1__EmptyObservable__["a" /* EmptyObservable */]();
         }
         var resultSelector = null;
         if (typeof sources[sources.length - 1] === 'function') {
@@ -23054,11 +24373,11 @@ var ForkJoinObservable = (function (_super) {
         }
         // if the first and only other argument besides the resultSelector is an array
         // assume it's been called with `forkJoin([obs1, obs2, obs3], resultSelector)`
-        if (sources.length === 1 && isArray_1.isArray(sources[0])) {
+        if (sources.length === 1 && Object(__WEBPACK_IMPORTED_MODULE_2__util_isArray__["a" /* isArray */])(sources[0])) {
             sources = sources[0];
         }
         if (sources.length === 0) {
-            return new EmptyObservable_1.EmptyObservable();
+            return new __WEBPACK_IMPORTED_MODULE_1__EmptyObservable__["a" /* EmptyObservable */]();
         }
         return new ForkJoinObservable(sources, resultSelector);
     };
@@ -23066,14 +24385,13 @@ var ForkJoinObservable = (function (_super) {
         return new ForkJoinSubscriber(subscriber, this.sources, this.resultSelector);
     };
     return ForkJoinObservable;
-}(Observable_1.Observable));
-exports.ForkJoinObservable = ForkJoinObservable;
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var ForkJoinSubscriber = (function (_super) {
+var ForkJoinSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ForkJoinSubscriber, _super);
     function ForkJoinSubscriber(destination, sources, resultSelector) {
         _super.call(this, destination);
@@ -23086,7 +24404,7 @@ var ForkJoinSubscriber = (function (_super) {
         this.values = new Array(len);
         for (var i = 0; i < len; i++) {
             var source = sources[i];
-            var innerSubscription = subscribeToResult_1.subscribeToResult(this, source, null, i);
+            var innerSubscription = Object(__WEBPACK_IMPORTED_MODULE_3__util_subscribeToResult__["a" /* subscribeToResult */])(this, source, null, i);
             if (innerSubscription) {
                 innerSubscription.outerIndex = i;
                 this.add(innerSubscription);
@@ -23119,38 +24437,53 @@ var ForkJoinSubscriber = (function (_super) {
         destination.complete();
     };
     return ForkJoinSubscriber;
-}(OuterSubscriber_1.OuterSubscriber));
-//# sourceMappingURL=ForkJoinObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_4__OuterSubscriber__["a" /* OuterSubscriber */]));
+//# sourceMappingURL=ForkJoinObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/FromObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/FromObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FromObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_isArray__ = __webpack_require__("../../../../rxjs/_esm5/util/isArray.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_isArrayLike__ = __webpack_require__("../../../../rxjs/_esm5/util/isArrayLike.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__util_isPromise__ = __webpack_require__("../../../../rxjs/_esm5/util/isPromise.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__PromiseObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/PromiseObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__IteratorObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/IteratorObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ArrayObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ArrayObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ArrayLikeObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ArrayLikeObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__symbol_iterator__ = __webpack_require__("../../../../rxjs/_esm5/symbol/iterator.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__operators_observeOn__ = __webpack_require__("../../../../rxjs/_esm5/operators/observeOn.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__symbol_observable__ = __webpack_require__("../../../../rxjs/_esm5/symbol/observable.js");
+/** PURE_IMPORTS_START .._util_isArray,.._util_isArrayLike,.._util_isPromise,._PromiseObservable,._IteratorObservable,._ArrayObservable,._ArrayLikeObservable,.._symbol_iterator,.._Observable,.._operators_observeOn,.._symbol_observable PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var isArray_1 = __webpack_require__("../../../../rxjs/util/isArray.js");
-var isArrayLike_1 = __webpack_require__("../../../../rxjs/util/isArrayLike.js");
-var isPromise_1 = __webpack_require__("../../../../rxjs/util/isPromise.js");
-var PromiseObservable_1 = __webpack_require__("../../../../rxjs/observable/PromiseObservable.js");
-var IteratorObservable_1 = __webpack_require__("../../../../rxjs/observable/IteratorObservable.js");
-var ArrayObservable_1 = __webpack_require__("../../../../rxjs/observable/ArrayObservable.js");
-var ArrayLikeObservable_1 = __webpack_require__("../../../../rxjs/observable/ArrayLikeObservable.js");
-var iterator_1 = __webpack_require__("../../../../rxjs/symbol/iterator.js");
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var observeOn_1 = __webpack_require__("../../../../rxjs/operator/observeOn.js");
-var observable_1 = __webpack_require__("../../../../rxjs/symbol/observable.js");
+
+
+
+
+
+
+
+
+
+
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var FromObservable = (function (_super) {
+var FromObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(FromObservable, _super);
     function FromObservable(ish, scheduler) {
         _super.call(this, null);
@@ -23215,23 +24548,23 @@ var FromObservable = (function (_super) {
      */
     FromObservable.create = function (ish, scheduler) {
         if (ish != null) {
-            if (typeof ish[observable_1.observable] === 'function') {
-                if (ish instanceof Observable_1.Observable && !scheduler) {
+            if (typeof ish[__WEBPACK_IMPORTED_MODULE_10__symbol_observable__["a" /* observable */]] === 'function') {
+                if (ish instanceof __WEBPACK_IMPORTED_MODULE_8__Observable__["a" /* Observable */] && !scheduler) {
                     return ish;
                 }
                 return new FromObservable(ish, scheduler);
             }
-            else if (isArray_1.isArray(ish)) {
-                return new ArrayObservable_1.ArrayObservable(ish, scheduler);
+            else if (Object(__WEBPACK_IMPORTED_MODULE_0__util_isArray__["a" /* isArray */])(ish)) {
+                return new __WEBPACK_IMPORTED_MODULE_5__ArrayObservable__["a" /* ArrayObservable */](ish, scheduler);
             }
-            else if (isPromise_1.isPromise(ish)) {
-                return new PromiseObservable_1.PromiseObservable(ish, scheduler);
+            else if (Object(__WEBPACK_IMPORTED_MODULE_2__util_isPromise__["a" /* isPromise */])(ish)) {
+                return new __WEBPACK_IMPORTED_MODULE_3__PromiseObservable__["a" /* PromiseObservable */](ish, scheduler);
             }
-            else if (typeof ish[iterator_1.iterator] === 'function' || typeof ish === 'string') {
-                return new IteratorObservable_1.IteratorObservable(ish, scheduler);
+            else if (typeof ish[__WEBPACK_IMPORTED_MODULE_7__symbol_iterator__["a" /* iterator */]] === 'function' || typeof ish === 'string') {
+                return new __WEBPACK_IMPORTED_MODULE_4__IteratorObservable__["a" /* IteratorObservable */](ish, scheduler);
             }
-            else if (isArrayLike_1.isArrayLike(ish)) {
-                return new ArrayLikeObservable_1.ArrayLikeObservable(ish, scheduler);
+            else if (Object(__WEBPACK_IMPORTED_MODULE_1__util_isArrayLike__["a" /* isArrayLike */])(ish)) {
+                return new __WEBPACK_IMPORTED_MODULE_6__ArrayLikeObservable__["a" /* ArrayLikeObservable */](ish, scheduler);
             }
         }
         throw new TypeError((ish !== null && typeof ish || ish) + ' is not observable');
@@ -23240,38 +24573,44 @@ var FromObservable = (function (_super) {
         var ish = this.ish;
         var scheduler = this.scheduler;
         if (scheduler == null) {
-            return ish[observable_1.observable]().subscribe(subscriber);
+            return ish[__WEBPACK_IMPORTED_MODULE_10__symbol_observable__["a" /* observable */]]().subscribe(subscriber);
         }
         else {
-            return ish[observable_1.observable]().subscribe(new observeOn_1.ObserveOnSubscriber(subscriber, scheduler, 0));
+            return ish[__WEBPACK_IMPORTED_MODULE_10__symbol_observable__["a" /* observable */]]().subscribe(new __WEBPACK_IMPORTED_MODULE_9__operators_observeOn__["a" /* ObserveOnSubscriber */](subscriber, scheduler, 0));
         }
     };
     return FromObservable;
-}(Observable_1.Observable));
-exports.FromObservable = FromObservable;
-//# sourceMappingURL=FromObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_8__Observable__["a" /* Observable */]));
+//# sourceMappingURL=FromObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/IteratorObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/IteratorObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return IteratorObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbol_iterator__ = __webpack_require__("../../../../rxjs/_esm5/symbol/iterator.js");
+/** PURE_IMPORTS_START .._util_root,.._Observable,.._symbol_iterator PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var iterator_1 = __webpack_require__("../../../../rxjs/symbol/iterator.js");
+
+
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var IteratorObservable = (function (_super) {
+var IteratorObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(IteratorObservable, _super);
     function IteratorObservable(iterator, scheduler) {
         _super.call(this);
@@ -23333,17 +24672,20 @@ var IteratorObservable = (function (_super) {
         }
     };
     return IteratorObservable;
-}(Observable_1.Observable));
-exports.IteratorObservable = IteratorObservable;
-var StringIterator = (function () {
+}(__WEBPACK_IMPORTED_MODULE_1__Observable__["a" /* Observable */]));
+var StringIterator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function StringIterator(str, idx, len) {
-        if (idx === void 0) { idx = 0; }
-        if (len === void 0) { len = str.length; }
+        if (idx === void 0) {
+            idx = 0;
+        }
+        if (len === void 0) {
+            len = str.length;
+        }
         this.str = str;
         this.idx = idx;
         this.len = len;
     }
-    StringIterator.prototype[iterator_1.iterator] = function () { return (this); };
+    StringIterator.prototype[__WEBPACK_IMPORTED_MODULE_2__symbol_iterator__["a" /* iterator */]] = function () { return (this); };
     StringIterator.prototype.next = function () {
         return this.idx < this.len ? {
             done: false,
@@ -23355,15 +24697,19 @@ var StringIterator = (function () {
     };
     return StringIterator;
 }());
-var ArrayIterator = (function () {
+var ArrayIterator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function ArrayIterator(arr, idx, len) {
-        if (idx === void 0) { idx = 0; }
-        if (len === void 0) { len = toLength(arr); }
+        if (idx === void 0) {
+            idx = 0;
+        }
+        if (len === void 0) {
+            len = toLength(arr);
+        }
         this.arr = arr;
         this.idx = idx;
         this.len = len;
     }
-    ArrayIterator.prototype[iterator_1.iterator] = function () { return this; };
+    ArrayIterator.prototype[__WEBPACK_IMPORTED_MODULE_2__symbol_iterator__["a" /* iterator */]] = function () { return this; };
     ArrayIterator.prototype.next = function () {
         return this.idx < this.len ? {
             done: false,
@@ -23376,7 +24722,7 @@ var ArrayIterator = (function () {
     return ArrayIterator;
 }());
 function getIterator(obj) {
-    var i = obj[iterator_1.iterator];
+    var i = obj[__WEBPACK_IMPORTED_MODULE_2__symbol_iterator__["a" /* iterator */]];
     if (!i && typeof obj === 'string') {
         return new StringIterator(obj);
     }
@@ -23386,9 +24732,9 @@ function getIterator(obj) {
     if (!i) {
         throw new TypeError('object is not iterable');
     }
-    return obj[iterator_1.iterator]();
+    return obj[__WEBPACK_IMPORTED_MODULE_2__symbol_iterator__["a" /* iterator */]]();
 }
-var maxSafeInteger = Math.pow(2, 53) - 1;
+var maxSafeInteger = /*@__PURE__*/ Math.pow(2, 53) - 1;
 function toLength(o) {
     var len = +o.length;
     if (isNaN(len)) {
@@ -23407,7 +24753,7 @@ function toLength(o) {
     return len;
 }
 function numberIsFinite(value) {
-    return typeof value === 'number' && root_1.root.isFinite(value);
+    return typeof value === 'number' && __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].isFinite(value);
 }
 function sign(value) {
     var valueAsNumber = +value;
@@ -23419,28 +24765,34 @@ function sign(value) {
     }
     return valueAsNumber < 0 ? -1 : 1;
 }
-//# sourceMappingURL=IteratorObservable.js.map
+//# sourceMappingURL=IteratorObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/PromiseObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/PromiseObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return PromiseObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/** PURE_IMPORTS_START .._util_root,.._Observable PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
+
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var PromiseObservable = (function (_super) {
+var PromiseObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(PromiseObservable, _super);
     function PromiseObservable(promise, scheduler) {
         _super.call(this);
@@ -23502,7 +24854,7 @@ var PromiseObservable = (function (_super) {
                 })
                     .then(null, function (err) {
                     // escape the promise trap, throw unhandled errors
-                    root_1.root.setTimeout(function () { throw err; });
+                    __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].setTimeout(function () { throw err; });
                 });
             }
         }
@@ -23526,14 +24878,13 @@ var PromiseObservable = (function (_super) {
                 })
                     .then(null, function (err) {
                     // escape the promise trap, throw unhandled errors
-                    root_1.root.setTimeout(function () { throw err; });
+                    __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].setTimeout(function () { throw err; });
                 });
             }
         }
     };
     return PromiseObservable;
-}(Observable_1.Observable));
-exports.PromiseObservable = PromiseObservable;
+}(__WEBPACK_IMPORTED_MODULE_1__Observable__["a" /* Observable */]));
 function dispatchNext(arg) {
     var value = arg.value, subscriber = arg.subscriber;
     if (!subscriber.closed) {
@@ -23547,27 +24898,32 @@ function dispatchError(arg) {
         subscriber.error(err);
     }
 }
-//# sourceMappingURL=PromiseObservable.js.map
+//# sourceMappingURL=PromiseObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/ScalarObservable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/ScalarObservable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ScalarObservable; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/** PURE_IMPORTS_START .._Observable PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
+
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @extends {Ignored}
  * @hide true
  */
-var ScalarObservable = (function (_super) {
+var ScalarObservable = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ScalarObservable, _super);
     function ScalarObservable(value, scheduler) {
         _super.call(this);
@@ -23610,90 +24966,104 @@ var ScalarObservable = (function (_super) {
         }
     };
     return ScalarObservable;
-}(Observable_1.Observable));
-exports.ScalarObservable = ScalarObservable;
-//# sourceMappingURL=ScalarObservable.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]));
+//# sourceMappingURL=ScalarObservable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/forkJoin.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/forkJoin.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return forkJoin; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ForkJoinObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ForkJoinObservable.js");
+/** PURE_IMPORTS_START ._ForkJoinObservable PURE_IMPORTS_END */
 
-var ForkJoinObservable_1 = __webpack_require__("../../../../rxjs/observable/ForkJoinObservable.js");
-exports.forkJoin = ForkJoinObservable_1.ForkJoinObservable.create;
-//# sourceMappingURL=forkJoin.js.map
+var forkJoin = __WEBPACK_IMPORTED_MODULE_0__ForkJoinObservable__["a" /* ForkJoinObservable */].create;
+//# sourceMappingURL=forkJoin.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/from.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/from.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return from; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__FromObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/FromObservable.js");
+/** PURE_IMPORTS_START ._FromObservable PURE_IMPORTS_END */
 
-var FromObservable_1 = __webpack_require__("../../../../rxjs/observable/FromObservable.js");
-exports.from = FromObservable_1.FromObservable.create;
-//# sourceMappingURL=from.js.map
+var from = __WEBPACK_IMPORTED_MODULE_0__FromObservable__["a" /* FromObservable */].create;
+//# sourceMappingURL=from.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/fromPromise.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/fromPromise.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return fromPromise; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__PromiseObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/PromiseObservable.js");
+/** PURE_IMPORTS_START ._PromiseObservable PURE_IMPORTS_END */
 
-var PromiseObservable_1 = __webpack_require__("../../../../rxjs/observable/PromiseObservable.js");
-exports.fromPromise = PromiseObservable_1.PromiseObservable.create;
-//# sourceMappingURL=fromPromise.js.map
+var fromPromise = __WEBPACK_IMPORTED_MODULE_0__PromiseObservable__["a" /* PromiseObservable */].create;
+//# sourceMappingURL=fromPromise.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/merge.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/merge.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return merge; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operator_merge__ = __webpack_require__("../../../../rxjs/_esm5/operator/merge.js");
+/** PURE_IMPORTS_START .._operator_merge PURE_IMPORTS_END */
 
-var merge_1 = __webpack_require__("../../../../rxjs/operator/merge.js");
-exports.merge = merge_1.mergeStatic;
-//# sourceMappingURL=merge.js.map
+var merge = __WEBPACK_IMPORTED_MODULE_0__operator_merge__["a" /* mergeStatic */];
+//# sourceMappingURL=merge.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/of.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/of.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return of; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ArrayObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ArrayObservable.js");
+/** PURE_IMPORTS_START ._ArrayObservable PURE_IMPORTS_END */
 
-var ArrayObservable_1 = __webpack_require__("../../../../rxjs/observable/ArrayObservable.js");
-exports.of = ArrayObservable_1.ArrayObservable.of;
-//# sourceMappingURL=of.js.map
+var of = __WEBPACK_IMPORTED_MODULE_0__ArrayObservable__["a" /* ArrayObservable */].of;
+//# sourceMappingURL=of.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/observable/throw.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/observable/throw.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return _throw; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ErrorObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ErrorObservable.js");
+/** PURE_IMPORTS_START ._ErrorObservable PURE_IMPORTS_END */
 
-var ErrorObservable_1 = __webpack_require__("../../../../rxjs/observable/ErrorObservable.js");
-exports._throw = ErrorObservable_1.ErrorObservable.create;
-//# sourceMappingURL=throw.js.map
+var _throw = __WEBPACK_IMPORTED_MODULE_0__ErrorObservable__["a" /* ErrorObservable */].create;
+//# sourceMappingURL=throw.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/catch.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operator/catch.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = _catch;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_catchError__ = __webpack_require__("../../../../rxjs/_esm5/operators/catchError.js");
+/** PURE_IMPORTS_START .._operators_catchError PURE_IMPORTS_END */
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var OuterSubscriber_1 = __webpack_require__("../../../../rxjs/OuterSubscriber.js");
-var subscribeToResult_1 = __webpack_require__("../../../../rxjs/util/subscribeToResult.js");
 /**
  * Catches errors on the observable to be handled by returning a new observable or throwing an error.
  *
@@ -23754,63 +25124,21 @@ var subscribeToResult_1 = __webpack_require__("../../../../rxjs/util/subscribeTo
  * @owner Observable
  */
 function _catch(selector) {
-    var operator = new CatchOperator(selector);
-    var caught = this.lift(operator);
-    return (operator.caught = caught);
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_catchError__["a" /* catchError */])(selector)(this);
 }
-exports._catch = _catch;
-var CatchOperator = (function () {
-    function CatchOperator(selector) {
-        this.selector = selector;
-    }
-    CatchOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new CatchSubscriber(subscriber, this.selector, this.caught));
-    };
-    return CatchOperator;
-}());
-/**
- * We need this JSDoc comment for affecting ESDoc.
- * @ignore
- * @extends {Ignored}
- */
-var CatchSubscriber = (function (_super) {
-    __extends(CatchSubscriber, _super);
-    function CatchSubscriber(destination, selector, caught) {
-        _super.call(this, destination);
-        this.selector = selector;
-        this.caught = caught;
-    }
-    // NOTE: overriding `error` instead of `_error` because we don't want
-    // to have this flag this subscriber as `isStopped`. We can mimic the
-    // behavior of the RetrySubscriber (from the `retry` operator), where
-    // we unsubscribe from our source chain, reset our Subscriber flags,
-    // then subscribe to the selector result.
-    CatchSubscriber.prototype.error = function (err) {
-        if (!this.isStopped) {
-            var result = void 0;
-            try {
-                result = this.selector(err, this.caught);
-            }
-            catch (err2) {
-                _super.prototype.error.call(this, err2);
-                return;
-            }
-            this._unsubscribeAndRecycle();
-            this.add(subscribeToResult_1.subscribeToResult(this, result));
-        }
-    };
-    return CatchSubscriber;
-}(OuterSubscriber_1.OuterSubscriber));
-//# sourceMappingURL=catch.js.map
+//# sourceMappingURL=catch.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/concatAll.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operator/concatAll.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = concatAll;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_concatAll__ = __webpack_require__("../../../../rxjs/_esm5/operators/concatAll.js");
+/** PURE_IMPORTS_START .._operators_concatAll PURE_IMPORTS_END */
 
-var mergeAll_1 = __webpack_require__("../../../../rxjs/operator/mergeAll.js");
 /* tslint:enable:max-line-length */
 /**
  * Converts a higher-order Observable into a first-order Observable by
@@ -23861,19 +25189,21 @@ var mergeAll_1 = __webpack_require__("../../../../rxjs/operator/mergeAll.js");
  * @owner Observable
  */
 function concatAll() {
-    return this.lift(new mergeAll_1.MergeAllOperator(1));
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_concatAll__["a" /* concatAll */])()(this);
 }
-exports.concatAll = concatAll;
-//# sourceMappingURL=concatAll.js.map
+//# sourceMappingURL=concatAll.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/concatMap.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operator/concatMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = concatMap;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_concatMap__ = __webpack_require__("../../../../rxjs/_esm5/operators/concatMap.js");
+/** PURE_IMPORTS_START .._operators_concatMap PURE_IMPORTS_END */
 
-var mergeMap_1 = __webpack_require__("../../../../rxjs/operator/mergeMap.js");
 /* tslint:enable:max-line-length */
 /**
  * Projects each source value to an Observable which is merged in the output
@@ -23935,24 +25265,21 @@ var mergeMap_1 = __webpack_require__("../../../../rxjs/operator/mergeMap.js");
  * @owner Observable
  */
 function concatMap(project, resultSelector) {
-    return this.lift(new mergeMap_1.MergeMapOperator(project, resultSelector, 1));
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_concatMap__["a" /* concatMap */])(project, resultSelector)(this);
 }
-exports.concatMap = concatMap;
-//# sourceMappingURL=concatMap.js.map
+//# sourceMappingURL=concatMap.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/every.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operator/every.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = every;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_every__ = __webpack_require__("../../../../rxjs/_esm5/operators/every.js");
+/** PURE_IMPORTS_START .._operators_every PURE_IMPORTS_END */
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
 /**
  * Returns an Observable that emits whether or not every item of the source satisfies the condition specified.
  *
@@ -23968,72 +25295,21 @@ var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
  * @owner Observable
  */
 function every(predicate, thisArg) {
-    return this.lift(new EveryOperator(predicate, thisArg, this));
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_every__["a" /* every */])(predicate, thisArg)(this);
 }
-exports.every = every;
-var EveryOperator = (function () {
-    function EveryOperator(predicate, thisArg, source) {
-        this.predicate = predicate;
-        this.thisArg = thisArg;
-        this.source = source;
-    }
-    EveryOperator.prototype.call = function (observer, source) {
-        return source.subscribe(new EverySubscriber(observer, this.predicate, this.thisArg, this.source));
-    };
-    return EveryOperator;
-}());
-/**
- * We need this JSDoc comment for affecting ESDoc.
- * @ignore
- * @extends {Ignored}
- */
-var EverySubscriber = (function (_super) {
-    __extends(EverySubscriber, _super);
-    function EverySubscriber(destination, predicate, thisArg, source) {
-        _super.call(this, destination);
-        this.predicate = predicate;
-        this.thisArg = thisArg;
-        this.source = source;
-        this.index = 0;
-        this.thisArg = thisArg || this;
-    }
-    EverySubscriber.prototype.notifyComplete = function (everyValueMatch) {
-        this.destination.next(everyValueMatch);
-        this.destination.complete();
-    };
-    EverySubscriber.prototype._next = function (value) {
-        var result = false;
-        try {
-            result = this.predicate.call(this.thisArg, value, this.index++, this.source);
-        }
-        catch (err) {
-            this.destination.error(err);
-            return;
-        }
-        if (!result) {
-            this.notifyComplete(false);
-        }
-    };
-    EverySubscriber.prototype._complete = function () {
-        this.notifyComplete(true);
-    };
-    return EverySubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=every.js.map
+//# sourceMappingURL=every.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/filter.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operator/filter.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = filter;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_filter__ = __webpack_require__("../../../../rxjs/_esm5/operators/filter.js");
+/** PURE_IMPORTS_START .._operators_filter PURE_IMPORTS_END */
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
 /* tslint:enable:max-line-length */
 /**
  * Filter items emitted by the source Observable by only emitting those that
@@ -24075,65 +25351,21 @@ var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
  * @owner Observable
  */
 function filter(predicate, thisArg) {
-    return this.lift(new FilterOperator(predicate, thisArg));
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_filter__["a" /* filter */])(predicate, thisArg)(this);
 }
-exports.filter = filter;
-var FilterOperator = (function () {
-    function FilterOperator(predicate, thisArg) {
-        this.predicate = predicate;
-        this.thisArg = thisArg;
-    }
-    FilterOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new FilterSubscriber(subscriber, this.predicate, this.thisArg));
-    };
-    return FilterOperator;
-}());
-/**
- * We need this JSDoc comment for affecting ESDoc.
- * @ignore
- * @extends {Ignored}
- */
-var FilterSubscriber = (function (_super) {
-    __extends(FilterSubscriber, _super);
-    function FilterSubscriber(destination, predicate, thisArg) {
-        _super.call(this, destination);
-        this.predicate = predicate;
-        this.thisArg = thisArg;
-        this.count = 0;
-    }
-    // the try catch block below is left specifically for
-    // optimization and perf reasons. a tryCatcher is not necessary here.
-    FilterSubscriber.prototype._next = function (value) {
-        var result;
-        try {
-            result = this.predicate.call(this.thisArg, value, this.count++);
-        }
-        catch (err) {
-            this.destination.error(err);
-            return;
-        }
-        if (result) {
-            this.destination.next(value);
-        }
-    };
-    return FilterSubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=filter.js.map
+//# sourceMappingURL=filter.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/first.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operator/first.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = first;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_first__ = __webpack_require__("../../../../rxjs/_esm5/operators/first.js");
+/** PURE_IMPORTS_START .._operators_first PURE_IMPORTS_END */
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
-var EmptyError_1 = __webpack_require__("../../../../rxjs/util/EmptyError.js");
 /**
  * Emits only the first value (or the first value that meets some condition)
  * emitted by the source Observable.
@@ -24184,10 +25416,1026 @@ var EmptyError_1 = __webpack_require__("../../../../rxjs/util/EmptyError.js");
  * @owner Observable
  */
 function first(predicate, resultSelector, defaultValue) {
-    return this.lift(new FirstOperator(predicate, resultSelector, defaultValue, this));
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_first__["a" /* first */])(predicate, resultSelector, defaultValue)(this);
 }
-exports.first = first;
-var FirstOperator = (function () {
+//# sourceMappingURL=first.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/last.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = last;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_last__ = __webpack_require__("../../../../rxjs/_esm5/operators/last.js");
+/** PURE_IMPORTS_START .._operators_last PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+/**
+ * Returns an Observable that emits only the last item emitted by the source Observable.
+ * It optionally takes a predicate function as a parameter, in which case, rather than emitting
+ * the last item from the source Observable, the resulting Observable will emit the last item
+ * from the source Observable that satisfies the predicate.
+ *
+ * <img src="./img/last.png" width="100%">
+ *
+ * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
+ * callback if the Observable completes before any `next` notification was sent.
+ * @param {function} predicate - The condition any source emitted item has to satisfy.
+ * @return {Observable} An Observable that emits only the last item satisfying the given condition
+ * from the source, or an NoSuchElementException if no such items are emitted.
+ * @throws - Throws if no items that match the predicate are emitted by the source Observable.
+ * @method last
+ * @owner Observable
+ */
+function last(predicate, resultSelector, defaultValue) {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_last__["a" /* last */])(predicate, resultSelector, defaultValue)(this);
+}
+//# sourceMappingURL=last.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/map.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = map;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_map__ = __webpack_require__("../../../../rxjs/_esm5/operators/map.js");
+/** PURE_IMPORTS_START .._operators_map PURE_IMPORTS_END */
+
+/**
+ * Applies a given `project` function to each value emitted by the source
+ * Observable, and emits the resulting values as an Observable.
+ *
+ * <span class="informal">Like [Array.prototype.map()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map),
+ * it passes each source value through a transformation function to get
+ * corresponding output values.</span>
+ *
+ * <img src="./img/map.png" width="100%">
+ *
+ * Similar to the well known `Array.prototype.map` function, this operator
+ * applies a projection to each value and emits that projection in the output
+ * Observable.
+ *
+ * @example <caption>Map every click to the clientX position of that click</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var positions = clicks.map(ev => ev.clientX);
+ * positions.subscribe(x => console.log(x));
+ *
+ * @see {@link mapTo}
+ * @see {@link pluck}
+ *
+ * @param {function(value: T, index: number): R} project The function to apply
+ * to each `value` emitted by the source Observable. The `index` parameter is
+ * the number `i` for the i-th emission that has happened since the
+ * subscription, starting from the number `0`.
+ * @param {any} [thisArg] An optional argument to define what `this` is in the
+ * `project` function.
+ * @return {Observable<R>} An Observable that emits the values from the source
+ * Observable transformed by the given `project` function.
+ * @method map
+ * @owner Observable
+ */
+function map(project, thisArg) {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_map__["a" /* map */])(project, thisArg)(this);
+}
+//# sourceMappingURL=map.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/merge.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export merge */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_merge__ = __webpack_require__("../../../../rxjs/_esm5/operators/merge.js");
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__operators_merge__["b"]; });
+/** PURE_IMPORTS_START .._operators_merge PURE_IMPORTS_END */
+
+
+/* tslint:enable:max-line-length */
+/**
+ * Creates an output Observable which concurrently emits all values from every
+ * given input Observable.
+ *
+ * <span class="informal">Flattens multiple Observables together by blending
+ * their values into one Observable.</span>
+ *
+ * <img src="./img/merge.png" width="100%">
+ *
+ * `merge` subscribes to each given input Observable (either the source or an
+ * Observable given as argument), and simply forwards (without doing any
+ * transformation) all the values from all the input Observables to the output
+ * Observable. The output Observable only completes once all input Observables
+ * have completed. Any error delivered by an input Observable will be immediately
+ * emitted on the output Observable.
+ *
+ * @example <caption>Merge together two Observables: 1s interval and clicks</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var timer = Rx.Observable.interval(1000);
+ * var clicksOrTimer = clicks.merge(timer);
+ * clicksOrTimer.subscribe(x => console.log(x));
+ *
+ * @example <caption>Merge together 3 Observables, but only 2 run concurrently</caption>
+ * var timer1 = Rx.Observable.interval(1000).take(10);
+ * var timer2 = Rx.Observable.interval(2000).take(6);
+ * var timer3 = Rx.Observable.interval(500).take(10);
+ * var concurrent = 2; // the argument
+ * var merged = timer1.merge(timer2, timer3, concurrent);
+ * merged.subscribe(x => console.log(x));
+ *
+ * @see {@link mergeAll}
+ * @see {@link mergeMap}
+ * @see {@link mergeMapTo}
+ * @see {@link mergeScan}
+ *
+ * @param {ObservableInput} other An input Observable to merge with the source
+ * Observable. More than one input Observables may be given as argument.
+ * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
+ * Observables being subscribed to concurrently.
+ * @param {Scheduler} [scheduler=null] The IScheduler to use for managing
+ * concurrency of input Observables.
+ * @return {Observable} An Observable that emits items that are the result of
+ * every input Observable.
+ * @method merge
+ * @owner Observable
+ */
+function merge() {
+    var observables = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        observables[_i - 0] = arguments[_i];
+    }
+    return __WEBPACK_IMPORTED_MODULE_0__operators_merge__["a" /* merge */].apply(void 0, observables)(this);
+}
+//# sourceMappingURL=merge.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/mergeAll.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = mergeAll;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_mergeAll__ = __webpack_require__("../../../../rxjs/_esm5/operators/mergeAll.js");
+/** PURE_IMPORTS_START .._operators_mergeAll PURE_IMPORTS_END */
+
+/**
+ * Converts a higher-order Observable into a first-order Observable which
+ * concurrently delivers all values that are emitted on the inner Observables.
+ *
+ * <span class="informal">Flattens an Observable-of-Observables.</span>
+ *
+ * <img src="./img/mergeAll.png" width="100%">
+ *
+ * `mergeAll` subscribes to an Observable that emits Observables, also known as
+ * a higher-order Observable. Each time it observes one of these emitted inner
+ * Observables, it subscribes to that and delivers all the values from the
+ * inner Observable on the output Observable. The output Observable only
+ * completes once all inner Observables have completed. Any error delivered by
+ * a inner Observable will be immediately emitted on the output Observable.
+ *
+ * @example <caption>Spawn a new interval Observable for each click event, and blend their outputs as one Observable</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var higherOrder = clicks.map((ev) => Rx.Observable.interval(1000));
+ * var firstOrder = higherOrder.mergeAll();
+ * firstOrder.subscribe(x => console.log(x));
+ *
+ * @example <caption>Count from 0 to 9 every second for each click, but only allow 2 concurrent timers</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var higherOrder = clicks.map((ev) => Rx.Observable.interval(1000).take(10));
+ * var firstOrder = higherOrder.mergeAll(2);
+ * firstOrder.subscribe(x => console.log(x));
+ *
+ * @see {@link combineAll}
+ * @see {@link concatAll}
+ * @see {@link exhaust}
+ * @see {@link merge}
+ * @see {@link mergeMap}
+ * @see {@link mergeMapTo}
+ * @see {@link mergeScan}
+ * @see {@link switch}
+ * @see {@link zipAll}
+ *
+ * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of inner
+ * Observables being subscribed to concurrently.
+ * @return {Observable} An Observable that emits values coming from all the
+ * inner Observables emitted by the source Observable.
+ * @method mergeAll
+ * @owner Observable
+ */
+function mergeAll(concurrent) {
+    if (concurrent === void 0) {
+        concurrent = Number.POSITIVE_INFINITY;
+    }
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_mergeAll__["a" /* mergeAll */])(concurrent)(this);
+}
+//# sourceMappingURL=mergeAll.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/mergeMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = mergeMap;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_mergeMap__ = __webpack_require__("../../../../rxjs/_esm5/operators/mergeMap.js");
+/** PURE_IMPORTS_START .._operators_mergeMap PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+/**
+ * Projects each source value to an Observable which is merged in the output
+ * Observable.
+ *
+ * <span class="informal">Maps each value to an Observable, then flattens all of
+ * these inner Observables using {@link mergeAll}.</span>
+ *
+ * <img src="./img/mergeMap.png" width="100%">
+ *
+ * Returns an Observable that emits items based on applying a function that you
+ * supply to each item emitted by the source Observable, where that function
+ * returns an Observable, and then merging those resulting Observables and
+ * emitting the results of this merger.
+ *
+ * @example <caption>Map and flatten each letter to an Observable ticking every 1 second</caption>
+ * var letters = Rx.Observable.of('a', 'b', 'c');
+ * var result = letters.mergeMap(x =>
+ *   Rx.Observable.interval(1000).map(i => x+i)
+ * );
+ * result.subscribe(x => console.log(x));
+ *
+ * // Results in the following:
+ * // a0
+ * // b0
+ * // c0
+ * // a1
+ * // b1
+ * // c1
+ * // continues to list a,b,c with respective ascending integers
+ *
+ * @see {@link concatMap}
+ * @see {@link exhaustMap}
+ * @see {@link merge}
+ * @see {@link mergeAll}
+ * @see {@link mergeMapTo}
+ * @see {@link mergeScan}
+ * @see {@link switchMap}
+ *
+ * @param {function(value: T, ?index: number): ObservableInput} project A function
+ * that, when applied to an item emitted by the source Observable, returns an
+ * Observable.
+ * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+ * A function to produce the value on the output Observable based on the values
+ * and the indices of the source (outer) emission and the inner Observable
+ * emission. The arguments passed to this function are:
+ * - `outerValue`: the value that came from the source
+ * - `innerValue`: the value that came from the projected Observable
+ * - `outerIndex`: the "index" of the value that came from the source
+ * - `innerIndex`: the "index" of the value from the projected Observable
+ * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
+ * Observables being subscribed to concurrently.
+ * @return {Observable} An Observable that emits the result of applying the
+ * projection function (and the optional `resultSelector`) to each item emitted
+ * by the source Observable and merging the results of the Observables obtained
+ * from this transformation.
+ * @method mergeMap
+ * @owner Observable
+ */
+function mergeMap(project, resultSelector, concurrent) {
+    if (concurrent === void 0) {
+        concurrent = Number.POSITIVE_INFINITY;
+    }
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_mergeMap__["a" /* mergeMap */])(project, resultSelector, concurrent)(this);
+}
+//# sourceMappingURL=mergeMap.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/reduce.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = reduce;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_reduce__ = __webpack_require__("../../../../rxjs/_esm5/operators/reduce.js");
+/** PURE_IMPORTS_START .._operators_reduce PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+/**
+ * Applies an accumulator function over the source Observable, and returns the
+ * accumulated result when the source completes, given an optional seed value.
+ *
+ * <span class="informal">Combines together all values emitted on the source,
+ * using an accumulator function that knows how to join a new source value into
+ * the accumulation from the past.</span>
+ *
+ * <img src="./img/reduce.png" width="100%">
+ *
+ * Like
+ * [Array.prototype.reduce()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce),
+ * `reduce` applies an `accumulator` function against an accumulation and each
+ * value of the source Observable (from the past) to reduce it to a single
+ * value, emitted on the output Observable. Note that `reduce` will only emit
+ * one value, only when the source Observable completes. It is equivalent to
+ * applying operator {@link scan} followed by operator {@link last}.
+ *
+ * Returns an Observable that applies a specified `accumulator` function to each
+ * item emitted by the source Observable. If a `seed` value is specified, then
+ * that value will be used as the initial value for the accumulator. If no seed
+ * value is specified, the first item of the source is used as the seed.
+ *
+ * @example <caption>Count the number of click events that happened in 5 seconds</caption>
+ * var clicksInFiveSeconds = Rx.Observable.fromEvent(document, 'click')
+ *   .takeUntil(Rx.Observable.interval(5000));
+ * var ones = clicksInFiveSeconds.mapTo(1);
+ * var seed = 0;
+ * var count = ones.reduce((acc, one) => acc + one, seed);
+ * count.subscribe(x => console.log(x));
+ *
+ * @see {@link count}
+ * @see {@link expand}
+ * @see {@link mergeScan}
+ * @see {@link scan}
+ *
+ * @param {function(acc: R, value: T, index: number): R} accumulator The accumulator function
+ * called on each source value.
+ * @param {R} [seed] The initial accumulation value.
+ * @return {Observable<R>} An Observable that emits a single value that is the
+ * result of accumulating the values emitted by the source Observable.
+ * @method reduce
+ * @owner Observable
+ */
+function reduce(accumulator, seed) {
+    // providing a seed of `undefined` *should* be valid and trigger
+    // hasSeed! so don't use `seed !== undefined` checks!
+    // For this reason, we have to check it here at the original call site
+    // otherwise inside Operator/Subscriber we won't know if `undefined`
+    // means they didn't provide anything or if they literally provided `undefined`
+    if (arguments.length >= 2) {
+        return Object(__WEBPACK_IMPORTED_MODULE_0__operators_reduce__["a" /* reduce */])(accumulator, seed)(this);
+    }
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_reduce__["a" /* reduce */])(accumulator)(this);
+}
+//# sourceMappingURL=reduce.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operator/share.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = share;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__operators_share__ = __webpack_require__("../../../../rxjs/_esm5/operators/share.js");
+/** PURE_IMPORTS_START .._operators_share PURE_IMPORTS_END */
+
+/**
+ * Returns a new Observable that multicasts (shares) the original Observable. As long as there is at least one
+ * Subscriber this Observable will be subscribed and emitting data. When all subscribers have unsubscribed it will
+ * unsubscribe from the source Observable. Because the Observable is multicasting it makes the stream `hot`.
+ *
+ * This behaves similarly to .publish().refCount(), with a behavior difference when the source observable emits complete.
+ * .publish().refCount() will not resubscribe to the original source, however .share() will resubscribe to the original source.
+ * Observable.of("test").publish().refCount() will not re-emit "test" on new subscriptions, Observable.of("test").share() will
+ * re-emit "test" to new subscriptions.
+ *
+ * <img src="./img/share.png" width="100%">
+ *
+ * @return {Observable<T>} An Observable that upon connection causes the source Observable to emit items to its Observers.
+ * @method share
+ * @owner Observable
+ */
+function share() {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__operators_share__["a" /* share */])()(this);
+}
+;
+//# sourceMappingURL=share.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/catchError.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = catchError;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__OuterSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/OuterSubscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_subscribeToResult__ = __webpack_require__("../../../../rxjs/_esm5/util/subscribeToResult.js");
+/** PURE_IMPORTS_START .._OuterSubscriber,.._util_subscribeToResult PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/**
+ * Catches errors on the observable to be handled by returning a new observable or throwing an error.
+ *
+ * <img src="./img/catch.png" width="100%">
+ *
+ * @example <caption>Continues with a different Observable when there's an error</caption>
+ *
+ * Observable.of(1, 2, 3, 4, 5)
+ *   .map(n => {
+ * 	   if (n == 4) {
+ * 	     throw 'four!';
+ *     }
+ *	   return n;
+ *   })
+ *   .catch(err => Observable.of('I', 'II', 'III', 'IV', 'V'))
+ *   .subscribe(x => console.log(x));
+ *   // 1, 2, 3, I, II, III, IV, V
+ *
+ * @example <caption>Retries the caught source Observable again in case of error, similar to retry() operator</caption>
+ *
+ * Observable.of(1, 2, 3, 4, 5)
+ *   .map(n => {
+ * 	   if (n === 4) {
+ * 	     throw 'four!';
+ *     }
+ * 	   return n;
+ *   })
+ *   .catch((err, caught) => caught)
+ *   .take(30)
+ *   .subscribe(x => console.log(x));
+ *   // 1, 2, 3, 1, 2, 3, ...
+ *
+ * @example <caption>Throws a new error when the source Observable throws an error</caption>
+ *
+ * Observable.of(1, 2, 3, 4, 5)
+ *   .map(n => {
+ *     if (n == 4) {
+ *       throw 'four!';
+ *     }
+ *     return n;
+ *   })
+ *   .catch(err => {
+ *     throw 'error in source. Details: ' + err;
+ *   })
+ *   .subscribe(
+ *     x => console.log(x),
+ *     err => console.log(err)
+ *   );
+ *   // 1, 2, 3, error in source. Details: four!
+ *
+ * @param {function} selector a function that takes as arguments `err`, which is the error, and `caught`, which
+ *  is the source observable, in case you'd like to "retry" that observable by returning it again. Whatever observable
+ *  is returned by the `selector` will be used to continue the observable chain.
+ * @return {Observable} An observable that originates from either the source or the observable returned by the
+ *  catch `selector` function.
+ * @name catchError
+ */
+function catchError(selector) {
+    return function catchErrorOperatorFunction(source) {
+        var operator = new CatchOperator(selector);
+        var caught = source.lift(operator);
+        return (operator.caught = caught);
+    };
+}
+var CatchOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function CatchOperator(selector) {
+        this.selector = selector;
+    }
+    CatchOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new CatchSubscriber(subscriber, this.selector, this.caught));
+    };
+    return CatchOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var CatchSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(CatchSubscriber, _super);
+    function CatchSubscriber(destination, selector, caught) {
+        _super.call(this, destination);
+        this.selector = selector;
+        this.caught = caught;
+    }
+    // NOTE: overriding `error` instead of `_error` because we don't want
+    // to have this flag this subscriber as `isStopped`. We can mimic the
+    // behavior of the RetrySubscriber (from the `retry` operator), where
+    // we unsubscribe from our source chain, reset our Subscriber flags,
+    // then subscribe to the selector result.
+    CatchSubscriber.prototype.error = function (err) {
+        if (!this.isStopped) {
+            var result = void 0;
+            try {
+                result = this.selector(err, this.caught);
+            }
+            catch (err2) {
+                _super.prototype.error.call(this, err2);
+                return;
+            }
+            this._unsubscribeAndRecycle();
+            this.add(Object(__WEBPACK_IMPORTED_MODULE_1__util_subscribeToResult__["a" /* subscribeToResult */])(this, result));
+        }
+    };
+    return CatchSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__OuterSubscriber__["a" /* OuterSubscriber */]));
+//# sourceMappingURL=catchError.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/concatAll.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = concatAll;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mergeAll__ = __webpack_require__("../../../../rxjs/_esm5/operators/mergeAll.js");
+/** PURE_IMPORTS_START ._mergeAll PURE_IMPORTS_END */
+
+/**
+ * Converts a higher-order Observable into a first-order Observable by
+ * concatenating the inner Observables in order.
+ *
+ * <span class="informal">Flattens an Observable-of-Observables by putting one
+ * inner Observable after the other.</span>
+ *
+ * <img src="./img/concatAll.png" width="100%">
+ *
+ * Joins every Observable emitted by the source (a higher-order Observable), in
+ * a serial fashion. It subscribes to each inner Observable only after the
+ * previous inner Observable has completed, and merges all of their values into
+ * the returned observable.
+ *
+ * __Warning:__ If the source Observable emits Observables quickly and
+ * endlessly, and the inner Observables it emits generally complete slower than
+ * the source emits, you can run into memory issues as the incoming Observables
+ * collect in an unbounded buffer.
+ *
+ * Note: `concatAll` is equivalent to `mergeAll` with concurrency parameter set
+ * to `1`.
+ *
+ * @example <caption>For each click event, tick every second from 0 to 3, with no concurrency</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var higherOrder = clicks.map(ev => Rx.Observable.interval(1000).take(4));
+ * var firstOrder = higherOrder.concatAll();
+ * firstOrder.subscribe(x => console.log(x));
+ *
+ * // Results in the following:
+ * // (results are not concurrent)
+ * // For every click on the "document" it will emit values 0 to 3 spaced
+ * // on a 1000ms interval
+ * // one click = 1000ms-> 0 -1000ms-> 1 -1000ms-> 2 -1000ms-> 3
+ *
+ * @see {@link combineAll}
+ * @see {@link concat}
+ * @see {@link concatMap}
+ * @see {@link concatMapTo}
+ * @see {@link exhaust}
+ * @see {@link mergeAll}
+ * @see {@link switch}
+ * @see {@link zipAll}
+ *
+ * @return {Observable} An Observable emitting values from all the inner
+ * Observables concatenated.
+ * @method concatAll
+ * @owner Observable
+ */
+function concatAll() {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mergeAll__["a" /* mergeAll */])(1);
+}
+//# sourceMappingURL=concatAll.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/concatMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = concatMap;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mergeMap__ = __webpack_require__("../../../../rxjs/_esm5/operators/mergeMap.js");
+/** PURE_IMPORTS_START ._mergeMap PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+/**
+ * Projects each source value to an Observable which is merged in the output
+ * Observable, in a serialized fashion waiting for each one to complete before
+ * merging the next.
+ *
+ * <span class="informal">Maps each value to an Observable, then flattens all of
+ * these inner Observables using {@link concatAll}.</span>
+ *
+ * <img src="./img/concatMap.png" width="100%">
+ *
+ * Returns an Observable that emits items based on applying a function that you
+ * supply to each item emitted by the source Observable, where that function
+ * returns an (so-called "inner") Observable. Each new inner Observable is
+ * concatenated with the previous inner Observable.
+ *
+ * __Warning:__ if source values arrive endlessly and faster than their
+ * corresponding inner Observables can complete, it will result in memory issues
+ * as inner Observables amass in an unbounded buffer waiting for their turn to
+ * be subscribed to.
+ *
+ * Note: `concatMap` is equivalent to `mergeMap` with concurrency parameter set
+ * to `1`.
+ *
+ * @example <caption>For each click event, tick every second from 0 to 3, with no concurrency</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.concatMap(ev => Rx.Observable.interval(1000).take(4));
+ * result.subscribe(x => console.log(x));
+ *
+ * // Results in the following:
+ * // (results are not concurrent)
+ * // For every click on the "document" it will emit values 0 to 3 spaced
+ * // on a 1000ms interval
+ * // one click = 1000ms-> 0 -1000ms-> 1 -1000ms-> 2 -1000ms-> 3
+ *
+ * @see {@link concat}
+ * @see {@link concatAll}
+ * @see {@link concatMapTo}
+ * @see {@link exhaustMap}
+ * @see {@link mergeMap}
+ * @see {@link switchMap}
+ *
+ * @param {function(value: T, ?index: number): ObservableInput} project A function
+ * that, when applied to an item emitted by the source Observable, returns an
+ * Observable.
+ * @param {function(outerValue: T, innerValue: I, outerIndex: number, innerIndex: number): any} [resultSelector]
+ * A function to produce the value on the output Observable based on the values
+ * and the indices of the source (outer) emission and the inner Observable
+ * emission. The arguments passed to this function are:
+ * - `outerValue`: the value that came from the source
+ * - `innerValue`: the value that came from the projected Observable
+ * - `outerIndex`: the "index" of the value that came from the source
+ * - `innerIndex`: the "index" of the value from the projected Observable
+ * @return {Observable} An Observable that emits the result of applying the
+ * projection function (and the optional `resultSelector`) to each item emitted
+ * by the source Observable and taking values from each projected inner
+ * Observable sequentially.
+ * @method concatMap
+ * @owner Observable
+ */
+function concatMap(project, resultSelector) {
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mergeMap__["a" /* mergeMap */])(project, resultSelector, 1);
+}
+//# sourceMappingURL=concatMap.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/defaultIfEmpty.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = defaultIfEmpty;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START .._Subscriber PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/* tslint:enable:max-line-length */
+/**
+ * Emits a given value if the source Observable completes without emitting any
+ * `next` value, otherwise mirrors the source Observable.
+ *
+ * <span class="informal">If the source Observable turns out to be empty, then
+ * this operator will emit a default value.</span>
+ *
+ * <img src="./img/defaultIfEmpty.png" width="100%">
+ *
+ * `defaultIfEmpty` emits the values emitted by the source Observable or a
+ * specified default value if the source Observable is empty (completes without
+ * having emitted any `next` value).
+ *
+ * @example <caption>If no clicks happen in 5 seconds, then emit "no clicks"</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var clicksBeforeFive = clicks.takeUntil(Rx.Observable.interval(5000));
+ * var result = clicksBeforeFive.defaultIfEmpty('no clicks');
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link empty}
+ * @see {@link last}
+ *
+ * @param {any} [defaultValue=null] The default value used if the source
+ * Observable is empty.
+ * @return {Observable} An Observable that emits either the specified
+ * `defaultValue` if the source Observable emits no items, or the values emitted
+ * by the source Observable.
+ * @method defaultIfEmpty
+ * @owner Observable
+ */
+function defaultIfEmpty(defaultValue) {
+    if (defaultValue === void 0) {
+        defaultValue = null;
+    }
+    return function (source) { return source.lift(new DefaultIfEmptyOperator(defaultValue)); };
+}
+var DefaultIfEmptyOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function DefaultIfEmptyOperator(defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+    DefaultIfEmptyOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new DefaultIfEmptySubscriber(subscriber, this.defaultValue));
+    };
+    return DefaultIfEmptyOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var DefaultIfEmptySubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(DefaultIfEmptySubscriber, _super);
+    function DefaultIfEmptySubscriber(destination, defaultValue) {
+        _super.call(this, destination);
+        this.defaultValue = defaultValue;
+        this.isEmpty = true;
+    }
+    DefaultIfEmptySubscriber.prototype._next = function (value) {
+        this.isEmpty = false;
+        this.destination.next(value);
+    };
+    DefaultIfEmptySubscriber.prototype._complete = function () {
+        if (this.isEmpty) {
+            this.destination.next(this.defaultValue);
+        }
+        this.destination.complete();
+    };
+    return DefaultIfEmptySubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=defaultIfEmpty.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/every.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = every;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START .._Subscriber PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/**
+ * Returns an Observable that emits whether or not every item of the source satisfies the condition specified.
+ *
+ * @example <caption>A simple example emitting true if all elements are less than 5, false otherwise</caption>
+ *  Observable.of(1, 2, 3, 4, 5, 6)
+ *     .every(x => x < 5)
+ *     .subscribe(x => console.log(x)); // -> false
+ *
+ * @param {function} predicate A function for determining if an item meets a specified condition.
+ * @param {any} [thisArg] Optional object to use for `this` in the callback.
+ * @return {Observable} An Observable of booleans that determines if all items of the source Observable meet the condition specified.
+ * @method every
+ * @owner Observable
+ */
+function every(predicate, thisArg) {
+    return function (source) { return source.lift(new EveryOperator(predicate, thisArg, source)); };
+}
+var EveryOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function EveryOperator(predicate, thisArg, source) {
+        this.predicate = predicate;
+        this.thisArg = thisArg;
+        this.source = source;
+    }
+    EveryOperator.prototype.call = function (observer, source) {
+        return source.subscribe(new EverySubscriber(observer, this.predicate, this.thisArg, this.source));
+    };
+    return EveryOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var EverySubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(EverySubscriber, _super);
+    function EverySubscriber(destination, predicate, thisArg, source) {
+        _super.call(this, destination);
+        this.predicate = predicate;
+        this.thisArg = thisArg;
+        this.source = source;
+        this.index = 0;
+        this.thisArg = thisArg || this;
+    }
+    EverySubscriber.prototype.notifyComplete = function (everyValueMatch) {
+        this.destination.next(everyValueMatch);
+        this.destination.complete();
+    };
+    EverySubscriber.prototype._next = function (value) {
+        var result = false;
+        try {
+            result = this.predicate.call(this.thisArg, value, this.index++, this.source);
+        }
+        catch (err) {
+            this.destination.error(err);
+            return;
+        }
+        if (!result) {
+            this.notifyComplete(false);
+        }
+    };
+    EverySubscriber.prototype._complete = function () {
+        this.notifyComplete(true);
+    };
+    return EverySubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=every.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/filter.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = filter;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START .._Subscriber PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/* tslint:enable:max-line-length */
+/**
+ * Filter items emitted by the source Observable by only emitting those that
+ * satisfy a specified predicate.
+ *
+ * <span class="informal">Like
+ * [Array.prototype.filter()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter),
+ * it only emits a value from the source if it passes a criterion function.</span>
+ *
+ * <img src="./img/filter.png" width="100%">
+ *
+ * Similar to the well-known `Array.prototype.filter` method, this operator
+ * takes values from the source Observable, passes them through a `predicate`
+ * function and only emits those values that yielded `true`.
+ *
+ * @example <caption>Emit only click events whose target was a DIV element</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var clicksOnDivs = clicks.filter(ev => ev.target.tagName === 'DIV');
+ * clicksOnDivs.subscribe(x => console.log(x));
+ *
+ * @see {@link distinct}
+ * @see {@link distinctUntilChanged}
+ * @see {@link distinctUntilKeyChanged}
+ * @see {@link ignoreElements}
+ * @see {@link partition}
+ * @see {@link skip}
+ *
+ * @param {function(value: T, index: number): boolean} predicate A function that
+ * evaluates each value emitted by the source Observable. If it returns `true`,
+ * the value is emitted, if `false` the value is not passed to the output
+ * Observable. The `index` parameter is the number `i` for the i-th source
+ * emission that has happened since the subscription, starting from the number
+ * `0`.
+ * @param {any} [thisArg] An optional argument to determine the value of `this`
+ * in the `predicate` function.
+ * @return {Observable} An Observable of values from the source that were
+ * allowed by the `predicate` function.
+ * @method filter
+ * @owner Observable
+ */
+function filter(predicate, thisArg) {
+    return function filterOperatorFunction(source) {
+        return source.lift(new FilterOperator(predicate, thisArg));
+    };
+}
+var FilterOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function FilterOperator(predicate, thisArg) {
+        this.predicate = predicate;
+        this.thisArg = thisArg;
+    }
+    FilterOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new FilterSubscriber(subscriber, this.predicate, this.thisArg));
+    };
+    return FilterOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var FilterSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(FilterSubscriber, _super);
+    function FilterSubscriber(destination, predicate, thisArg) {
+        _super.call(this, destination);
+        this.predicate = predicate;
+        this.thisArg = thisArg;
+        this.count = 0;
+    }
+    // the try catch block below is left specifically for
+    // optimization and perf reasons. a tryCatcher is not necessary here.
+    FilterSubscriber.prototype._next = function (value) {
+        var result;
+        try {
+            result = this.predicate.call(this.thisArg, value, this.count++);
+        }
+        catch (err) {
+            this.destination.error(err);
+            return;
+        }
+        if (result) {
+            this.destination.next(value);
+        }
+    };
+    return FilterSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=filter.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/first.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = first;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_EmptyError__ = __webpack_require__("../../../../rxjs/_esm5/util/EmptyError.js");
+/** PURE_IMPORTS_START .._Subscriber,.._util_EmptyError PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+
+/**
+ * Emits only the first value (or the first value that meets some condition)
+ * emitted by the source Observable.
+ *
+ * <span class="informal">Emits only the first value. Or emits only the first
+ * value that passes some test.</span>
+ *
+ * <img src="./img/first.png" width="100%">
+ *
+ * If called with no arguments, `first` emits the first value of the source
+ * Observable, then completes. If called with a `predicate` function, `first`
+ * emits the first value of the source that matches the specified condition. It
+ * may also take a `resultSelector` function to produce the output value from
+ * the input value, and a `defaultValue` to emit in case the source completes
+ * before it is able to emit a valid value. Throws an error if `defaultValue`
+ * was not provided and a matching element is not found.
+ *
+ * @example <caption>Emit only the first click that happens on the DOM</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.first();
+ * result.subscribe(x => console.log(x));
+ *
+ * @example <caption>Emits the first click that happens on a DIV</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var result = clicks.first(ev => ev.target.tagName === 'DIV');
+ * result.subscribe(x => console.log(x));
+ *
+ * @see {@link filter}
+ * @see {@link find}
+ * @see {@link take}
+ *
+ * @throws {EmptyError} Delivers an EmptyError to the Observer's `error`
+ * callback if the Observable completes before any `next` notification was sent.
+ *
+ * @param {function(value: T, index: number, source: Observable<T>): boolean} [predicate]
+ * An optional function called with each item to test for condition matching.
+ * @param {function(value: T, index: number): R} [resultSelector] A function to
+ * produce the value on the output Observable based on the values
+ * and the indices of the source Observable. The arguments passed to this
+ * function are:
+ * - `value`: the value that was emitted on the source.
+ * - `index`: the "index" of the value from the source.
+ * @param {R} [defaultValue] The default value emitted in case no valid value
+ * was found on the source.
+ * @return {Observable<T|R>} An Observable of the first item that matches the
+ * condition.
+ * @method first
+ * @owner Observable
+ */
+function first(predicate, resultSelector, defaultValue) {
+    return function (source) { return source.lift(new FirstOperator(predicate, resultSelector, defaultValue, source)); };
+}
+var FirstOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function FirstOperator(predicate, resultSelector, defaultValue, source) {
         this.predicate = predicate;
         this.resultSelector = resultSelector;
@@ -24204,7 +26452,7 @@ var FirstOperator = (function () {
  * @ignore
  * @extends {Ignored}
  */
-var FirstSubscriber = (function (_super) {
+var FirstSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(FirstSubscriber, _super);
     function FirstSubscriber(destination, predicate, resultSelector, defaultValue, source) {
         _super.call(this, destination);
@@ -24272,27 +26520,33 @@ var FirstSubscriber = (function (_super) {
             destination.complete();
         }
         else if (!this.hasCompleted) {
-            destination.error(new EmptyError_1.EmptyError);
+            destination.error(new __WEBPACK_IMPORTED_MODULE_1__util_EmptyError__["a" /* EmptyError */]);
         }
     };
     return FirstSubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=first.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=first.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/last.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/last.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (immutable) */ __webpack_exports__["a"] = last;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_EmptyError__ = __webpack_require__("../../../../rxjs/_esm5/util/EmptyError.js");
+/** PURE_IMPORTS_START .._Subscriber,.._util_EmptyError PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
-var EmptyError_1 = __webpack_require__("../../../../rxjs/util/EmptyError.js");
+
+
 /* tslint:enable:max-line-length */
 /**
  * Returns an Observable that emits only the last item emitted by the source Observable.
@@ -24312,10 +26566,9 @@ var EmptyError_1 = __webpack_require__("../../../../rxjs/util/EmptyError.js");
  * @owner Observable
  */
 function last(predicate, resultSelector, defaultValue) {
-    return this.lift(new LastOperator(predicate, resultSelector, defaultValue, this));
+    return function (source) { return source.lift(new LastOperator(predicate, resultSelector, defaultValue, source)); };
 }
-exports.last = last;
-var LastOperator = (function () {
+var LastOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function LastOperator(predicate, resultSelector, defaultValue, source) {
         this.predicate = predicate;
         this.resultSelector = resultSelector;
@@ -24332,7 +26585,7 @@ var LastOperator = (function () {
  * @ignore
  * @extends {Ignored}
  */
-var LastSubscriber = (function (_super) {
+var LastSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(LastSubscriber, _super);
     function LastSubscriber(destination, predicate, resultSelector, defaultValue, source) {
         _super.call(this, destination);
@@ -24398,26 +26651,32 @@ var LastSubscriber = (function (_super) {
             destination.complete();
         }
         else {
-            destination.error(new EmptyError_1.EmptyError);
+            destination.error(new __WEBPACK_IMPORTED_MODULE_1__util_EmptyError__["a" /* EmptyError */]);
         }
     };
     return LastSubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=last.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=last.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/map.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/map.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (immutable) */ __webpack_exports__["a"] = map;
+/* unused harmony export MapOperator */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START .._Subscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
+
 /**
  * Applies a given `project` function to each value emitted by the source
  * Observable, and emits the resulting values as an Observable.
@@ -24452,13 +26711,14 @@ var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
  * @owner Observable
  */
 function map(project, thisArg) {
-    if (typeof project !== 'function') {
-        throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
-    }
-    return this.lift(new MapOperator(project, thisArg));
+    return function mapOperation(source) {
+        if (typeof project !== 'function') {
+            throw new TypeError('argument is not a function. Are you looking for `mapTo()`?');
+        }
+        return source.lift(new MapOperator(project, thisArg));
+    };
 }
-exports.map = map;
-var MapOperator = (function () {
+var MapOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function MapOperator(project, thisArg) {
         this.project = project;
         this.thisArg = thisArg;
@@ -24468,13 +26728,12 @@ var MapOperator = (function () {
     };
     return MapOperator;
 }());
-exports.MapOperator = MapOperator;
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var MapSubscriber = (function (_super) {
+var MapSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(MapSubscriber, _super);
     function MapSubscriber(destination, project, thisArg) {
         _super.call(this, destination);
@@ -24496,75 +26755,35 @@ var MapSubscriber = (function (_super) {
         this.destination.next(result);
     };
     return MapSubscriber;
-}(Subscriber_1.Subscriber));
-//# sourceMappingURL=map.js.map
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=map.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/merge.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/merge.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = merge;
+/* harmony export (immutable) */ __webpack_exports__["b"] = mergeStatic;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__observable_ArrayObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ArrayObservable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mergeAll__ = __webpack_require__("../../../../rxjs/_esm5/operators/mergeAll.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_isScheduler__ = __webpack_require__("../../../../rxjs/_esm5/util/isScheduler.js");
+/** PURE_IMPORTS_START .._Observable,.._observable_ArrayObservable,._mergeAll,.._util_isScheduler PURE_IMPORTS_END */
 
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var ArrayObservable_1 = __webpack_require__("../../../../rxjs/observable/ArrayObservable.js");
-var mergeAll_1 = __webpack_require__("../../../../rxjs/operator/mergeAll.js");
-var isScheduler_1 = __webpack_require__("../../../../rxjs/util/isScheduler.js");
+
+
+
 /* tslint:enable:max-line-length */
-/**
- * Creates an output Observable which concurrently emits all values from every
- * given input Observable.
- *
- * <span class="informal">Flattens multiple Observables together by blending
- * their values into one Observable.</span>
- *
- * <img src="./img/merge.png" width="100%">
- *
- * `merge` subscribes to each given input Observable (either the source or an
- * Observable given as argument), and simply forwards (without doing any
- * transformation) all the values from all the input Observables to the output
- * Observable. The output Observable only completes once all input Observables
- * have completed. Any error delivered by an input Observable will be immediately
- * emitted on the output Observable.
- *
- * @example <caption>Merge together two Observables: 1s interval and clicks</caption>
- * var clicks = Rx.Observable.fromEvent(document, 'click');
- * var timer = Rx.Observable.interval(1000);
- * var clicksOrTimer = clicks.merge(timer);
- * clicksOrTimer.subscribe(x => console.log(x));
- *
- * @example <caption>Merge together 3 Observables, but only 2 run concurrently</caption>
- * var timer1 = Rx.Observable.interval(1000).take(10);
- * var timer2 = Rx.Observable.interval(2000).take(6);
- * var timer3 = Rx.Observable.interval(500).take(10);
- * var concurrent = 2; // the argument
- * var merged = timer1.merge(timer2, timer3, concurrent);
- * merged.subscribe(x => console.log(x));
- *
- * @see {@link mergeAll}
- * @see {@link mergeMap}
- * @see {@link mergeMapTo}
- * @see {@link mergeScan}
- *
- * @param {ObservableInput} other An input Observable to merge with the source
- * Observable. More than one input Observables may be given as argument.
- * @param {number} [concurrent=Number.POSITIVE_INFINITY] Maximum number of input
- * Observables being subscribed to concurrently.
- * @param {Scheduler} [scheduler=null] The IScheduler to use for managing
- * concurrency of input Observables.
- * @return {Observable} An Observable that emits items that are the result of
- * every input Observable.
- * @method merge
- * @owner Observable
- */
 function merge() {
     var observables = [];
     for (var _i = 0; _i < arguments.length; _i++) {
         observables[_i - 0] = arguments[_i];
     }
-    return this.lift.call(mergeStatic.apply(void 0, [this].concat(observables)));
+    return function (source) { return source.lift.call(mergeStatic.apply(void 0, [source].concat(observables))); };
 }
-exports.merge = merge;
 /* tslint:enable:max-line-length */
 /**
  * Creates an output Observable which concurrently emits all values from every
@@ -24634,7 +26853,7 @@ function mergeStatic() {
     var concurrent = Number.POSITIVE_INFINITY;
     var scheduler = null;
     var last = observables[observables.length - 1];
-    if (isScheduler_1.isScheduler(last)) {
+    if (Object(__WEBPACK_IMPORTED_MODULE_3__util_isScheduler__["a" /* isScheduler */])(last)) {
         scheduler = observables.pop();
         if (observables.length > 1 && typeof observables[observables.length - 1] === 'number') {
             concurrent = observables.pop();
@@ -24643,28 +26862,26 @@ function mergeStatic() {
     else if (typeof last === 'number') {
         concurrent = observables.pop();
     }
-    if (scheduler === null && observables.length === 1 && observables[0] instanceof Observable_1.Observable) {
+    if (scheduler === null && observables.length === 1 && observables[0] instanceof __WEBPACK_IMPORTED_MODULE_0__Observable__["a" /* Observable */]) {
         return observables[0];
     }
-    return new ArrayObservable_1.ArrayObservable(observables, scheduler).lift(new mergeAll_1.MergeAllOperator(concurrent));
+    return Object(__WEBPACK_IMPORTED_MODULE_2__mergeAll__["a" /* mergeAll */])(concurrent)(new __WEBPACK_IMPORTED_MODULE_1__observable_ArrayObservable__["a" /* ArrayObservable */](observables, scheduler));
 }
-exports.mergeStatic = mergeStatic;
-//# sourceMappingURL=merge.js.map
+//# sourceMappingURL=merge.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/mergeAll.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/mergeAll.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = mergeAll;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mergeMap__ = __webpack_require__("../../../../rxjs/_esm5/operators/mergeMap.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_identity__ = __webpack_require__("../../../../rxjs/_esm5/util/identity.js");
+/** PURE_IMPORTS_START ._mergeMap,.._util_identity PURE_IMPORTS_END */
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var OuterSubscriber_1 = __webpack_require__("../../../../rxjs/OuterSubscriber.js");
-var subscribeToResult_1 = __webpack_require__("../../../../rxjs/util/subscribeToResult.js");
+
 /**
  * Converts a higher-order Observable into a first-order Observable which
  * concurrently delivers all values that are emitted on the inner Observables.
@@ -24710,79 +26927,35 @@ var subscribeToResult_1 = __webpack_require__("../../../../rxjs/util/subscribeTo
  * @owner Observable
  */
 function mergeAll(concurrent) {
-    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
-    return this.lift(new MergeAllOperator(concurrent));
+    if (concurrent === void 0) {
+        concurrent = Number.POSITIVE_INFINITY;
+    }
+    return Object(__WEBPACK_IMPORTED_MODULE_0__mergeMap__["a" /* mergeMap */])(__WEBPACK_IMPORTED_MODULE_1__util_identity__["a" /* identity */], null, concurrent);
 }
-exports.mergeAll = mergeAll;
-var MergeAllOperator = (function () {
-    function MergeAllOperator(concurrent) {
-        this.concurrent = concurrent;
-    }
-    MergeAllOperator.prototype.call = function (observer, source) {
-        return source.subscribe(new MergeAllSubscriber(observer, this.concurrent));
-    };
-    return MergeAllOperator;
-}());
-exports.MergeAllOperator = MergeAllOperator;
-/**
- * We need this JSDoc comment for affecting ESDoc.
- * @ignore
- * @extends {Ignored}
- */
-var MergeAllSubscriber = (function (_super) {
-    __extends(MergeAllSubscriber, _super);
-    function MergeAllSubscriber(destination, concurrent) {
-        _super.call(this, destination);
-        this.concurrent = concurrent;
-        this.hasCompleted = false;
-        this.buffer = [];
-        this.active = 0;
-    }
-    MergeAllSubscriber.prototype._next = function (observable) {
-        if (this.active < this.concurrent) {
-            this.active++;
-            this.add(subscribeToResult_1.subscribeToResult(this, observable));
-        }
-        else {
-            this.buffer.push(observable);
-        }
-    };
-    MergeAllSubscriber.prototype._complete = function () {
-        this.hasCompleted = true;
-        if (this.active === 0 && this.buffer.length === 0) {
-            this.destination.complete();
-        }
-    };
-    MergeAllSubscriber.prototype.notifyComplete = function (innerSub) {
-        var buffer = this.buffer;
-        this.remove(innerSub);
-        this.active--;
-        if (buffer.length > 0) {
-            this._next(buffer.shift());
-        }
-        else if (this.active === 0 && this.hasCompleted) {
-            this.destination.complete();
-        }
-    };
-    return MergeAllSubscriber;
-}(OuterSubscriber_1.OuterSubscriber));
-exports.MergeAllSubscriber = MergeAllSubscriber;
-//# sourceMappingURL=mergeAll.js.map
+//# sourceMappingURL=mergeAll.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/mergeMap.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/mergeMap.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (immutable) */ __webpack_exports__["a"] = mergeMap;
+/* unused harmony export MergeMapOperator */
+/* unused harmony export MergeMapSubscriber */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_subscribeToResult__ = __webpack_require__("../../../../rxjs/_esm5/util/subscribeToResult.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__OuterSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/OuterSubscriber.js");
+/** PURE_IMPORTS_START .._util_subscribeToResult,.._OuterSubscriber PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var subscribeToResult_1 = __webpack_require__("../../../../rxjs/util/subscribeToResult.js");
-var OuterSubscriber_1 = __webpack_require__("../../../../rxjs/OuterSubscriber.js");
+
+
 /* tslint:enable:max-line-length */
 /**
  * Projects each source value to an Observable which is merged in the output
@@ -24843,17 +27016,22 @@ var OuterSubscriber_1 = __webpack_require__("../../../../rxjs/OuterSubscriber.js
  * @owner Observable
  */
 function mergeMap(project, resultSelector, concurrent) {
-    if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
-    if (typeof resultSelector === 'number') {
-        concurrent = resultSelector;
-        resultSelector = null;
+    if (concurrent === void 0) {
+        concurrent = Number.POSITIVE_INFINITY;
     }
-    return this.lift(new MergeMapOperator(project, resultSelector, concurrent));
+    return function mergeMapOperatorFunction(source) {
+        if (typeof resultSelector === 'number') {
+            concurrent = resultSelector;
+            resultSelector = null;
+        }
+        return source.lift(new MergeMapOperator(project, resultSelector, concurrent));
+    };
 }
-exports.mergeMap = mergeMap;
-var MergeMapOperator = (function () {
+var MergeMapOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function MergeMapOperator(project, resultSelector, concurrent) {
-        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+        if (concurrent === void 0) {
+            concurrent = Number.POSITIVE_INFINITY;
+        }
         this.project = project;
         this.resultSelector = resultSelector;
         this.concurrent = concurrent;
@@ -24863,16 +27041,17 @@ var MergeMapOperator = (function () {
     };
     return MergeMapOperator;
 }());
-exports.MergeMapOperator = MergeMapOperator;
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var MergeMapSubscriber = (function (_super) {
+var MergeMapSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(MergeMapSubscriber, _super);
     function MergeMapSubscriber(destination, project, resultSelector, concurrent) {
-        if (concurrent === void 0) { concurrent = Number.POSITIVE_INFINITY; }
+        if (concurrent === void 0) {
+            concurrent = Number.POSITIVE_INFINITY;
+        }
         _super.call(this, destination);
         this.project = project;
         this.resultSelector = resultSelector;
@@ -24904,7 +27083,7 @@ var MergeMapSubscriber = (function (_super) {
         this._innerSub(result, value, index);
     };
     MergeMapSubscriber.prototype._innerSub = function (ish, value, index) {
-        this.add(subscribeToResult_1.subscribeToResult(this, ish, value, index));
+        this.add(Object(__WEBPACK_IMPORTED_MODULE_0__util_subscribeToResult__["a" /* subscribeToResult */])(this, ish, value, index));
     };
     MergeMapSubscriber.prototype._complete = function () {
         this.hasCompleted = true;
@@ -24943,18 +27122,21 @@ var MergeMapSubscriber = (function (_super) {
         }
     };
     return MergeMapSubscriber;
-}(OuterSubscriber_1.OuterSubscriber));
-exports.MergeMapSubscriber = MergeMapSubscriber;
-//# sourceMappingURL=mergeMap.js.map
+}(__WEBPACK_IMPORTED_MODULE_1__OuterSubscriber__["a" /* OuterSubscriber */]));
+//# sourceMappingURL=mergeMap.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/multicast.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/multicast.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = multicast;
+/* unused harmony export MulticastOperator */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__observable_ConnectableObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/ConnectableObservable.js");
+/** PURE_IMPORTS_START .._observable_ConnectableObservable PURE_IMPORTS_END */
 
-var ConnectableObservable_1 = __webpack_require__("../../../../rxjs/observable/ConnectableObservable.js");
 /* tslint:enable:max-line-length */
 /**
  * Returns an Observable that emits the results of invoking a specified selector on items
@@ -24976,25 +27158,26 @@ var ConnectableObservable_1 = __webpack_require__("../../../../rxjs/observable/C
  * @owner Observable
  */
 function multicast(subjectOrSubjectFactory, selector) {
-    var subjectFactory;
-    if (typeof subjectOrSubjectFactory === 'function') {
-        subjectFactory = subjectOrSubjectFactory;
-    }
-    else {
-        subjectFactory = function subjectFactory() {
-            return subjectOrSubjectFactory;
-        };
-    }
-    if (typeof selector === 'function') {
-        return this.lift(new MulticastOperator(subjectFactory, selector));
-    }
-    var connectable = Object.create(this, ConnectableObservable_1.connectableObservableDescriptor);
-    connectable.source = this;
-    connectable.subjectFactory = subjectFactory;
-    return connectable;
+    return function multicastOperatorFunction(source) {
+        var subjectFactory;
+        if (typeof subjectOrSubjectFactory === 'function') {
+            subjectFactory = subjectOrSubjectFactory;
+        }
+        else {
+            subjectFactory = function subjectFactory() {
+                return subjectOrSubjectFactory;
+            };
+        }
+        if (typeof selector === 'function') {
+            return source.lift(new MulticastOperator(subjectFactory, selector));
+        }
+        var connectable = Object.create(source, __WEBPACK_IMPORTED_MODULE_0__observable_ConnectableObservable__["a" /* connectableObservableDescriptor */]);
+        connectable.source = source;
+        connectable.subjectFactory = subjectFactory;
+        return connectable;
+    };
 }
-exports.multicast = multicast;
-var MulticastOperator = (function () {
+var MulticastOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function MulticastOperator(subjectFactory, selector) {
         this.subjectFactory = subjectFactory;
         this.selector = selector;
@@ -25008,23 +27191,31 @@ var MulticastOperator = (function () {
     };
     return MulticastOperator;
 }());
-exports.MulticastOperator = MulticastOperator;
-//# sourceMappingURL=multicast.js.map
+//# sourceMappingURL=multicast.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/observeOn.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/observeOn.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* unused harmony export observeOn */
+/* unused harmony export ObserveOnOperator */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ObserveOnSubscriber; });
+/* unused harmony export ObserveOnMessage */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__Notification__ = __webpack_require__("../../../../rxjs/_esm5/Notification.js");
+/** PURE_IMPORTS_START .._Subscriber,.._Notification PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
-var Notification_1 = __webpack_require__("../../../../rxjs/Notification.js");
+
+
 /**
  *
  * Re-emits all notifications from source Observable with specified scheduler.
@@ -25072,13 +27263,18 @@ var Notification_1 = __webpack_require__("../../../../rxjs/Notification.js");
  * @owner Observable
  */
 function observeOn(scheduler, delay) {
-    if (delay === void 0) { delay = 0; }
-    return this.lift(new ObserveOnOperator(scheduler, delay));
+    if (delay === void 0) {
+        delay = 0;
+    }
+    return function observeOnOperatorFunction(source) {
+        return source.lift(new ObserveOnOperator(scheduler, delay));
+    };
 }
-exports.observeOn = observeOn;
-var ObserveOnOperator = (function () {
+var ObserveOnOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function ObserveOnOperator(scheduler, delay) {
-        if (delay === void 0) { delay = 0; }
+        if (delay === void 0) {
+            delay = 0;
+        }
         this.scheduler = scheduler;
         this.delay = delay;
     }
@@ -25087,16 +27283,17 @@ var ObserveOnOperator = (function () {
     };
     return ObserveOnOperator;
 }());
-exports.ObserveOnOperator = ObserveOnOperator;
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var ObserveOnSubscriber = (function (_super) {
+var ObserveOnSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ObserveOnSubscriber, _super);
     function ObserveOnSubscriber(destination, scheduler, delay) {
-        if (delay === void 0) { delay = 0; }
+        if (delay === void 0) {
+            delay = 0;
+        }
         _super.call(this, destination);
         this.scheduler = scheduler;
         this.delay = delay;
@@ -25110,40 +27307,42 @@ var ObserveOnSubscriber = (function (_super) {
         this.add(this.scheduler.schedule(ObserveOnSubscriber.dispatch, this.delay, new ObserveOnMessage(notification, this.destination)));
     };
     ObserveOnSubscriber.prototype._next = function (value) {
-        this.scheduleMessage(Notification_1.Notification.createNext(value));
+        this.scheduleMessage(__WEBPACK_IMPORTED_MODULE_1__Notification__["a" /* Notification */].createNext(value));
     };
     ObserveOnSubscriber.prototype._error = function (err) {
-        this.scheduleMessage(Notification_1.Notification.createError(err));
+        this.scheduleMessage(__WEBPACK_IMPORTED_MODULE_1__Notification__["a" /* Notification */].createError(err));
     };
     ObserveOnSubscriber.prototype._complete = function () {
-        this.scheduleMessage(Notification_1.Notification.createComplete());
+        this.scheduleMessage(__WEBPACK_IMPORTED_MODULE_1__Notification__["a" /* Notification */].createComplete());
     };
     return ObserveOnSubscriber;
-}(Subscriber_1.Subscriber));
-exports.ObserveOnSubscriber = ObserveOnSubscriber;
-var ObserveOnMessage = (function () {
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+var ObserveOnMessage = /*@__PURE__*/ (/*@__PURE__*/ function () {
     function ObserveOnMessage(notification, destination) {
         this.notification = notification;
         this.destination = destination;
     }
     return ObserveOnMessage;
 }());
-exports.ObserveOnMessage = ObserveOnMessage;
-//# sourceMappingURL=observeOn.js.map
+//# sourceMappingURL=observeOn.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/reduce.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/reduce.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = reduce;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__scan__ = __webpack_require__("../../../../rxjs/_esm5/operators/scan.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__takeLast__ = __webpack_require__("../../../../rxjs/_esm5/operators/takeLast.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__defaultIfEmpty__ = __webpack_require__("../../../../rxjs/_esm5/operators/defaultIfEmpty.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__util_pipe__ = __webpack_require__("../../../../rxjs/_esm5/util/pipe.js");
+/** PURE_IMPORTS_START ._scan,._takeLast,._defaultIfEmpty,.._util_pipe PURE_IMPORTS_END */
 
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
+
+
+
 /* tslint:enable:max-line-length */
 /**
  * Applies an accumulator function over the source Observable, and returns the
@@ -25190,6 +27389,177 @@ var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
  * @owner Observable
  */
 function reduce(accumulator, seed) {
+    // providing a seed of `undefined` *should* be valid and trigger
+    // hasSeed! so don't use `seed !== undefined` checks!
+    // For this reason, we have to check it here at the original call site
+    // otherwise inside Operator/Subscriber we won't know if `undefined`
+    // means they didn't provide anything or if they literally provided `undefined`
+    if (arguments.length >= 2) {
+        return function reduceOperatorFunctionWithSeed(source) {
+            return Object(__WEBPACK_IMPORTED_MODULE_3__util_pipe__["a" /* pipe */])(Object(__WEBPACK_IMPORTED_MODULE_0__scan__["a" /* scan */])(accumulator, seed), Object(__WEBPACK_IMPORTED_MODULE_1__takeLast__["a" /* takeLast */])(1), Object(__WEBPACK_IMPORTED_MODULE_2__defaultIfEmpty__["a" /* defaultIfEmpty */])(seed))(source);
+        };
+    }
+    return function reduceOperatorFunction(source) {
+        return Object(__WEBPACK_IMPORTED_MODULE_3__util_pipe__["a" /* pipe */])(Object(__WEBPACK_IMPORTED_MODULE_0__scan__["a" /* scan */])(function (acc, value, index) {
+            return accumulator(acc, value, index + 1);
+        }), Object(__WEBPACK_IMPORTED_MODULE_1__takeLast__["a" /* takeLast */])(1))(source);
+    };
+}
+//# sourceMappingURL=reduce.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/refCount.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = refCount;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START .._Subscriber PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+function refCount() {
+    return function refCountOperatorFunction(source) {
+        return source.lift(new RefCountOperator(source));
+    };
+}
+var RefCountOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function RefCountOperator(connectable) {
+        this.connectable = connectable;
+    }
+    RefCountOperator.prototype.call = function (subscriber, source) {
+        var connectable = this.connectable;
+        connectable._refCount++;
+        var refCounter = new RefCountSubscriber(subscriber, connectable);
+        var subscription = source.subscribe(refCounter);
+        if (!refCounter.closed) {
+            refCounter.connection = connectable.connect();
+        }
+        return subscription;
+    };
+    return RefCountOperator;
+}());
+var RefCountSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(RefCountSubscriber, _super);
+    function RefCountSubscriber(destination, connectable) {
+        _super.call(this, destination);
+        this.connectable = connectable;
+    }
+    RefCountSubscriber.prototype._unsubscribe = function () {
+        var connectable = this.connectable;
+        if (!connectable) {
+            this.connection = null;
+            return;
+        }
+        this.connectable = null;
+        var refCount = connectable._refCount;
+        if (refCount <= 0) {
+            this.connection = null;
+            return;
+        }
+        connectable._refCount = refCount - 1;
+        if (refCount > 1) {
+            this.connection = null;
+            return;
+        }
+        ///
+        // Compare the local RefCountSubscriber's connection Subscription to the
+        // connection Subscription on the shared ConnectableObservable. In cases
+        // where the ConnectableObservable source synchronously emits values, and
+        // the RefCountSubscriber's downstream Observers synchronously unsubscribe,
+        // execution continues to here before the RefCountOperator has a chance to
+        // supply the RefCountSubscriber with the shared connection Subscription.
+        // For example:
+        // ```
+        // Observable.range(0, 10)
+        //   .publish()
+        //   .refCount()
+        //   .take(5)
+        //   .subscribe();
+        // ```
+        // In order to account for this case, RefCountSubscriber should only dispose
+        // the ConnectableObservable's shared connection Subscription if the
+        // connection Subscription exists, *and* either:
+        //   a. RefCountSubscriber doesn't have a reference to the shared connection
+        //      Subscription yet, or,
+        //   b. RefCountSubscriber's connection Subscription reference is identical
+        //      to the shared connection Subscription
+        ///
+        var connection = this.connection;
+        var sharedConnection = connectable._connection;
+        this.connection = null;
+        if (sharedConnection && (!connection || sharedConnection === connection)) {
+            sharedConnection.unsubscribe();
+        }
+    };
+    return RefCountSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=refCount.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/operators/scan.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = scan;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/** PURE_IMPORTS_START .._Subscriber PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+/* tslint:enable:max-line-length */
+/**
+ * Applies an accumulator function over the source Observable, and returns each
+ * intermediate result, with an optional seed value.
+ *
+ * <span class="informal">It's like {@link reduce}, but emits the current
+ * accumulation whenever the source emits a value.</span>
+ *
+ * <img src="./img/scan.png" width="100%">
+ *
+ * Combines together all values emitted on the source, using an accumulator
+ * function that knows how to join a new source value into the accumulation from
+ * the past. Is similar to {@link reduce}, but emits the intermediate
+ * accumulations.
+ *
+ * Returns an Observable that applies a specified `accumulator` function to each
+ * item emitted by the source Observable. If a `seed` value is specified, then
+ * that value will be used as the initial value for the accumulator. If no seed
+ * value is specified, the first item of the source is used as the seed.
+ *
+ * @example <caption>Count the number of click events</caption>
+ * var clicks = Rx.Observable.fromEvent(document, 'click');
+ * var ones = clicks.mapTo(1);
+ * var seed = 0;
+ * var count = ones.scan((acc, one) => acc + one, seed);
+ * count.subscribe(x => console.log(x));
+ *
+ * @see {@link expand}
+ * @see {@link mergeScan}
+ * @see {@link reduce}
+ *
+ * @param {function(acc: R, value: T, index: number): R} accumulator
+ * The accumulator function called on each source value.
+ * @param {T|R} [seed] The initial accumulation value.
+ * @return {Observable<R>} An observable of the accumulated values.
+ * @method scan
+ * @owner Observable
+ */
+function scan(accumulator, seed) {
     var hasSeed = false;
     // providing a seed of `undefined` *should* be valid and trigger
     // hasSeed! so don't use `seed !== undefined` checks!
@@ -25199,88 +27569,97 @@ function reduce(accumulator, seed) {
     if (arguments.length >= 2) {
         hasSeed = true;
     }
-    return this.lift(new ReduceOperator(accumulator, seed, hasSeed));
+    return function scanOperatorFunction(source) {
+        return source.lift(new ScanOperator(accumulator, seed, hasSeed));
+    };
 }
-exports.reduce = reduce;
-var ReduceOperator = (function () {
-    function ReduceOperator(accumulator, seed, hasSeed) {
-        if (hasSeed === void 0) { hasSeed = false; }
+var ScanOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function ScanOperator(accumulator, seed, hasSeed) {
+        if (hasSeed === void 0) {
+            hasSeed = false;
+        }
         this.accumulator = accumulator;
         this.seed = seed;
         this.hasSeed = hasSeed;
     }
-    ReduceOperator.prototype.call = function (subscriber, source) {
-        return source.subscribe(new ReduceSubscriber(subscriber, this.accumulator, this.seed, this.hasSeed));
+    ScanOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new ScanSubscriber(subscriber, this.accumulator, this.seed, this.hasSeed));
     };
-    return ReduceOperator;
+    return ScanOperator;
 }());
-exports.ReduceOperator = ReduceOperator;
 /**
  * We need this JSDoc comment for affecting ESDoc.
  * @ignore
  * @extends {Ignored}
  */
-var ReduceSubscriber = (function (_super) {
-    __extends(ReduceSubscriber, _super);
-    function ReduceSubscriber(destination, accumulator, seed, hasSeed) {
+var ScanSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(ScanSubscriber, _super);
+    function ScanSubscriber(destination, accumulator, _seed, hasSeed) {
         _super.call(this, destination);
         this.accumulator = accumulator;
+        this._seed = _seed;
         this.hasSeed = hasSeed;
         this.index = 0;
-        this.hasValue = false;
-        this.acc = seed;
-        if (!this.hasSeed) {
-            this.index++;
-        }
     }
-    ReduceSubscriber.prototype._next = function (value) {
-        if (this.hasValue || (this.hasValue = this.hasSeed)) {
-            this._tryReduce(value);
+    Object.defineProperty(ScanSubscriber.prototype, "seed", {
+        get: function () {
+            return this._seed;
+        },
+        set: function (value) {
+            this.hasSeed = true;
+            this._seed = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    ScanSubscriber.prototype._next = function (value) {
+        if (!this.hasSeed) {
+            this.seed = value;
+            this.destination.next(value);
         }
         else {
-            this.acc = value;
-            this.hasValue = true;
+            return this._tryNext(value);
         }
     };
-    ReduceSubscriber.prototype._tryReduce = function (value) {
+    ScanSubscriber.prototype._tryNext = function (value) {
+        var index = this.index++;
         var result;
         try {
-            result = this.accumulator(this.acc, value, this.index++);
+            result = this.accumulator(this.seed, value, index);
         }
         catch (err) {
             this.destination.error(err);
-            return;
         }
-        this.acc = result;
+        this.seed = result;
+        this.destination.next(result);
     };
-    ReduceSubscriber.prototype._complete = function () {
-        if (this.hasValue || this.hasSeed) {
-            this.destination.next(this.acc);
-        }
-        this.destination.complete();
-    };
-    return ReduceSubscriber;
-}(Subscriber_1.Subscriber));
-exports.ReduceSubscriber = ReduceSubscriber;
-//# sourceMappingURL=reduce.js.map
+    return ScanSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=scan.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/operator/share.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/share.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = share;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__multicast__ = __webpack_require__("../../../../rxjs/_esm5/operators/multicast.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__refCount__ = __webpack_require__("../../../../rxjs/_esm5/operators/refCount.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
+/** PURE_IMPORTS_START ._multicast,._refCount,.._Subject PURE_IMPORTS_END */
 
-var multicast_1 = __webpack_require__("../../../../rxjs/operator/multicast.js");
-var Subject_1 = __webpack_require__("../../../../rxjs/Subject.js");
+
+
 function shareSubjectFactory() {
-    return new Subject_1.Subject();
+    return new __WEBPACK_IMPORTED_MODULE_2__Subject__["Subject"]();
 }
 /**
  * Returns a new Observable that multicasts (shares) the original Observable. As long as there is at least one
  * Subscriber this Observable will be subscribed and emitting data. When all subscribers have unsubscribed it will
  * unsubscribe from the source Observable. Because the Observable is multicasting it makes the stream `hot`.
- * This is an alias for .publish().refCount().
+ * This is an alias for .multicast(() => new Subject()).refCount().
  *
  * <img src="./img/share.png" width="100%">
  *
@@ -25289,20 +27668,146 @@ function shareSubjectFactory() {
  * @owner Observable
  */
 function share() {
-    return multicast_1.multicast.call(this, shareSubjectFactory).refCount();
+    return function (source) { return Object(__WEBPACK_IMPORTED_MODULE_1__refCount__["a" /* refCount */])()(Object(__WEBPACK_IMPORTED_MODULE_0__multicast__["a" /* multicast */])(shareSubjectFactory)(source)); };
 }
-exports.share = share;
 ;
-//# sourceMappingURL=share.js.map
+//# sourceMappingURL=share.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/symbol/iterator.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/operators/takeLast.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = takeLast;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__util_ArgumentOutOfRangeError__ = __webpack_require__("../../../../rxjs/_esm5/util/ArgumentOutOfRangeError.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__observable_EmptyObservable__ = __webpack_require__("../../../../rxjs/_esm5/observable/EmptyObservable.js");
+/** PURE_IMPORTS_START .._Subscriber,.._util_ArgumentOutOfRangeError,.._observable_EmptyObservable PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
 
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
+
+
+/**
+ * Emits only the last `count` values emitted by the source Observable.
+ *
+ * <span class="informal">Remembers the latest `count` values, then emits those
+ * only when the source completes.</span>
+ *
+ * <img src="./img/takeLast.png" width="100%">
+ *
+ * `takeLast` returns an Observable that emits at most the last `count` values
+ * emitted by the source Observable. If the source emits fewer than `count`
+ * values then all of its values are emitted. This operator must wait until the
+ * `complete` notification emission from the source in order to emit the `next`
+ * values on the output Observable, because otherwise it is impossible to know
+ * whether or not more values will be emitted on the source. For this reason,
+ * all values are emitted synchronously, followed by the complete notification.
+ *
+ * @example <caption>Take the last 3 values of an Observable with many values</caption>
+ * var many = Rx.Observable.range(1, 100);
+ * var lastThree = many.takeLast(3);
+ * lastThree.subscribe(x => console.log(x));
+ *
+ * @see {@link take}
+ * @see {@link takeUntil}
+ * @see {@link takeWhile}
+ * @see {@link skip}
+ *
+ * @throws {ArgumentOutOfRangeError} When using `takeLast(i)`, it delivers an
+ * ArgumentOutOrRangeError to the Observer's `error` callback if `i < 0`.
+ *
+ * @param {number} count The maximum number of values to emit from the end of
+ * the sequence of values emitted by the source Observable.
+ * @return {Observable<T>} An Observable that emits at most the last count
+ * values emitted by the source Observable.
+ * @method takeLast
+ * @owner Observable
+ */
+function takeLast(count) {
+    return function takeLastOperatorFunction(source) {
+        if (count === 0) {
+            return new __WEBPACK_IMPORTED_MODULE_2__observable_EmptyObservable__["a" /* EmptyObservable */]();
+        }
+        else {
+            return source.lift(new TakeLastOperator(count));
+        }
+    };
+}
+var TakeLastOperator = /*@__PURE__*/ (/*@__PURE__*/ function () {
+    function TakeLastOperator(total) {
+        this.total = total;
+        if (this.total < 0) {
+            throw new __WEBPACK_IMPORTED_MODULE_1__util_ArgumentOutOfRangeError__["a" /* ArgumentOutOfRangeError */];
+        }
+    }
+    TakeLastOperator.prototype.call = function (subscriber, source) {
+        return source.subscribe(new TakeLastSubscriber(subscriber, this.total));
+    };
+    return TakeLastOperator;
+}());
+/**
+ * We need this JSDoc comment for affecting ESDoc.
+ * @ignore
+ * @extends {Ignored}
+ */
+var TakeLastSubscriber = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(TakeLastSubscriber, _super);
+    function TakeLastSubscriber(destination, total) {
+        _super.call(this, destination);
+        this.total = total;
+        this.ring = new Array();
+        this.count = 0;
+    }
+    TakeLastSubscriber.prototype._next = function (value) {
+        var ring = this.ring;
+        var total = this.total;
+        var count = this.count++;
+        if (ring.length < total) {
+            ring.push(value);
+        }
+        else {
+            var index = count % total;
+            ring[index] = value;
+        }
+    };
+    TakeLastSubscriber.prototype._complete = function () {
+        var destination = this.destination;
+        var count = this.count;
+        if (count > 0) {
+            var total = this.count >= this.total ? this.total : this.count;
+            var ring = this.ring;
+            for (var i = 0; i < total; i++) {
+                var idx = (count++) % total;
+                destination.next(ring[idx]);
+            }
+        }
+        destination.complete();
+    };
+    return TakeLastSubscriber;
+}(__WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]));
+//# sourceMappingURL=takeLast.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/symbol/iterator.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export symbolIteratorPonyfill */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return iterator; });
+/* unused harmony export $$iterator */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/** PURE_IMPORTS_START .._util_root PURE_IMPORTS_END */
+
 function symbolIteratorPonyfill(root) {
     var Symbol = root.Symbol;
     if (typeof Symbol === 'function') {
@@ -25332,22 +27837,26 @@ function symbolIteratorPonyfill(root) {
         return '@@iterator';
     }
 }
-exports.symbolIteratorPonyfill = symbolIteratorPonyfill;
-exports.iterator = symbolIteratorPonyfill(root_1.root);
+var iterator = /*@__PURE__*/ symbolIteratorPonyfill(__WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */]);
 /**
  * @deprecated use iterator instead
  */
-exports.$$iterator = exports.iterator;
-//# sourceMappingURL=iterator.js.map
+var $$iterator = iterator;
+//# sourceMappingURL=iterator.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/symbol/observable.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/symbol/observable.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* unused harmony export getSymbolObservable */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return observable; });
+/* unused harmony export $$observable */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/** PURE_IMPORTS_START .._util_root PURE_IMPORTS_END */
 
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
 function getSymbolObservable(context) {
     var $$observable;
     var Symbol = context.Symbol;
@@ -25365,40 +27874,85 @@ function getSymbolObservable(context) {
     }
     return $$observable;
 }
-exports.getSymbolObservable = getSymbolObservable;
-exports.observable = getSymbolObservable(root_1.root);
+var observable = /*@__PURE__*/ getSymbolObservable(__WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */]);
 /**
  * @deprecated use observable instead
  */
-exports.$$observable = exports.observable;
-//# sourceMappingURL=observable.js.map
+var $$observable = observable;
+//# sourceMappingURL=observable.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/symbol/rxSubscriber.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/symbol/rxSubscriber.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return rxSubscriber; });
+/* unused harmony export $$rxSubscriber */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__util_root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/** PURE_IMPORTS_START .._util_root PURE_IMPORTS_END */
 
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
-var Symbol = root_1.root.Symbol;
-exports.rxSubscriber = (typeof Symbol === 'function' && typeof Symbol.for === 'function') ?
-    Symbol.for('rxSubscriber') : '@@rxSubscriber';
+var Symbol = __WEBPACK_IMPORTED_MODULE_0__util_root__["a" /* root */].Symbol;
+var rxSubscriber = (typeof Symbol === 'function' && typeof Symbol.for === 'function') ?
+    /*@__PURE__*/ Symbol.for('rxSubscriber') : '@@rxSubscriber';
 /**
  * @deprecated use rxSubscriber instead
  */
-exports.$$rxSubscriber = exports.rxSubscriber;
-//# sourceMappingURL=rxSubscriber.js.map
+var $$rxSubscriber = rxSubscriber;
+//# sourceMappingURL=rxSubscriber.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/EmptyError.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/ArgumentOutOfRangeError.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArgumentOutOfRangeError; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+/**
+ * An error thrown when an element was queried at a certain index of an
+ * Observable, but no such index or position exists in that sequence.
+ *
+ * @see {@link elementAt}
+ * @see {@link take}
+ * @see {@link takeLast}
+ *
+ * @class ArgumentOutOfRangeError
+ */
+var ArgumentOutOfRangeError = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
+    __extends(ArgumentOutOfRangeError, _super);
+    function ArgumentOutOfRangeError() {
+        var err = _super.call(this, 'argument out of range');
+        this.name = err.name = 'ArgumentOutOfRangeError';
+        this.stack = err.stack;
+        this.message = err.message;
+    }
+    return ArgumentOutOfRangeError;
+}(Error));
+//# sourceMappingURL=ArgumentOutOfRangeError.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/util/EmptyError.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return EmptyError; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+var __extends = (this && this.__extends) || function (d, b) {
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
@@ -25412,7 +27966,7 @@ var __extends = (this && this.__extends) || function (d, b) {
  *
  * @class EmptyError
  */
-var EmptyError = (function (_super) {
+var EmptyError = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(EmptyError, _super);
     function EmptyError() {
         var err = _super.call(this, 'no elements in sequence');
@@ -25422,18 +27976,21 @@ var EmptyError = (function (_super) {
     }
     return EmptyError;
 }(Error));
-exports.EmptyError = EmptyError;
-//# sourceMappingURL=EmptyError.js.map
+//# sourceMappingURL=EmptyError.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/ObjectUnsubscribedError.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/ObjectUnsubscribedError.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ObjectUnsubscribedError; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
@@ -25446,7 +28003,7 @@ var __extends = (this && this.__extends) || function (d, b) {
  *
  * @class ObjectUnsubscribedError
  */
-var ObjectUnsubscribedError = (function (_super) {
+var ObjectUnsubscribedError = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(ObjectUnsubscribedError, _super);
     function ObjectUnsubscribedError() {
         var err = _super.call(this, 'object unsubscribed');
@@ -25456,18 +28013,21 @@ var ObjectUnsubscribedError = (function (_super) {
     }
     return ObjectUnsubscribedError;
 }(Error));
-exports.ObjectUnsubscribedError = ObjectUnsubscribedError;
-//# sourceMappingURL=ObjectUnsubscribedError.js.map
+//# sourceMappingURL=ObjectUnsubscribedError.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/UnsubscriptionError.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/UnsubscriptionError.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return UnsubscriptionError; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    for (var p in b)
+        if (b.hasOwnProperty(p))
+            d[p] = b[p];
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
@@ -25475,7 +28035,7 @@ var __extends = (this && this.__extends) || function (d, b) {
  * An error thrown when one or more errors have occurred during the
  * `unsubscribe` of a {@link Subscription}.
  */
-var UnsubscriptionError = (function (_super) {
+var UnsubscriptionError = /*@__PURE__*/ (/*@__PURE__*/ function (_super) {
     __extends(UnsubscriptionError, _super);
     function UnsubscriptionError(errors) {
         _super.call(this);
@@ -25488,150 +28048,233 @@ var UnsubscriptionError = (function (_super) {
     }
     return UnsubscriptionError;
 }(Error));
-exports.UnsubscriptionError = UnsubscriptionError;
-//# sourceMappingURL=UnsubscriptionError.js.map
+//# sourceMappingURL=UnsubscriptionError.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/errorObject.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/errorObject.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return errorObject; });
 // typeof any so that it we don't have to cast when comparing a result to the error object
-exports.errorObject = { e: {} };
-//# sourceMappingURL=errorObject.js.map
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+var errorObject = { e: {} };
+//# sourceMappingURL=errorObject.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/isArray.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/identity.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = identity;
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+function identity(x) {
+    return x;
+}
+//# sourceMappingURL=identity.js.map 
 
-exports.isArray = Array.isArray || (function (x) { return x && typeof x.length === 'number'; });
-//# sourceMappingURL=isArray.js.map
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/isArrayLike.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/isArray.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return isArray; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+var isArray = Array.isArray || (function (x) { return x && typeof x.length === 'number'; });
+//# sourceMappingURL=isArray.js.map 
 
-exports.isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
-//# sourceMappingURL=isArrayLike.js.map
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/isFunction.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/isArrayLike.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return isArrayLike; });
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+var isArrayLike = (function (x) { return x && typeof x.length === 'number'; });
+//# sourceMappingURL=isArrayLike.js.map 
 
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/util/isFunction.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = isFunction;
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isFunction(x) {
     return typeof x === 'function';
 }
-exports.isFunction = isFunction;
-//# sourceMappingURL=isFunction.js.map
+//# sourceMappingURL=isFunction.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/isObject.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/isObject.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (immutable) */ __webpack_exports__["a"] = isObject;
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isObject(x) {
     return x != null && typeof x === 'object';
 }
-exports.isObject = isObject;
-//# sourceMappingURL=isObject.js.map
+//# sourceMappingURL=isObject.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/isPromise.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/isPromise.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (immutable) */ __webpack_exports__["a"] = isPromise;
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isPromise(value) {
     return value && typeof value.subscribe !== 'function' && typeof value.then === 'function';
 }
-exports.isPromise = isPromise;
-//# sourceMappingURL=isPromise.js.map
+//# sourceMappingURL=isPromise.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/isScheduler.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/isScheduler.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-
+/* harmony export (immutable) */ __webpack_exports__["a"] = isScheduler;
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 function isScheduler(value) {
     return value && typeof value.schedule === 'function';
 }
-exports.isScheduler = isScheduler;
-//# sourceMappingURL=isScheduler.js.map
+//# sourceMappingURL=isScheduler.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/root.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/noop.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
+/* harmony export (immutable) */ __webpack_exports__["a"] = noop;
+/* tslint:disable:no-empty */
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
+function noop() { }
+//# sourceMappingURL=noop.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/util/pipe.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = pipe;
+/* harmony export (immutable) */ __webpack_exports__["b"] = pipeFromArray;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__noop__ = __webpack_require__("../../../../rxjs/_esm5/util/noop.js");
+/** PURE_IMPORTS_START ._noop PURE_IMPORTS_END */
+
+/* tslint:enable:max-line-length */
+function pipe() {
+    var fns = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+        fns[_i - 0] = arguments[_i];
+    }
+    return pipeFromArray(fns);
+}
+/* @internal */
+function pipeFromArray(fns) {
+    if (!fns) {
+        return __WEBPACK_IMPORTED_MODULE_0__noop__["a" /* noop */];
+    }
+    if (fns.length === 1) {
+        return fns[0];
+    }
+    return function piped(input) {
+        return fns.reduce(function (prev, fn) { return fn(prev); }, input);
+    };
+}
+//# sourceMappingURL=pipe.js.map 
+
+
+/***/ }),
+
+/***/ "../../../../rxjs/_esm5/util/root.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return _root; });
 // CommonJS / Node have global context exposed as "global" variable.
 // We don't want to include the whole node.d.ts this this compilation unit so we'll just fake
 // the global "global" var for now.
+/** PURE_IMPORTS_START  PURE_IMPORTS_END */
 var __window = typeof window !== 'undefined' && window;
 var __self = typeof self !== 'undefined' && typeof WorkerGlobalScope !== 'undefined' &&
     self instanceof WorkerGlobalScope && self;
 var __global = typeof global !== 'undefined' && global;
 var _root = __window || __global || __self;
-exports.root = _root;
 // Workaround Closure Compiler restriction: The body of a goog.module cannot use throw.
 // This is needed when used with angular/tsickle which inserts a goog.module statement.
 // Wrap in IIFE
-(function () {
+/*@__PURE__*/ (function () {
     if (!_root) {
         throw new Error('RxJS could not find any global context (window, self, global)');
     }
 })();
-//# sourceMappingURL=root.js.map
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__("../../../../webpack/buildin/global.js")))
+
+//# sourceMappingURL=root.js.map 
+
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__("../../../../webpack/buildin/global.js")))
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/subscribeToResult.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/subscribeToResult.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = subscribeToResult;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__root__ = __webpack_require__("../../../../rxjs/_esm5/util/root.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__isArrayLike__ = __webpack_require__("../../../../rxjs/_esm5/util/isArrayLike.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__isPromise__ = __webpack_require__("../../../../rxjs/_esm5/util/isPromise.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__isObject__ = __webpack_require__("../../../../rxjs/_esm5/util/isObject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__symbol_iterator__ = __webpack_require__("../../../../rxjs/_esm5/symbol/iterator.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__InnerSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/InnerSubscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__symbol_observable__ = __webpack_require__("../../../../rxjs/_esm5/symbol/observable.js");
+/** PURE_IMPORTS_START ._root,._isArrayLike,._isPromise,._isObject,.._Observable,.._symbol_iterator,.._InnerSubscriber,.._symbol_observable PURE_IMPORTS_END */
 
-var root_1 = __webpack_require__("../../../../rxjs/util/root.js");
-var isArrayLike_1 = __webpack_require__("../../../../rxjs/util/isArrayLike.js");
-var isPromise_1 = __webpack_require__("../../../../rxjs/util/isPromise.js");
-var isObject_1 = __webpack_require__("../../../../rxjs/util/isObject.js");
-var Observable_1 = __webpack_require__("../../../../rxjs/Observable.js");
-var iterator_1 = __webpack_require__("../../../../rxjs/symbol/iterator.js");
-var InnerSubscriber_1 = __webpack_require__("../../../../rxjs/InnerSubscriber.js");
-var observable_1 = __webpack_require__("../../../../rxjs/symbol/observable.js");
+
+
+
+
+
+
+
 function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
-    var destination = new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex);
+    var destination = new __WEBPACK_IMPORTED_MODULE_6__InnerSubscriber__["a" /* InnerSubscriber */](outerSubscriber, outerValue, outerIndex);
     if (destination.closed) {
         return null;
     }
-    if (result instanceof Observable_1.Observable) {
+    if (result instanceof __WEBPACK_IMPORTED_MODULE_4__Observable__["a" /* Observable */]) {
         if (result._isScalar) {
             destination.next(result.value);
             destination.complete();
             return null;
         }
         else {
+            destination.syncErrorThrowable = true;
             return result.subscribe(destination);
         }
     }
-    else if (isArrayLike_1.isArrayLike(result)) {
+    else if (Object(__WEBPACK_IMPORTED_MODULE_1__isArrayLike__["a" /* isArrayLike */])(result)) {
         for (var i = 0, len = result.length; i < len && !destination.closed; i++) {
             destination.next(result[i]);
         }
@@ -25639,7 +28282,7 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
             destination.complete();
         }
     }
-    else if (isPromise_1.isPromise(result)) {
+    else if (Object(__WEBPACK_IMPORTED_MODULE_2__isPromise__["a" /* isPromise */])(result)) {
         result.then(function (value) {
             if (!destination.closed) {
                 destination.next(value);
@@ -25648,12 +28291,12 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
         }, function (err) { return destination.error(err); })
             .then(null, function (err) {
             // Escaping the Promise trap: globally throw unhandled errors
-            root_1.root.setTimeout(function () { throw err; });
+            __WEBPACK_IMPORTED_MODULE_0__root__["a" /* root */].setTimeout(function () { throw err; });
         });
         return destination;
     }
-    else if (result && typeof result[iterator_1.iterator] === 'function') {
-        var iterator = result[iterator_1.iterator]();
+    else if (result && typeof result[__WEBPACK_IMPORTED_MODULE_5__symbol_iterator__["a" /* iterator */]] === 'function') {
+        var iterator = result[__WEBPACK_IMPORTED_MODULE_5__symbol_iterator__["a" /* iterator */]]();
         do {
             var item = iterator.next();
             if (item.done) {
@@ -25666,78 +28309,84 @@ function subscribeToResult(outerSubscriber, result, outerValue, outerIndex) {
             }
         } while (true);
     }
-    else if (result && typeof result[observable_1.observable] === 'function') {
-        var obs = result[observable_1.observable]();
+    else if (result && typeof result[__WEBPACK_IMPORTED_MODULE_7__symbol_observable__["a" /* observable */]] === 'function') {
+        var obs = result[__WEBPACK_IMPORTED_MODULE_7__symbol_observable__["a" /* observable */]]();
         if (typeof obs.subscribe !== 'function') {
             destination.error(new TypeError('Provided object does not correctly implement Symbol.observable'));
         }
         else {
-            return obs.subscribe(new InnerSubscriber_1.InnerSubscriber(outerSubscriber, outerValue, outerIndex));
+            return obs.subscribe(new __WEBPACK_IMPORTED_MODULE_6__InnerSubscriber__["a" /* InnerSubscriber */](outerSubscriber, outerValue, outerIndex));
         }
     }
     else {
-        var value = isObject_1.isObject(result) ? 'an invalid object' : "'" + result + "'";
+        var value = Object(__WEBPACK_IMPORTED_MODULE_3__isObject__["a" /* isObject */])(result) ? 'an invalid object' : "'" + result + "'";
         var msg = ("You provided " + value + " where a stream was expected.")
             + ' You can provide an Observable, Promise, Array, or Iterable.';
         destination.error(new TypeError(msg));
     }
     return null;
 }
-exports.subscribeToResult = subscribeToResult;
-//# sourceMappingURL=subscribeToResult.js.map
+//# sourceMappingURL=subscribeToResult.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/toSubscriber.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/toSubscriber.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = toSubscriber;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Subscriber__ = __webpack_require__("../../../../rxjs/_esm5/Subscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__symbol_rxSubscriber__ = __webpack_require__("../../../../rxjs/_esm5/symbol/rxSubscriber.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Observer__ = __webpack_require__("../../../../rxjs/_esm5/Observer.js");
+/** PURE_IMPORTS_START .._Subscriber,.._symbol_rxSubscriber,.._Observer PURE_IMPORTS_END */
 
-var Subscriber_1 = __webpack_require__("../../../../rxjs/Subscriber.js");
-var rxSubscriber_1 = __webpack_require__("../../../../rxjs/symbol/rxSubscriber.js");
-var Observer_1 = __webpack_require__("../../../../rxjs/Observer.js");
+
+
 function toSubscriber(nextOrObserver, error, complete) {
     if (nextOrObserver) {
-        if (nextOrObserver instanceof Subscriber_1.Subscriber) {
+        if (nextOrObserver instanceof __WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */]) {
             return nextOrObserver;
         }
-        if (nextOrObserver[rxSubscriber_1.rxSubscriber]) {
-            return nextOrObserver[rxSubscriber_1.rxSubscriber]();
+        if (nextOrObserver[__WEBPACK_IMPORTED_MODULE_1__symbol_rxSubscriber__["a" /* rxSubscriber */]]) {
+            return nextOrObserver[__WEBPACK_IMPORTED_MODULE_1__symbol_rxSubscriber__["a" /* rxSubscriber */]]();
         }
     }
     if (!nextOrObserver && !error && !complete) {
-        return new Subscriber_1.Subscriber(Observer_1.empty);
+        return new __WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */](__WEBPACK_IMPORTED_MODULE_2__Observer__["a" /* empty */]);
     }
-    return new Subscriber_1.Subscriber(nextOrObserver, error, complete);
+    return new __WEBPACK_IMPORTED_MODULE_0__Subscriber__["a" /* Subscriber */](nextOrObserver, error, complete);
 }
-exports.toSubscriber = toSubscriber;
-//# sourceMappingURL=toSubscriber.js.map
+//# sourceMappingURL=toSubscriber.js.map 
+
 
 /***/ }),
 
-/***/ "../../../../rxjs/util/tryCatch.js":
-/***/ (function(module, exports, __webpack_require__) {
+/***/ "../../../../rxjs/_esm5/util/tryCatch.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = tryCatch;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__errorObject__ = __webpack_require__("../../../../rxjs/_esm5/util/errorObject.js");
+/** PURE_IMPORTS_START ._errorObject PURE_IMPORTS_END */
 
-var errorObject_1 = __webpack_require__("../../../../rxjs/util/errorObject.js");
 var tryCatchTarget;
 function tryCatcher() {
     try {
         return tryCatchTarget.apply(this, arguments);
     }
     catch (e) {
-        errorObject_1.errorObject.e = e;
-        return errorObject_1.errorObject;
+        __WEBPACK_IMPORTED_MODULE_0__errorObject__["a" /* errorObject */].e = e;
+        return __WEBPACK_IMPORTED_MODULE_0__errorObject__["a" /* errorObject */];
     }
 }
 function tryCatch(fn) {
     tryCatchTarget = fn;
     return tryCatcher;
 }
-exports.tryCatch = tryCatch;
 ;
-//# sourceMappingURL=tryCatch.js.map
+//# sourceMappingURL=tryCatch.js.map 
+
 
 /***/ }),
 
@@ -25761,6 +28410,7 @@ exports.tryCatch = tryCatch;
 /* unused harmony export __asyncGenerator */
 /* unused harmony export __asyncDelegator */
 /* unused harmony export __asyncValues */
+/* unused harmony export __makeTemplateObject */
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
@@ -25823,7 +28473,7 @@ function __metadata(metadataKey, metadataValue) {
 function __awaiter(thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator.throw(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
@@ -25922,6 +28572,12 @@ function __asyncValues(o) {
     var m = o[Symbol.asyncIterator];
     return m ? m.call(o) : typeof __values === "function" ? __values(o) : o[Symbol.iterator]();
 }
+
+function __makeTemplateObject(cooked, raw) {
+    if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
+    return cooked;
+};
+
 
 /***/ }),
 
@@ -26207,7 +28863,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵAnimationGroupPlayer", function() { return AnimationGroupPlayer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵPRE_STYLE", function() { return ɵPRE_STYLE; });
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -26307,6 +28963,11 @@ var AUTO_STYLE = '*';
  * within a template by referencing the name of the trigger followed by the expression value that
  * the
  * trigger is bound to (in the form of `[\@triggerName]="expression"`.
+ *
+ * Animation trigger bindings strigify values and then match the previous and current values against
+ * any linked transitions. If a boolean value is provided into the trigger binding then it will both
+ * be represented as `1` or `true` and `0` or `false` for a true and false boolean values
+ * respectively.
  *
  * ### Usage
  *
@@ -26793,6 +29454,21 @@ function keyframes(steps) {
  * ])
  * ```
  *
+ * ### Boolean values
+ * if a trigger binding value is a boolean value then it can be matched using a transition
+ * expression that compares `true` and `false` or `1` and `0`.
+ *
+ * ```
+ * // in the template
+ * <div [\@openClose]="open ? true : false">...</div>
+ *
+ * // in the component metadata
+ * trigger('openClose', [
+ *   state('true', style({ height: '*' })),
+ *   state('false', style({ height: '0px' })),
+ *   transition('false <=> true', animate(500))
+ * ])
+ * ```
  * {\@example core/animation/ts/dsl/animation_example.ts region='Component'}
  *
  * \@experimental Animation support is experimental.
@@ -26817,7 +29493,7 @@ function transition(stateChangeExpr, steps, options) {
  * var fadeAnimation = animation([
  *   style({ opacity: '{{ start }}' }),
  *   animate('{{ time }}',
- *     style({ opacity: '{{ end }}'))
+ *     style({ opacity: '{{ end }}'}))
  * ], { params: { time: '1000ms', start: 0, end: 1 }});
  * ```
  *
@@ -27565,7 +30241,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -31532,7 +34208,7 @@ function isPlatformWorkerUi(platformId) {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -31640,17 +34316,6 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4'
 /* unused harmony export NullTemplateVisitor */
 /* unused harmony export RecursiveTemplateAstVisitor */
 /* unused harmony export templateVisitAll */
-/* unused harmony export CompileAnimationEntryMetadata */
-/* unused harmony export CompileAnimationStateMetadata */
-/* unused harmony export CompileAnimationStateDeclarationMetadata */
-/* unused harmony export CompileAnimationStateTransitionMetadata */
-/* unused harmony export CompileAnimationMetadata */
-/* unused harmony export CompileAnimationKeyframesSequenceMetadata */
-/* unused harmony export CompileAnimationStyleMetadata */
-/* unused harmony export CompileAnimationAnimateMetadata */
-/* unused harmony export CompileAnimationWithStepsMetadata */
-/* unused harmony export CompileAnimationSequenceMetadata */
-/* unused harmony export CompileAnimationGroupMetadata */
 /* unused harmony export identifierName */
 /* unused harmony export identifierModuleUrl */
 /* unused harmony export viewClassName */
@@ -31803,7 +34468,7 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4'
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -31823,7 +34488,7 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4'
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -33575,145 +36240,6 @@ function utf8Encode(str) {
 // group 2: "event" from "(event)"
 // group 3: "@trigger" from "@trigger"
 var HOST_REG_EXP = /^(?:(?:\[([^\]]+)\])|(?:\(([^\)]+)\)))|(\@[-\w]+)$/;
-var CompileAnimationEntryMetadata = (function () {
-    /**
-     * @param {?=} name
-     * @param {?=} definitions
-     */
-    function CompileAnimationEntryMetadata(name, definitions) {
-        if (name === void 0) { name = null; }
-        if (definitions === void 0) { definitions = null; }
-        this.name = name;
-        this.definitions = definitions;
-    }
-    return CompileAnimationEntryMetadata;
-}());
-/**
- * @abstract
- */
-var CompileAnimationStateMetadata = (function () {
-    function CompileAnimationStateMetadata() {
-    }
-    return CompileAnimationStateMetadata;
-}());
-var CompileAnimationStateDeclarationMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationStateDeclarationMetadata, _super);
-    /**
-     * @param {?} stateNameExpr
-     * @param {?} styles
-     */
-    function CompileAnimationStateDeclarationMetadata(stateNameExpr, styles) {
-        var _this = _super.call(this) || this;
-        _this.stateNameExpr = stateNameExpr;
-        _this.styles = styles;
-        return _this;
-    }
-    return CompileAnimationStateDeclarationMetadata;
-}(CompileAnimationStateMetadata));
-var CompileAnimationStateTransitionMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationStateTransitionMetadata, _super);
-    /**
-     * @param {?} stateChangeExpr
-     * @param {?} steps
-     */
-    function CompileAnimationStateTransitionMetadata(stateChangeExpr, steps) {
-        var _this = _super.call(this) || this;
-        _this.stateChangeExpr = stateChangeExpr;
-        _this.steps = steps;
-        return _this;
-    }
-    return CompileAnimationStateTransitionMetadata;
-}(CompileAnimationStateMetadata));
-/**
- * @abstract
- */
-var CompileAnimationMetadata = (function () {
-    function CompileAnimationMetadata() {
-    }
-    return CompileAnimationMetadata;
-}());
-var CompileAnimationKeyframesSequenceMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationKeyframesSequenceMetadata, _super);
-    /**
-     * @param {?=} steps
-     */
-    function CompileAnimationKeyframesSequenceMetadata(steps) {
-        if (steps === void 0) { steps = []; }
-        var _this = _super.call(this) || this;
-        _this.steps = steps;
-        return _this;
-    }
-    return CompileAnimationKeyframesSequenceMetadata;
-}(CompileAnimationMetadata));
-var CompileAnimationStyleMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationStyleMetadata, _super);
-    /**
-     * @param {?} offset
-     * @param {?=} styles
-     */
-    function CompileAnimationStyleMetadata(offset, styles) {
-        if (styles === void 0) { styles = null; }
-        var _this = _super.call(this) || this;
-        _this.offset = offset;
-        _this.styles = styles;
-        return _this;
-    }
-    return CompileAnimationStyleMetadata;
-}(CompileAnimationMetadata));
-var CompileAnimationAnimateMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationAnimateMetadata, _super);
-    /**
-     * @param {?=} timings
-     * @param {?=} styles
-     */
-    function CompileAnimationAnimateMetadata(timings, styles) {
-        if (timings === void 0) { timings = 0; }
-        if (styles === void 0) { styles = null; }
-        var _this = _super.call(this) || this;
-        _this.timings = timings;
-        _this.styles = styles;
-        return _this;
-    }
-    return CompileAnimationAnimateMetadata;
-}(CompileAnimationMetadata));
-/**
- * @abstract
- */
-var CompileAnimationWithStepsMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationWithStepsMetadata, _super);
-    /**
-     * @param {?=} steps
-     */
-    function CompileAnimationWithStepsMetadata(steps) {
-        if (steps === void 0) { steps = null; }
-        var _this = _super.call(this) || this;
-        _this.steps = steps;
-        return _this;
-    }
-    return CompileAnimationWithStepsMetadata;
-}(CompileAnimationMetadata));
-var CompileAnimationSequenceMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationSequenceMetadata, _super);
-    /**
-     * @param {?=} steps
-     */
-    function CompileAnimationSequenceMetadata(steps) {
-        if (steps === void 0) { steps = null; }
-        return _super.call(this, steps) || this;
-    }
-    return CompileAnimationSequenceMetadata;
-}(CompileAnimationWithStepsMetadata));
-var CompileAnimationGroupMetadata = (function (_super) {
-    __WEBPACK_IMPORTED_MODULE_0_tslib__["a" /* __extends */](CompileAnimationGroupMetadata, _super);
-    /**
-     * @param {?=} steps
-     */
-    function CompileAnimationGroupMetadata(steps) {
-        if (steps === void 0) { steps = null; }
-        return _super.call(this, steps) || this;
-    }
-    return CompileAnimationGroupMetadata;
-}(CompileAnimationWithStepsMetadata));
 /**
  * @param {?} name
  * @return {?}
@@ -33861,7 +36387,6 @@ var CompileTemplateMetadata = (function () {
      */
     CompileTemplateMetadata.prototype.toSummary = function () {
         return {
-            animations: this.animations.map(function (anim) { return anim.name; }),
             ngContentSelectors: this.ngContentSelectors,
             encapsulation: this.encapsulation,
         };
@@ -35794,7 +38319,6 @@ var InterpolationConfig = (function () {
         assertInterpolationSymbols('interpolation', markers);
         return new InterpolationConfig(markers[0], markers[1]);
     };
-    ;
     return InterpolationConfig;
 }());
 var DEFAULT_INTERPOLATION_CONFIG = new InterpolationConfig('{{', '}}');
@@ -39994,7 +42518,6 @@ var RecurseVisitor = (function () {
      * @return {?}
      */
     RecurseVisitor.prototype.visitText = function (text, context) { };
-    ;
     /**
      * @param {?} container
      * @param {?=} context
@@ -40028,14 +42551,12 @@ var RecurseVisitor = (function () {
      * @return {?}
      */
     RecurseVisitor.prototype.visitPlaceholder = function (ph, context) { };
-    ;
     /**
      * @param {?} ph
      * @param {?=} context
      * @return {?}
      */
     RecurseVisitor.prototype.visitIcuPlaceholder = function (ph, context) { };
-    ;
     return RecurseVisitor;
 }());
 /**
@@ -41142,7 +43663,6 @@ var Doctype = (function () {
         this.rootTag = rootTag;
         this.dtd = dtd;
     }
-    ;
     /**
      * @param {?} visitor
      * @return {?}
@@ -41181,7 +43701,6 @@ var Text$2 = (function () {
     function Text$2(unescapedValue) {
         this.value = _escapeXml(unescapedValue);
     }
-    ;
     /**
      * @param {?} visitor
      * @return {?}
@@ -46810,7 +49329,6 @@ var JitSummaryResolver = (function () {
      * @return {?}
      */
     JitSummaryResolver.prototype.isLibraryFile = function (fileName) { return false; };
-    ;
     /**
      * @param {?} fileName
      * @return {?}
@@ -46823,7 +49341,6 @@ var JitSummaryResolver = (function () {
     JitSummaryResolver.prototype.resolveSummary = function (reference) {
         return this._summaries.get(reference) || null;
     };
-    ;
     /**
      * @param {?} filePath
      * @return {?}
@@ -46839,7 +49356,6 @@ var JitSummaryResolver = (function () {
      * @return {?}
      */
     JitSummaryResolver.prototype.addSummary = function (summary) { this._summaries.set(summary.symbol, summary); };
-    ;
     return JitSummaryResolver;
 }());
 JitSummaryResolver.decorators = [
@@ -52854,7 +55370,6 @@ var SafeSelector = (function () {
             return pseudo + replaceBy;
         });
     }
-    ;
     /**
      * @param {?} content
      * @return {?}
@@ -54115,14 +56630,10 @@ var ViewCompileResult = (function () {
 }());
 var ViewCompiler = (function () {
     /**
-     * @param {?} _config
      * @param {?} _reflector
-     * @param {?} _schemaRegistry
      */
-    function ViewCompiler(_config, _reflector, _schemaRegistry) {
-        this._config = _config;
+    function ViewCompiler(_reflector) {
         this._reflector = _reflector;
-        this._schemaRegistry = _schemaRegistry;
     }
     /**
      * @param {?} outputCtx
@@ -54172,9 +56683,7 @@ ViewCompiler.decorators = [
  * @nocollapse
  */
 ViewCompiler.ctorParameters = function () { return [
-    { type: CompilerConfig, },
     { type: CompileReflector, },
-    { type: ElementSchemaRegistry, },
 ]; };
 var LOG_VAR$1 = variable('_l');
 var VIEW_VAR = variable('_v');
@@ -54334,12 +56843,15 @@ var ViewBuilder = (function () {
      * @return {?}
      */
     ViewBuilder.prototype.visitText = function (ast, context) {
-        // textDef(ngContentIndex: number, constants: string[]): NodeDef;
+        // Static text nodes have no check function
+        var /** @type {?} */ checkIndex = -1;
         this.nodes.push(function () { return ({
             sourceSpan: ast.sourceSpan,
             nodeFlags: 2 /* TypeText */,
             nodeDef: importExpr(Identifiers.textDef).callFn([
-                literal(ast.ngContentIndex), literalArr([literal(ast.value)])
+                literal(checkIndex),
+                literal(ast.ngContentIndex),
+                literalArr([literal(ast.value)]),
             ])
         }); });
     };
@@ -54356,12 +56868,16 @@ var ViewBuilder = (function () {
         var /** @type {?} */ astWithSource = (ast.value);
         var /** @type {?} */ inter = (astWithSource.ast);
         var /** @type {?} */ updateRendererExpressions = inter.expressions.map(function (expr, bindingIndex) { return _this._preprocessUpdateExpression({ nodeIndex: nodeIndex, bindingIndex: bindingIndex, sourceSpan: ast.sourceSpan, context: COMP_VAR, value: expr }); });
-        // textDef(ngContentIndex: number, constants: string[]): NodeDef;
+        // Check index is the same as the node index during compilation
+        // They might only differ at runtime
+        var /** @type {?} */ checkIndex = nodeIndex;
         this.nodes[nodeIndex] = function () { return ({
             sourceSpan: ast.sourceSpan,
             nodeFlags: 2 /* TypeText */,
             nodeDef: importExpr(Identifiers.textDef).callFn([
-                literal(ast.ngContentIndex), literalArr(inter.strings.map(function (s) { return literal(s); }))
+                literal(checkIndex),
+                literal(ast.ngContentIndex),
+                literalArr(inter.strings.map(function (s) { return literal(s); })),
             ]),
             updateRenderer: updateRendererExpressions
         }); };
@@ -54447,18 +56963,14 @@ var ViewBuilder = (function () {
             compView = this.outputCtx.importExpr(compAst.directive.componentViewType);
             compRendererType = this.outputCtx.importExpr(compAst.directive.rendererType);
         }
-        // elementDef(
-        //   flags: NodeFlags, matchedQueriesDsl: [string | number, QueryValueType][],
-        //   ngContentIndex: number, childCount: number, namespaceAndName: string,
-        //   fixedAttrs: [string, string][] = [],
-        //   bindings?: [BindingFlags, string, string | SecurityContext][],
-        //   outputs?: ([OutputType.ElementOutput | OutputType.DirectiveHostOutput, string, string])[],
-        //   handleEvent?: ElementHandleEventFn,
-        //   componentView?: () => ViewDefinition, componentRendererType?: RendererType2): NodeDef;
+        // Check index is the same as the node index during compilation
+        // They might only differ at runtime
+        var /** @type {?} */ checkIndex = nodeIndex;
         this.nodes[nodeIndex] = function () { return ({
             sourceSpan: ast.sourceSpan,
             nodeFlags: 1 /* TypeElement */ | flags,
             nodeDef: importExpr(Identifiers.elementDef).callFn([
+                literal(checkIndex),
                 literal(flags),
                 queryMatchesExpr,
                 literal(ast.ngContentIndex),
@@ -54640,19 +57152,21 @@ var ViewBuilder = (function () {
             context: dirContextExpr,
             eventAst: hostEventAst, dirAst: dirAst,
         }); });
-        // directiveDef(
-        //   flags: NodeFlags, matchedQueries: [string, QueryValueType][], childCount: number, ctor:
-        //   any,
-        //   deps: ([DepFlags, any] | any)[], props?: {[name: string]: [number, string]},
-        //   outputs?: {[name: string]: string}, component?: () => ViewDefinition): NodeDef;
+        // Check index is the same as the node index during compilation
+        // They might only differ at runtime
+        var /** @type {?} */ checkIndex = nodeIndex;
         this.nodes[nodeIndex] = function () { return ({
             sourceSpan: dirAst.sourceSpan,
             nodeFlags: 16384 /* TypeDirective */ | flags,
             nodeDef: importExpr(Identifiers.directiveDef).callFn([
-                literal(flags), queryMatchExprs.length ? literalArr(queryMatchExprs) : NULL_EXPR,
-                literal(childCount), providerExpr, depsExpr,
+                literal(checkIndex),
+                literal(flags),
+                queryMatchExprs.length ? literalArr(queryMatchExprs) : NULL_EXPR,
+                literal(childCount),
+                providerExpr,
+                depsExpr,
                 inputDefs.length ? new LiteralMapExpr(inputDefs) : NULL_EXPR,
-                outputDefs.length ? new LiteralMapExpr(outputDefs) : NULL_EXPR
+                outputDefs.length ? new LiteralMapExpr(outputDefs) : NULL_EXPR,
             ]),
             updateDirectives: updateDirectiveExpressions,
             directive: dirAst.directive.type,
@@ -54757,39 +57271,43 @@ var ViewBuilder = (function () {
      * @param {?} argCount
      * @return {?}
      */
-    ViewBuilder.prototype.createLiteralArrayConverter = function (sourceSpan, argCount) {
+    ViewBuilder.prototype._createLiteralArrayConverter = function (sourceSpan, argCount) {
         if (argCount === 0) {
             var /** @type {?} */ valueExpr_1 = importExpr(Identifiers.EMPTY_ARRAY);
             return function () { return valueExpr_1; };
         }
-        var /** @type {?} */ nodeIndex = this.nodes.length;
-        // pureArrayDef(argCount: number): NodeDef;
+        var /** @type {?} */ checkIndex = this.nodes.length;
         this.nodes.push(function () { return ({
             sourceSpan: sourceSpan,
             nodeFlags: 32 /* TypePureArray */,
-            nodeDef: importExpr(Identifiers.pureArrayDef).callFn([literal(argCount)])
+            nodeDef: importExpr(Identifiers.pureArrayDef).callFn([
+                literal(checkIndex),
+                literal(argCount),
+            ])
         }); });
-        return function (args) { return callCheckStmt(nodeIndex, args); };
+        return function (args) { return callCheckStmt(checkIndex, args); };
     };
     /**
      * @param {?} sourceSpan
      * @param {?} keys
      * @return {?}
      */
-    ViewBuilder.prototype.createLiteralMapConverter = function (sourceSpan, keys) {
+    ViewBuilder.prototype._createLiteralMapConverter = function (sourceSpan, keys) {
         if (keys.length === 0) {
             var /** @type {?} */ valueExpr_2 = importExpr(Identifiers.EMPTY_MAP);
             return function () { return valueExpr_2; };
         }
-        // function pureObjectDef(propToIndex: {[p: string]: number}): NodeDef
         var /** @type {?} */ map = literalMap(keys.map(function (e, i) { return (Object.assign({}, e, { value: literal(i) })); }));
-        var /** @type {?} */ nodeIndex = this.nodes.length;
+        var /** @type {?} */ checkIndex = this.nodes.length;
         this.nodes.push(function () { return ({
             sourceSpan: sourceSpan,
             nodeFlags: 64 /* TypePureObject */,
-            nodeDef: importExpr(Identifiers.pureObjectDef).callFn([map])
+            nodeDef: importExpr(Identifiers.pureObjectDef).callFn([
+                literal(checkIndex),
+                map,
+            ])
         }); });
-        return function (args) { return callCheckStmt(nodeIndex, args); };
+        return function (args) { return callCheckStmt(checkIndex, args); };
     };
     /**
      * @param {?} expression
@@ -54797,15 +57315,17 @@ var ViewBuilder = (function () {
      * @param {?} argCount
      * @return {?}
      */
-    ViewBuilder.prototype.createPipeConverter = function (expression, name, argCount) {
+    ViewBuilder.prototype._createPipeConverter = function (expression, name, argCount) {
         var /** @type {?} */ pipe = ((this.usedPipes.find(function (pipeSummary) { return pipeSummary.name === name; })));
         if (pipe.pure) {
-            var /** @type {?} */ nodeIndex_1 = this.nodes.length;
-            // function purePipeDef(argCount: number): NodeDef;
+            var /** @type {?} */ checkIndex_1 = this.nodes.length;
             this.nodes.push(function () { return ({
                 sourceSpan: expression.sourceSpan,
                 nodeFlags: 128 /* TypePurePipe */,
-                nodeDef: importExpr(Identifiers.purePipeDef).callFn([literal(argCount)])
+                nodeDef: importExpr(Identifiers.purePipeDef).callFn([
+                    literal(checkIndex_1),
+                    literal(argCount),
+                ])
             }); });
             // find underlying pipe in the component view
             var /** @type {?} */ compViewExpr = VIEW_VAR;
@@ -54816,7 +57336,7 @@ var ViewBuilder = (function () {
             }
             var /** @type {?} */ pipeNodeIndex = compBuilder.purePipeNodeIndices[name];
             var /** @type {?} */ pipeValueExpr_1 = importExpr(Identifiers.nodeValue).callFn([compViewExpr, literal(pipeNodeIndex)]);
-            return function (args) { return callUnwrapValue(expression.nodeIndex, expression.bindingIndex, callCheckStmt(nodeIndex_1, [pipeValueExpr_1].concat(args))); };
+            return function (args) { return callUnwrapValue(expression.nodeIndex, expression.bindingIndex, callCheckStmt(checkIndex_1, [pipeValueExpr_1].concat(args))); };
         }
         else {
             var /** @type {?} */ nodeIndex = this._createPipe(expression.sourceSpan, pipe);
@@ -54852,6 +57372,11 @@ var ViewBuilder = (function () {
         return nodeIndex;
     };
     /**
+     * For the AST in `UpdateExpression.value`:
+     * - create nodes for pipes, literal arrays and, literal maps,
+     * - update the AST to replace pipes, literal arrays and, literal maps with calls to check fn.
+     *
+     * WARNING: This might create new nodeDefs (for pipes and literal arrays and literal maps)!
      * @param {?} expression
      * @return {?}
      */
@@ -54863,9 +57388,9 @@ var ViewBuilder = (function () {
             sourceSpan: expression.sourceSpan,
             context: expression.context,
             value: convertPropertyBindingBuiltins({
-                createLiteralArrayConverter: function (argCount) { return _this.createLiteralArrayConverter(expression.sourceSpan, argCount); },
-                createLiteralMapConverter: function (keys) { return _this.createLiteralMapConverter(expression.sourceSpan, keys); },
-                createPipeConverter: function (name, argCount) { return _this.createPipeConverter(expression, name, argCount); }
+                createLiteralArrayConverter: function (argCount) { return _this._createLiteralArrayConverter(expression.sourceSpan, argCount); },
+                createLiteralMapConverter: function (keys) { return _this._createLiteralMapConverter(expression.sourceSpan, keys); },
+                createPipeConverter: function (name, argCount) { return _this._createPipeConverter(expression, name, argCount); }
             }, expression.value)
         };
     };
@@ -56690,13 +59215,14 @@ var StaticReflector = (function () {
                 if (expression instanceof StaticSymbol) {
                     // Stop simplification at builtin symbols or if we are in a reference context
                     if (expression === self.injectionToken || expression === self.opaqueToken ||
-                        self.conversionMap.has(expression) || (references > 0 && !expression.members.length)) {
+                        self.conversionMap.has(expression) ||
+                        (references > 0 && !expression.members.length)) {
                         return expression;
                     }
                     else {
                         var /** @type {?} */ staticSymbol = expression;
                         var /** @type {?} */ declarationValue = resolveReferenceValue(staticSymbol);
-                        if (declarationValue) {
+                        if (declarationValue != null) {
                             return simplifyInContext(staticSymbol, declarationValue, depth + 1, references);
                         }
                         else {
@@ -56778,8 +59304,8 @@ var StaticReflector = (function () {
                                 }
                                 return null;
                             case 'index':
-                                var /** @type {?} */ indexTarget = simplify(expression['expression']);
-                                var /** @type {?} */ index = simplify(expression['index']);
+                                var /** @type {?} */ indexTarget = simplifyInContext(context, expression['expression'], depth, 0);
+                                var /** @type {?} */ index = simplifyInContext(context, expression['index'], depth, 0);
                                 if (indexTarget && isPrimitive(index))
                                     return indexTarget[index];
                                 return null;
@@ -56792,7 +59318,7 @@ var StaticReflector = (function () {
                                     selectContext =
                                         self.getStaticSymbol(selectTarget.filePath, selectTarget.name, members);
                                     var /** @type {?} */ declarationValue = resolveReferenceValue(selectContext);
-                                    if (declarationValue) {
+                                    if (declarationValue != null) {
                                         return simplifyInContext(selectContext, declarationValue, depth + 1, references);
                                     }
                                     else {
@@ -57698,7 +60224,7 @@ function createAotCompiler(compilerHost, options) {
     var /** @type {?} */ tmplParser = new TemplateParser(config, staticReflector, expressionParser, elementSchemaRegistry, htmlParser, console, []);
     var /** @type {?} */ resolver = new CompileMetadataResolver(config, new NgModuleResolver(staticReflector), new DirectiveResolver(staticReflector), new PipeResolver(staticReflector), summaryResolver, elementSchemaRegistry, normalizer, console, symbolCache, staticReflector);
     // TODO(vicb): do not pass options.i18nFormat here
-    var /** @type {?} */ viewCompiler = new ViewCompiler(config, staticReflector, elementSchemaRegistry);
+    var /** @type {?} */ viewCompiler = new ViewCompiler(staticReflector);
     var /** @type {?} */ compiler = new AotCompiler(config, compilerHost, staticReflector, resolver, tmplParser, new StyleCompiler(urlResolver), viewCompiler, new NgModuleCompiler(staticReflector), new TypeScriptEmitter(), summaryResolver, options.locale || null, options.i18nFormat || null, options.enableSummariesForJit || null, symbolResolver);
     return { compiler: compiler, reflector: staticReflector };
 }
@@ -59815,17 +62341,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵt", function() { return _def; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵu", function() { return DebugContext; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__ = __webpack_require__("../../../../rxjs/Observable.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__ = __webpack_require__("../../../../rxjs/observable/merge.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__ = __webpack_require__("../../../../rxjs/operator/share.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__("../../../../rxjs/Subject.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__ = __webpack_require__("../../../../rxjs/_esm5/observable/merge.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__ = __webpack_require__("../../../../rxjs/_esm5/operator/share.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -60621,7 +63143,7 @@ var Version = (function () {
 /**
  * \@stable
  */
-var VERSION = new Version('4.4.4');
+var VERSION = new Version('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -64507,7 +67029,7 @@ var ApplicationRef_ = (function (_super) {
         _this._stable = true;
         _this._enforceNoNewChanges = isDevMode();
         _this._zone.onMicrotaskEmpty.subscribe({ next: function () { _this._zone.run(function () { _this.tick(); }); } });
-        var isCurrentlyStable = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__["Observable"](function (observer) {
+        var isCurrentlyStable = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__["a" /* Observable */](function (observer) {
             _this._stable = _this._zone.isStable && !_this._zone.hasPendingMacrotasks &&
                 !_this._zone.hasPendingMicrotasks;
             _this._zone.runOutsideAngular(function () {
@@ -64515,7 +67037,7 @@ var ApplicationRef_ = (function (_super) {
                 observer.complete();
             });
         });
-        var isStable = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__["Observable"](function (observer) {
+        var isStable = new __WEBPACK_IMPORTED_MODULE_1_rxjs_Observable__["a" /* Observable */](function (observer) {
             // Create the subscription to onStable outside the Angular Zone so that
             // the callback is run outside the Angular Zone.
             var stableSub;
@@ -64545,7 +67067,7 @@ var ApplicationRef_ = (function (_super) {
                 unstableSub.unsubscribe();
             };
         });
-        _this._isStable = Object(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__["merge"])(isCurrentlyStable, __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__["share"].call(isStable));
+        _this._isStable = Object(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_merge__["a" /* merge */])(isCurrentlyStable, __WEBPACK_IMPORTED_MODULE_3_rxjs_operator_share__["a" /* share */].call(isStable));
         return _this;
     }
     /**
@@ -66041,7 +68563,6 @@ var EventListener = (function () {
         this.name = name;
         this.callback = callback;
     }
-    ;
     return EventListener;
 }());
 /**
@@ -68398,7 +70919,7 @@ function checkAndUpdateBinding(view, def, bindingIdx, value) {
 function checkBindingNoChanges(view, def, bindingIdx, value) {
     var /** @type {?} */ oldValue = view.oldValues[def.bindingIndex + bindingIdx];
     if ((view.state & 1 /* BeforeFirstCheck */) || !devModeEqual(oldValue, value)) {
-        throw expressionChangedAfterItHasBeenCheckedError(Services.createDebugContext(view, def.index), oldValue, value, (view.state & 1 /* BeforeFirstCheck */) !== 0);
+        throw expressionChangedAfterItHasBeenCheckedError(Services.createDebugContext(view, def.nodeIndex), oldValue, value, (view.state & 1 /* BeforeFirstCheck */) !== 0);
     }
 }
 /**
@@ -68446,7 +70967,7 @@ function dispatchEvent(view, nodeIndex, eventName, event) {
 function declaredViewContainer(view) {
     if (view.parent) {
         var /** @type {?} */ parentView = view.parent;
-        return asElementData(parentView, /** @type {?} */ ((view.parentNodeDef)).index);
+        return asElementData(parentView, /** @type {?} */ ((view.parentNodeDef)).nodeIndex);
     }
     return null;
 }
@@ -68474,9 +70995,9 @@ function viewParentEl(view) {
 function renderNode(view, def) {
     switch (def.flags & 201347067 /* Types */) {
         case 1 /* TypeElement */:
-            return asElementData(view, def.index).renderElement;
+            return asElementData(view, def.nodeIndex).renderElement;
         case 2 /* TypeText */:
-            return asTextData(view, def.index).renderText;
+            return asTextData(view, def.nodeIndex).renderText;
     }
 }
 /**
@@ -68563,7 +71084,7 @@ function getParentRenderElement(view, renderHost, def) {
                 ViewEncapsulation.Native)) {
             // only children of non components, or children of components with native encapsulation should
             // be attached.
-            return asElementData(view, /** @type {?} */ ((def.renderParent)).index).renderElement;
+            return asElementData(view, /** @type {?} */ ((def.renderParent)).nodeIndex).renderElement;
         }
     }
     else {
@@ -68645,8 +71166,8 @@ function visitProjectedRenderNodes(view, ngContentIndex, action, parentNode, nex
     }
     var /** @type {?} */ hostView = ((compView)).parent;
     var /** @type {?} */ hostElDef = viewParentEl(/** @type {?} */ ((compView)));
-    var /** @type {?} */ startIndex = ((hostElDef)).index + 1;
-    var /** @type {?} */ endIndex = ((hostElDef)).index + ((hostElDef)).childCount;
+    var /** @type {?} */ startIndex = ((hostElDef)).nodeIndex + 1;
+    var /** @type {?} */ endIndex = ((hostElDef)).nodeIndex + ((hostElDef)).childCount;
     for (var /** @type {?} */ i = startIndex; i <= endIndex; i++) {
         var /** @type {?} */ nodeDef = ((hostView)).def.nodes[i];
         if (nodeDef.ngContentIndex === ngContentIndex) {
@@ -68687,7 +71208,7 @@ function visitRenderNode(view, nodeDef, action, parentNode, nextSibling, target)
                 execRenderNodeAction(view, rn, action, parentNode, nextSibling, target);
             }
             if (nodeDef.bindingFlags & (32 /* SyntheticHostProperty */)) {
-                var /** @type {?} */ compView = asElementData(view, nodeDef.index).componentView;
+                var /** @type {?} */ compView = asElementData(view, nodeDef.nodeIndex).componentView;
                 execRenderNodeAction(compView, rn, action, parentNode, nextSibling, target);
             }
         }
@@ -68695,13 +71216,13 @@ function visitRenderNode(view, nodeDef, action, parentNode, nextSibling, target)
             execRenderNodeAction(view, rn, action, parentNode, nextSibling, target);
         }
         if (nodeDef.flags & 16777216 /* EmbeddedViews */) {
-            var /** @type {?} */ embeddedViews = ((asElementData(view, nodeDef.index).viewContainer))._embeddedViews;
+            var /** @type {?} */ embeddedViews = ((asElementData(view, nodeDef.nodeIndex).viewContainer))._embeddedViews;
             for (var /** @type {?} */ k = 0; k < embeddedViews.length; k++) {
                 visitRootRenderNodes(embeddedViews[k], action, parentNode, nextSibling, target);
             }
         }
         if (nodeDef.flags & 1 /* TypeElement */ && !((nodeDef.element)).name) {
-            visitSiblingRenderNodes(view, action, nodeDef.index + 1, nodeDef.index + nodeDef.childCount, parentNode, nextSibling, target);
+            visitSiblingRenderNodes(view, action, nodeDef.nodeIndex + 1, nodeDef.nodeIndex + nodeDef.childCount, parentNode, nextSibling, target);
         }
     }
 }
@@ -68854,13 +71375,14 @@ function anchorDef(flags, matchedQueriesDsl, ngContentIndex, childCount, handleE
     var /** @type {?} */ template = templateFactory ? resolveDefinition(templateFactory) : null;
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
         flags: flags,
+        checkIndex: -1,
         childFlags: 0,
         directChildFlags: 0,
         childMatchedQueries: 0, matchedQueries: matchedQueries, matchedQueryIds: matchedQueryIds, references: references, ngContentIndex: ngContentIndex, childCount: childCount,
@@ -68885,6 +71407,7 @@ function anchorDef(flags, matchedQueriesDsl, ngContentIndex, childCount, handleE
     };
 }
 /**
+ * @param {?} checkIndex
  * @param {?} flags
  * @param {?} matchedQueriesDsl
  * @param {?} ngContentIndex
@@ -68898,7 +71421,7 @@ function anchorDef(flags, matchedQueriesDsl, ngContentIndex, childCount, handleE
  * @param {?=} componentRendererType
  * @return {?}
  */
-function elementDef(flags, matchedQueriesDsl, ngContentIndex, childCount, namespaceAndName, fixedAttrs, bindings, outputs, handleEvent, componentView, componentRendererType) {
+function elementDef(checkIndex, flags, matchedQueriesDsl, ngContentIndex, childCount, namespaceAndName, fixedAttrs, bindings, outputs, handleEvent, componentView, componentRendererType) {
     if (fixedAttrs === void 0) { fixedAttrs = []; }
     if (!handleEvent) {
         handleEvent = NOOP;
@@ -68951,12 +71474,13 @@ function elementDef(flags, matchedQueriesDsl, ngContentIndex, childCount, namesp
     flags |= 1 /* TypeElement */;
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
+        checkIndex: checkIndex,
         flags: flags,
         childFlags: 0,
         directChildFlags: 0,
@@ -69028,7 +71552,7 @@ function createElement(view, renderHost, def) {
 function listenToElementOutputs(view, compView, def, el) {
     for (var /** @type {?} */ i = 0; i < def.outputs.length; i++) {
         var /** @type {?} */ output = def.outputs[i];
-        var /** @type {?} */ handleEventClosure = renderEventHandlerClosure(view, def.index, elementEventFullName(output.target, output.eventName));
+        var /** @type {?} */ handleEventClosure = renderEventHandlerClosure(view, def.nodeIndex, elementEventFullName(output.target, output.eventName));
         var /** @type {?} */ listenTarget = output.target;
         var /** @type {?} */ listenerView = view;
         if (output.target === 'component') {
@@ -69122,7 +71646,7 @@ function checkAndUpdateElementValue(view, def, bindingIdx, value) {
         return false;
     }
     var /** @type {?} */ binding = def.bindings[bindingIdx];
-    var /** @type {?} */ elData = asElementData(view, def.index);
+    var /** @type {?} */ elData = asElementData(view, def.nodeIndex);
     var /** @type {?} */ renderNode$$1 = elData.renderElement;
     var /** @type {?} */ name = ((binding.name));
     switch (binding.flags & 15 /* Types */) {
@@ -69230,7 +71754,7 @@ function setElementProperty(view, binding, renderNode$$1, name, value) {
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-var NOT_CREATED$1 = new Object();
+var UNDEFINED_VALUE = new Object();
 var InjectorRefTokenKey$1 = tokenKey(Injector);
 var NgModuleRefTokenKey = tokenKey(NgModuleRef);
 /**
@@ -69275,8 +71799,9 @@ function initNgModule(data) {
     var /** @type {?} */ providers = data._providers = new Array(def.providers.length);
     for (var /** @type {?} */ i = 0; i < def.providers.length; i++) {
         var /** @type {?} */ provDef = def.providers[i];
-        providers[i] = provDef.flags & 4096 /* LazyProvider */ ? NOT_CREATED$1 :
-            _createProviderInstance$1(data, provDef);
+        if (!(provDef.flags & 4096 /* LazyProvider */)) {
+            providers[i] = _createProviderInstance$1(data, provDef);
+        }
     }
 }
 /**
@@ -69305,11 +71830,11 @@ function resolveNgModuleDep(data, depDef, notFoundValue) {
     var /** @type {?} */ providerDef = data._def.providersByKey[tokenKey$$1];
     if (providerDef) {
         var /** @type {?} */ providerInstance = data._providers[providerDef.index];
-        if (providerInstance === NOT_CREATED$1) {
+        if (providerInstance === undefined) {
             providerInstance = data._providers[providerDef.index] =
                 _createProviderInstance$1(data, providerDef);
         }
-        return providerInstance;
+        return providerInstance === UNDEFINED_VALUE ? undefined : providerInstance;
     }
     return data._parent.get(depDef.token, notFoundValue);
 }
@@ -69334,7 +71859,7 @@ function _createProviderInstance$1(ngModule, providerDef) {
             injectable = providerDef.value;
             break;
     }
-    return injectable;
+    return injectable === undefined ? UNDEFINED_VALUE : injectable;
 }
 /**
  * @param {?} ngModule
@@ -69344,29 +71869,22 @@ function _createProviderInstance$1(ngModule, providerDef) {
  */
 function _createClass(ngModule, ctor, deps) {
     var /** @type {?} */ len = deps.length;
-    var /** @type {?} */ injectable;
     switch (len) {
         case 0:
-            injectable = new ctor();
-            break;
+            return new ctor();
         case 1:
-            injectable = new ctor(resolveNgModuleDep(ngModule, deps[0]));
-            break;
+            return new ctor(resolveNgModuleDep(ngModule, deps[0]));
         case 2:
-            injectable =
-                new ctor(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]));
-            break;
+            return new ctor(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]));
         case 3:
-            injectable = new ctor(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]), resolveNgModuleDep(ngModule, deps[2]));
-            break;
+            return new ctor(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]), resolveNgModuleDep(ngModule, deps[2]));
         default:
             var /** @type {?} */ depValues = new Array(len);
             for (var /** @type {?} */ i = 0; i < len; i++) {
                 depValues[i] = resolveNgModuleDep(ngModule, deps[i]);
             }
-            injectable = new (ctor.bind.apply(ctor, [void 0].concat(depValues)))();
+            return new (ctor.bind.apply(ctor, [void 0].concat(depValues)))();
     }
-    return injectable;
 }
 /**
  * @param {?} ngModule
@@ -69376,29 +71894,22 @@ function _createClass(ngModule, ctor, deps) {
  */
 function _callFactory(ngModule, factory, deps) {
     var /** @type {?} */ len = deps.length;
-    var /** @type {?} */ injectable;
     switch (len) {
         case 0:
-            injectable = factory();
-            break;
+            return factory();
         case 1:
-            injectable = factory(resolveNgModuleDep(ngModule, deps[0]));
-            break;
+            return factory(resolveNgModuleDep(ngModule, deps[0]));
         case 2:
-            injectable =
-                factory(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]));
-            break;
+            return factory(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]));
         case 3:
-            injectable = factory(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]), resolveNgModuleDep(ngModule, deps[2]));
-            break;
+            return factory(resolveNgModuleDep(ngModule, deps[0]), resolveNgModuleDep(ngModule, deps[1]), resolveNgModuleDep(ngModule, deps[2]));
         default:
             var /** @type {?} */ depValues = Array(len);
             for (var /** @type {?} */ i = 0; i < len; i++) {
                 depValues[i] = resolveNgModuleDep(ngModule, deps[i]);
             }
-            injectable = factory.apply(void 0, depValues);
+            return factory.apply(void 0, depValues);
     }
-    return injectable;
 }
 /**
  * @param {?} ngModule
@@ -69411,7 +71922,7 @@ function callNgModuleLifecycle(ngModule, lifecycles) {
         var /** @type {?} */ provDef = def.providers[i];
         if (provDef.flags & 131072 /* OnDestroy */) {
             var /** @type {?} */ instance = ngModule._providers[i];
-            if (instance && instance !== NOT_CREATED$1) {
+            if (instance && instance !== UNDEFINED_VALUE) {
                 instance.ngOnDestroy();
             }
         }
@@ -69693,7 +72204,7 @@ var ComponentFactory_ = (function (_super) {
             throw new Error('ngModule should be provided');
         }
         var /** @type {?} */ viewDef = resolveDefinition(this.viewDefFactory);
-        var /** @type {?} */ componentNodeIndex = ((((viewDef.nodes[0].element)).componentProvider)).index;
+        var /** @type {?} */ componentNodeIndex = ((((viewDef.nodes[0].element)).componentProvider)).nodeIndex;
         var /** @type {?} */ view = Services.createRootView(injector, projectableNodes || [], rootSelectorOrNode, viewDef, ngModule, EMPTY_CONTEXT);
         var /** @type {?} */ component = asProviderData(view, componentNodeIndex).instance;
         if (rootSelectorOrNode) {
@@ -69723,7 +72234,7 @@ var ComponentRef_ = (function (_super) {
          * @return {?}
          */
         get: function () {
-            return new ElementRef(asElementData(this._view, this._elDef.index).renderElement);
+            return new ElementRef(asElementData(this._view, this._elDef.nodeIndex).renderElement);
         },
         enumerable: true,
         configurable: true
@@ -69744,7 +72255,6 @@ var ComponentRef_ = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    ;
     Object.defineProperty(ComponentRef_.prototype, "hostView", {
         /**
          * @return {?}
@@ -69753,7 +72263,6 @@ var ComponentRef_ = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    ;
     Object.defineProperty(ComponentRef_.prototype, "changeDetectorRef", {
         /**
          * @return {?}
@@ -69762,7 +72271,6 @@ var ComponentRef_ = (function (_super) {
         enumerable: true,
         configurable: true
     });
-    ;
     Object.defineProperty(ComponentRef_.prototype, "componentType", {
         /**
          * @return {?}
@@ -69869,7 +72377,6 @@ var ViewContainerRef_ = (function () {
         enumerable: true,
         configurable: true
     });
-    ;
     /**
      * @template C
      * @param {?} templateRef
@@ -70108,7 +72615,7 @@ var TemplateRef_ = (function (_super) {
          * @return {?}
          */
         get: function () {
-            return new ElementRef(asElementData(this._parentView, this._def.index).renderElement);
+            return new ElementRef(asElementData(this._parentView, this._def.nodeIndex).renderElement);
         },
         enumerable: true,
         configurable: true
@@ -70152,14 +72659,14 @@ var Injector_ = (function () {
 function nodeValue(view, index) {
     var /** @type {?} */ def = view.def.nodes[index];
     if (def.flags & 1 /* TypeElement */) {
-        var /** @type {?} */ elData = asElementData(view, def.index);
+        var /** @type {?} */ elData = asElementData(view, def.nodeIndex);
         return ((def.element)).template ? elData.template : elData.renderElement;
     }
     else if (def.flags & 2 /* TypeText */) {
-        return asTextData(view, def.index).renderText;
+        return asTextData(view, def.nodeIndex).renderText;
     }
     else if (def.flags & (20224 /* CatProvider */ | 16 /* TypePipe */)) {
-        return asProviderData(view, def.index).instance;
+        return asProviderData(view, def.nodeIndex).instance;
     }
     throw new Error("Illegal state: read nodeValue for node index " + index);
 }
@@ -70457,8 +72964,8 @@ var ViewContainerRefTokenKey = tokenKey(ViewContainerRef);
 var TemplateRefTokenKey = tokenKey(TemplateRef);
 var ChangeDetectorRefTokenKey = tokenKey(ChangeDetectorRef);
 var InjectorRefTokenKey = tokenKey(Injector);
-var NOT_CREATED = new Object();
 /**
+ * @param {?} checkIndex
  * @param {?} flags
  * @param {?} matchedQueries
  * @param {?} childCount
@@ -70468,7 +72975,7 @@ var NOT_CREATED = new Object();
  * @param {?=} outputs
  * @return {?}
  */
-function directiveDef(flags, matchedQueries, childCount, ctor, deps, props, outputs) {
+function directiveDef(checkIndex, flags, matchedQueries, childCount, ctor, deps, props, outputs) {
     var /** @type {?} */ bindings = [];
     if (props) {
         for (var /** @type {?} */ prop in props) {
@@ -70489,7 +72996,7 @@ function directiveDef(flags, matchedQueries, childCount, ctor, deps, props, outp
         }
     }
     flags |= 16384 /* TypeDirective */;
-    return _def(flags, matchedQueries, childCount, ctor, ctor, deps, bindings, outputDefs);
+    return _def(checkIndex, flags, matchedQueries, childCount, ctor, ctor, deps, bindings, outputDefs);
 }
 /**
  * @param {?} flags
@@ -70499,7 +73006,7 @@ function directiveDef(flags, matchedQueries, childCount, ctor, deps, props, outp
  */
 function pipeDef(flags, ctor, deps) {
     flags |= 16 /* TypePipe */;
-    return _def(flags, null, 0, ctor, ctor, deps);
+    return _def(-1, flags, null, 0, ctor, ctor, deps);
 }
 /**
  * @param {?} flags
@@ -70510,9 +73017,10 @@ function pipeDef(flags, ctor, deps) {
  * @return {?}
  */
 function providerDef(flags, matchedQueries, token, value, deps) {
-    return _def(flags, matchedQueries, 0, token, value, deps);
+    return _def(-1, flags, matchedQueries, 0, token, value, deps);
 }
 /**
+ * @param {?} checkIndex
  * @param {?} flags
  * @param {?} matchedQueriesDsl
  * @param {?} childCount
@@ -70523,7 +73031,7 @@ function providerDef(flags, matchedQueries, token, value, deps) {
  * @param {?=} outputs
  * @return {?}
  */
-function _def(flags, matchedQueriesDsl, childCount, token, value, deps, bindings, outputs) {
+function _def(checkIndex, flags, matchedQueriesDsl, childCount, token, value, deps, bindings, outputs) {
     var _a = splitMatchedQueriesDsl(matchedQueriesDsl), matchedQueries = _a.matchedQueries, references = _a.references, matchedQueryIds = _a.matchedQueryIds;
     if (!outputs) {
         outputs = [];
@@ -70534,12 +73042,13 @@ function _def(flags, matchedQueriesDsl, childCount, token, value, deps, bindings
     var /** @type {?} */ depDefs = splitDepsDsl(deps);
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
+        checkIndex: checkIndex,
         flags: flags,
         childFlags: 0,
         directChildFlags: 0,
@@ -70559,7 +73068,7 @@ function _def(flags, matchedQueriesDsl, childCount, token, value, deps, bindings
  * @return {?}
  */
 function createProviderInstance(view, def) {
-    return def.flags & 4096 /* LazyProvider */ ? NOT_CREATED : _createProviderInstance(view, def);
+    return _createProviderInstance(view, def);
 }
 /**
  * @param {?} view
@@ -70590,7 +73099,7 @@ function createDirectiveInstance(view, def) {
     if (def.outputs.length) {
         for (var /** @type {?} */ i = 0; i < def.outputs.length; i++) {
             var /** @type {?} */ output = def.outputs[i];
-            var /** @type {?} */ subscription = instance[((output.propName))].subscribe(eventHandlerClosure(view, /** @type {?} */ ((def.parent)).index, output.eventName)); /** @type {?} */
+            var /** @type {?} */ subscription = instance[((output.propName))].subscribe(eventHandlerClosure(view, /** @type {?} */ ((def.parent)).nodeIndex, output.eventName)); /** @type {?} */
             ((view.disposables))[def.outputIndex + i] = subscription.unsubscribe.bind(subscription);
         }
     }
@@ -70629,7 +73138,7 @@ function eventHandlerClosure(view, index, eventName) {
  * @return {?}
  */
 function checkAndUpdateDirectiveInline(view, def, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9) {
-    var /** @type {?} */ providerData = asProviderData(view, def.index);
+    var /** @type {?} */ providerData = asProviderData(view, def.nodeIndex);
     var /** @type {?} */ directive = providerData.instance;
     var /** @type {?} */ changed = false;
     var /** @type {?} */ changes = ((undefined));
@@ -70692,7 +73201,7 @@ function checkAndUpdateDirectiveInline(view, def, v0, v1, v2, v3, v4, v5, v6, v7
  * @return {?}
  */
 function checkAndUpdateDirectiveDynamic(view, def, values) {
-    var /** @type {?} */ providerData = asProviderData(view, def.index);
+    var /** @type {?} */ providerData = asProviderData(view, def.nodeIndex);
     var /** @type {?} */ directive = providerData.instance;
     var /** @type {?} */ changed = false;
     var /** @type {?} */ changes = ((undefined));
@@ -70722,22 +73231,16 @@ function _createProviderInstance(view, def) {
     // private services can see other private services
     var /** @type {?} */ allowPrivateServices = (def.flags & 8192 /* PrivateProvider */) > 0;
     var /** @type {?} */ providerDef = def.provider;
-    var /** @type {?} */ injectable;
     switch (def.flags & 201347067 /* Types */) {
         case 512 /* TypeClassProvider */:
-            injectable = createClass(view, /** @type {?} */ ((def.parent)), allowPrivateServices, /** @type {?} */ ((providerDef)).value, /** @type {?} */ ((providerDef)).deps);
-            break;
+            return createClass(view, /** @type {?} */ ((def.parent)), allowPrivateServices, /** @type {?} */ ((providerDef)).value, /** @type {?} */ ((providerDef)).deps);
         case 1024 /* TypeFactoryProvider */:
-            injectable = callFactory(view, /** @type {?} */ ((def.parent)), allowPrivateServices, /** @type {?} */ ((providerDef)).value, /** @type {?} */ ((providerDef)).deps);
-            break;
+            return callFactory(view, /** @type {?} */ ((def.parent)), allowPrivateServices, /** @type {?} */ ((providerDef)).value, /** @type {?} */ ((providerDef)).deps);
         case 2048 /* TypeUseExistingProvider */:
-            injectable = resolveDep(view, /** @type {?} */ ((def.parent)), allowPrivateServices, /** @type {?} */ ((providerDef)).deps[0]);
-            break;
+            return resolveDep(view, /** @type {?} */ ((def.parent)), allowPrivateServices, /** @type {?} */ ((providerDef)).deps[0]);
         case 256 /* TypeValueProvider */:
-            injectable = ((providerDef)).value;
-            break;
+            return ((providerDef)).value;
     }
-    return injectable;
 }
 /**
  * @param {?} view
@@ -70749,28 +73252,22 @@ function _createProviderInstance(view, def) {
  */
 function createClass(view, elDef, allowPrivateServices, ctor, deps) {
     var /** @type {?} */ len = deps.length;
-    var /** @type {?} */ injectable;
     switch (len) {
         case 0:
-            injectable = new ctor();
-            break;
+            return new ctor();
         case 1:
-            injectable = new ctor(resolveDep(view, elDef, allowPrivateServices, deps[0]));
-            break;
+            return new ctor(resolveDep(view, elDef, allowPrivateServices, deps[0]));
         case 2:
-            injectable = new ctor(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]));
-            break;
+            return new ctor(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]));
         case 3:
-            injectable = new ctor(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]), resolveDep(view, elDef, allowPrivateServices, deps[2]));
-            break;
+            return new ctor(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]), resolveDep(view, elDef, allowPrivateServices, deps[2]));
         default:
             var /** @type {?} */ depValues = new Array(len);
             for (var /** @type {?} */ i = 0; i < len; i++) {
                 depValues[i] = resolveDep(view, elDef, allowPrivateServices, deps[i]);
             }
-            injectable = new (ctor.bind.apply(ctor, [void 0].concat(depValues)))();
+            return new (ctor.bind.apply(ctor, [void 0].concat(depValues)))();
     }
-    return injectable;
 }
 /**
  * @param {?} view
@@ -70782,28 +73279,22 @@ function createClass(view, elDef, allowPrivateServices, ctor, deps) {
  */
 function callFactory(view, elDef, allowPrivateServices, factory, deps) {
     var /** @type {?} */ len = deps.length;
-    var /** @type {?} */ injectable;
     switch (len) {
         case 0:
-            injectable = factory();
-            break;
+            return factory();
         case 1:
-            injectable = factory(resolveDep(view, elDef, allowPrivateServices, deps[0]));
-            break;
+            return factory(resolveDep(view, elDef, allowPrivateServices, deps[0]));
         case 2:
-            injectable = factory(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]));
-            break;
+            return factory(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]));
         case 3:
-            injectable = factory(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]), resolveDep(view, elDef, allowPrivateServices, deps[2]));
-            break;
+            return factory(resolveDep(view, elDef, allowPrivateServices, deps[0]), resolveDep(view, elDef, allowPrivateServices, deps[1]), resolveDep(view, elDef, allowPrivateServices, deps[2]));
         default:
             var /** @type {?} */ depValues = Array(len);
             for (var /** @type {?} */ i = 0; i < len; i++) {
                 depValues[i] = resolveDep(view, elDef, allowPrivateServices, deps[i]);
             }
-            injectable = factory.apply(void 0, depValues);
+            return factory.apply(void 0, depValues);
     }
-    return injectable;
 }
 // This default value is when checking the hierarchy for a token.
 //
@@ -70862,12 +73353,12 @@ function resolveDep(view, elDef, allowPrivateServices, depDef, notFoundValue) {
                     return compView.renderer;
                 }
                 case ElementRefTokenKey:
-                    return new ElementRef(asElementData(view, elDef.index).renderElement);
+                    return new ElementRef(asElementData(view, elDef.nodeIndex).renderElement);
                 case ViewContainerRefTokenKey:
-                    return asElementData(view, elDef.index).viewContainer;
+                    return asElementData(view, elDef.nodeIndex).viewContainer;
                 case TemplateRefTokenKey: {
                     if (((elDef.element)).template) {
-                        return asElementData(view, elDef.index).template;
+                        return asElementData(view, elDef.nodeIndex).template;
                     }
                     break;
                 }
@@ -70880,9 +73371,10 @@ function resolveDep(view, elDef, allowPrivateServices, depDef, notFoundValue) {
                 default:
                     var /** @type {?} */ providerDef_1 = (((allowPrivateServices ? ((elDef.element)).allProviders : ((elDef.element)).publicProviders)))[tokenKey$$1];
                     if (providerDef_1) {
-                        var /** @type {?} */ providerData = asProviderData(view, providerDef_1.index);
-                        if (providerData.instance === NOT_CREATED) {
-                            providerData.instance = _createProviderInstance(view, providerDef_1);
+                        var /** @type {?} */ providerData = asProviderData(view, providerDef_1.nodeIndex);
+                        if (!providerData) {
+                            providerData = { instance: _createProviderInstance(view, providerDef_1) };
+                            view.nodes[providerDef_1.nodeIndex] = (providerData);
                         }
                         return providerData.instance;
                     }
@@ -70913,7 +73405,7 @@ function resolveDep(view, elDef, allowPrivateServices, depDef, notFoundValue) {
 function findCompView(view, elDef, allowPrivateServices) {
     var /** @type {?} */ compView;
     if (allowPrivateServices) {
-        compView = asElementData(view, elDef.index).componentView;
+        compView = asElementData(view, elDef.nodeIndex).componentView;
     }
     else {
         compView = view;
@@ -70934,7 +73426,7 @@ function findCompView(view, elDef, allowPrivateServices) {
  */
 function updateProp(view, providerData, def, bindingIdx, value, changes) {
     if (def.flags & 32768 /* Component */) {
-        var /** @type {?} */ compView = asElementData(view, /** @type {?} */ ((def.parent)).index).componentView;
+        var /** @type {?} */ compView = asElementData(view, /** @type {?} */ ((def.parent)).nodeIndex).componentView;
         if (compView.def.flags & 2 /* OnPush */) {
             compView.state |= 8 /* ChecksEnabled */;
         }
@@ -70980,7 +73472,7 @@ function callLifecycleHooksChildrenFirst(view, lifecycles) {
             i += nodeDef.childCount;
         }
         while (parent && (parent.flags & 1 /* TypeElement */) &&
-            i === parent.index + parent.childCount) {
+            i === parent.nodeIndex + parent.childCount) {
             // last child of an element
             if (parent.directChildFlags & lifecycles) {
                 callElementProvidersLifecycles(view, parent, lifecycles);
@@ -70996,7 +73488,7 @@ function callLifecycleHooksChildrenFirst(view, lifecycles) {
  * @return {?}
  */
 function callElementProvidersLifecycles(view, elDef, lifecycles) {
-    for (var /** @type {?} */ i = elDef.index + 1; i <= elDef.index + elDef.childCount; i++) {
+    for (var /** @type {?} */ i = elDef.nodeIndex + 1; i <= elDef.nodeIndex + elDef.childCount; i++) {
         var /** @type {?} */ nodeDef = view.def.nodes[i];
         if (nodeDef.flags & lifecycles) {
             callProviderLifecycles(view, i, nodeDef.flags & lifecycles);
@@ -71012,8 +73504,12 @@ function callElementProvidersLifecycles(view, elDef, lifecycles) {
  * @return {?}
  */
 function callProviderLifecycles(view, index, lifecycles) {
-    var /** @type {?} */ provider = asProviderData(view, index).instance;
-    if (provider === NOT_CREATED) {
+    var /** @type {?} */ providerData = asProviderData(view, index);
+    if (!providerData) {
+        return;
+    }
+    var /** @type {?} */ provider = providerData.instance;
+    if (!provider) {
         return;
     }
     Services.setCurrentNode(view, index);
@@ -71054,13 +73550,14 @@ function queryDef(flags, id, bindings) {
     }
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
-        flags: flags,
+        // TODO(vicb): check
+        checkIndex: -1, flags: flags,
         childFlags: 0,
         directChildFlags: 0,
         childMatchedQueries: 0,
@@ -71095,7 +73592,7 @@ function dirtyParentQueries(view) {
         var /** @type {?} */ tplDef = ((view.parentNodeDef));
         view = view.parent;
         // content queries
-        var /** @type {?} */ end = tplDef.index + tplDef.childCount;
+        var /** @type {?} */ end = tplDef.nodeIndex + tplDef.childCount;
         for (var /** @type {?} */ i = 0; i <= end; i++) {
             var /** @type {?} */ nodeDef = view.def.nodes[i];
             if ((nodeDef.flags & 67108864 /* TypeContentQuery */) &&
@@ -71103,7 +73600,7 @@ function dirtyParentQueries(view) {
                 (((nodeDef.query)).filterId & queryIds) === ((nodeDef.query)).filterId) {
                 asQueryList(view, i).setDirty();
             }
-            if ((nodeDef.flags & 1 /* TypeElement */ && i + nodeDef.childCount < tplDef.index) ||
+            if ((nodeDef.flags & 1 /* TypeElement */ && i + nodeDef.childCount < tplDef.nodeIndex) ||
                 !(nodeDef.childFlags & 67108864 /* TypeContentQuery */) ||
                 !(nodeDef.childFlags & 536870912 /* DynamicQuery */)) {
                 // skip elements that don't contain the template element or no query.
@@ -71129,7 +73626,7 @@ function dirtyParentQueries(view) {
  * @return {?}
  */
 function checkAndUpdateQuery(view, nodeDef) {
-    var /** @type {?} */ queryList = asQueryList(view, nodeDef.index);
+    var /** @type {?} */ queryList = asQueryList(view, nodeDef.nodeIndex);
     if (!queryList.dirty) {
         return;
     }
@@ -71137,8 +73634,8 @@ function checkAndUpdateQuery(view, nodeDef) {
     var /** @type {?} */ newValues = ((undefined));
     if (nodeDef.flags & 67108864 /* TypeContentQuery */) {
         var /** @type {?} */ elementDef_1 = ((((nodeDef.parent)).parent));
-        newValues = calcQueryValues(view, elementDef_1.index, elementDef_1.index + elementDef_1.childCount, /** @type {?} */ ((nodeDef.query)), []);
-        directiveInstance = asProviderData(view, /** @type {?} */ ((nodeDef.parent)).index).instance;
+        newValues = calcQueryValues(view, elementDef_1.nodeIndex, elementDef_1.nodeIndex + elementDef_1.childCount, /** @type {?} */ ((nodeDef.query)), []);
+        directiveInstance = asProviderData(view, /** @type {?} */ ((nodeDef.parent)).nodeIndex).instance;
     }
     else if (nodeDef.flags & 134217728 /* TypeViewQuery */) {
         newValues = calcQueryValues(view, 0, view.def.nodes.length - 1, /** @type {?} */ ((nodeDef.query)), []);
@@ -71224,25 +73721,18 @@ function calcQueryValues(view, startIndex, endIndex, queryDef, values) {
 function getQueryValue(view, nodeDef, queryValueType) {
     if (queryValueType != null) {
         // a match
-        var /** @type {?} */ value = void 0;
         switch (queryValueType) {
             case 1 /* RenderElement */:
-                value = asElementData(view, nodeDef.index).renderElement;
-                break;
+                return asElementData(view, nodeDef.nodeIndex).renderElement;
             case 0 /* ElementRef */:
-                value = new ElementRef(asElementData(view, nodeDef.index).renderElement);
-                break;
+                return new ElementRef(asElementData(view, nodeDef.nodeIndex).renderElement);
             case 2 /* TemplateRef */:
-                value = asElementData(view, nodeDef.index).template;
-                break;
+                return asElementData(view, nodeDef.nodeIndex).template;
             case 3 /* ViewContainerRef */:
-                value = asElementData(view, nodeDef.index).viewContainer;
-                break;
+                return asElementData(view, nodeDef.nodeIndex).viewContainer;
             case 4 /* Provider */:
-                value = asProviderData(view, nodeDef.index).instance;
-                break;
+                return asProviderData(view, nodeDef.nodeIndex).instance;
         }
-        return value;
     }
 }
 /**
@@ -71260,12 +73750,13 @@ function getQueryValue(view, nodeDef, queryValueType) {
 function ngContentDef(ngContentIndex, index) {
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
+        checkIndex: -1,
         flags: 8 /* TypeNgContent */,
         childFlags: 0,
         directChildFlags: 0,
@@ -71307,25 +73798,28 @@ function appendNgContent(view, renderHost, def) {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
+ * @param {?} checkIndex
  * @param {?} argCount
  * @return {?}
  */
-function purePipeDef(argCount) {
+function purePipeDef(checkIndex, argCount) {
     // argCount + 1 to include the pipe as first arg
-    return _pureExpressionDef(128 /* TypePurePipe */, new Array(argCount + 1));
+    return _pureExpressionDef(128 /* TypePurePipe */, checkIndex, new Array(argCount + 1));
 }
 /**
+ * @param {?} checkIndex
  * @param {?} argCount
  * @return {?}
  */
-function pureArrayDef(argCount) {
-    return _pureExpressionDef(32 /* TypePureArray */, new Array(argCount));
+function pureArrayDef(checkIndex, argCount) {
+    return _pureExpressionDef(32 /* TypePureArray */, checkIndex, new Array(argCount));
 }
 /**
+ * @param {?} checkIndex
  * @param {?} propToIndex
  * @return {?}
  */
-function pureObjectDef(propToIndex) {
+function pureObjectDef(checkIndex, propToIndex) {
     var /** @type {?} */ keys = Object.keys(propToIndex);
     var /** @type {?} */ nbKeys = keys.length;
     var /** @type {?} */ propertyNames = new Array(nbKeys);
@@ -71334,14 +73828,15 @@ function pureObjectDef(propToIndex) {
         var /** @type {?} */ index = propToIndex[key];
         propertyNames[index] = key;
     }
-    return _pureExpressionDef(64 /* TypePureObject */, propertyNames);
+    return _pureExpressionDef(64 /* TypePureObject */, checkIndex, propertyNames);
 }
 /**
  * @param {?} flags
+ * @param {?} checkIndex
  * @param {?} propertyNames
  * @return {?}
  */
-function _pureExpressionDef(flags, propertyNames) {
+function _pureExpressionDef(flags, checkIndex, propertyNames) {
     var /** @type {?} */ bindings = new Array(propertyNames.length);
     for (var /** @type {?} */ i = 0; i < propertyNames.length; i++) {
         var /** @type {?} */ prop = propertyNames[i];
@@ -71356,12 +73851,13 @@ function _pureExpressionDef(flags, propertyNames) {
     }
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
+        checkIndex: checkIndex,
         flags: flags,
         childFlags: 0,
         directChildFlags: 0,
@@ -71428,7 +73924,7 @@ function checkAndUpdatePureExpressionInline(view, def, v0, v1, v2, v3, v4, v5, v
     if (bindLen > 9 && checkAndUpdateBinding(view, def, 9, v9))
         changed = true;
     if (changed) {
-        var /** @type {?} */ data = asPureExpressionData(view, def.index);
+        var /** @type {?} */ data = asPureExpressionData(view, def.nodeIndex);
         var /** @type {?} */ value = void 0;
         switch (def.flags & 201347067 /* Types */) {
             case 32 /* TypePureArray */:
@@ -71534,7 +74030,7 @@ function checkAndUpdatePureExpressionDynamic(view, def, values) {
         }
     }
     if (changed) {
-        var /** @type {?} */ data = asPureExpressionData(view, def.index);
+        var /** @type {?} */ data = asPureExpressionData(view, def.nodeIndex);
         var /** @type {?} */ value = void 0;
         switch (def.flags & 201347067 /* Types */) {
             case 32 /* TypePureArray */:
@@ -71564,32 +74060,33 @@ function checkAndUpdatePureExpressionDynamic(view, def, values) {
  * found in the LICENSE file at https://angular.io/license
  */
 /**
+ * @param {?} checkIndex
  * @param {?} ngContentIndex
- * @param {?} constants
+ * @param {?} staticText
  * @return {?}
  */
-function textDef(ngContentIndex, constants) {
-    var /** @type {?} */ bindings = new Array(constants.length - 1);
-    for (var /** @type {?} */ i = 1; i < constants.length; i++) {
+function textDef(checkIndex, ngContentIndex, staticText) {
+    var /** @type {?} */ bindings = new Array(staticText.length - 1);
+    for (var /** @type {?} */ i = 1; i < staticText.length; i++) {
         bindings[i - 1] = {
             flags: 8 /* TypeProperty */,
             name: null,
             ns: null,
             nonMinifiedName: null,
             securityContext: null,
-            suffix: constants[i]
+            suffix: staticText[i],
         };
     }
-    var /** @type {?} */ flags = 2;
     return {
         // will bet set by the view definition
-        index: -1,
+        nodeIndex: -1,
         parent: null,
         renderParent: null,
         bindingIndex: -1,
         outputIndex: -1,
         // regular values
-        flags: flags,
+        checkIndex: checkIndex,
+        flags: 2 /* TypeText */,
         childFlags: 0,
         directChildFlags: 0,
         childMatchedQueries: 0,
@@ -71597,13 +74094,13 @@ function textDef(ngContentIndex, constants) {
         matchedQueryIds: 0,
         references: {}, ngContentIndex: ngContentIndex,
         childCount: 0, bindings: bindings,
-        bindingFlags: calcBindingFlags(bindings),
+        bindingFlags: 8 /* TypeProperty */,
         outputs: [],
         element: null,
         provider: null,
-        text: { prefix: constants[0] },
+        text: { prefix: staticText[0] },
         query: null,
-        ngContent: null
+        ngContent: null,
     };
 }
 /**
@@ -71683,7 +74180,7 @@ function checkAndUpdateTextInline(view, def, v0, v1, v2, v3, v4, v5, v6, v7, v8,
             value += _addInterpolationPart(v8, bindings[8]);
         if (bindLen > 9)
             value += _addInterpolationPart(v9, bindings[9]);
-        var /** @type {?} */ renderNode$$1 = asTextData(view, def.index).renderText;
+        var /** @type {?} */ renderNode$$1 = asTextData(view, def.nodeIndex).renderText;
         view.renderer.setValue(renderNode$$1, value);
     }
     return changed;
@@ -71710,7 +74207,7 @@ function checkAndUpdateTextDynamic(view, def, values) {
             value = value + _addInterpolationPart(values[i], bindings[i]);
         }
         value = ((def.text)).prefix + value;
-        var /** @type {?} */ renderNode$$1 = asTextData(view, def.index).renderText;
+        var /** @type {?} */ renderNode$$1 = asTextData(view, def.nodeIndex).renderText;
         view.renderer.setValue(renderNode$$1, value);
     }
     return changed;
@@ -71752,7 +74249,7 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
     var /** @type {?} */ lastRenderRootNode = null;
     for (var /** @type {?} */ i = 0; i < nodes.length; i++) {
         var /** @type {?} */ node = nodes[i];
-        node.index = i;
+        node.nodeIndex = i;
         node.parent = currentParent;
         node.bindingIndex = viewBindingCount;
         node.outputIndex = viewDisposableCount;
@@ -71828,7 +74325,7 @@ function viewDef(flags, nodes, updateDirectives, updateRenderer) {
             // The loop is required because an element could be the last transitive children of several
             // elements. We loop to either the root or the highest opened element (= with remaining
             // children)
-            while (currentParent && i === currentParent.index + currentParent.childCount) {
+            while (currentParent && i === currentParent.nodeIndex + currentParent.childCount) {
                 var /** @type {?} */ newParent = currentParent.parent;
                 if (newParent) {
                     newParent.childFlags |= currentParent.childFlags;
@@ -71880,28 +74377,28 @@ function validateNode(parent, node, nodeCount) {
         }
         if (template.lastRenderRootNode &&
             template.lastRenderRootNode.flags & 16777216 /* EmbeddedViews */) {
-            throw new Error("Illegal State: Last root node of a template can't have embedded views, at index " + node.index + "!");
+            throw new Error("Illegal State: Last root node of a template can't have embedded views, at index " + node.nodeIndex + "!");
         }
     }
     if (node.flags & 20224 /* CatProvider */) {
         var /** @type {?} */ parentFlags = parent ? parent.flags : 0;
         if ((parentFlags & 1 /* TypeElement */) === 0) {
-            throw new Error("Illegal State: Provider/Directive nodes need to be children of elements or anchors, at index " + node.index + "!");
+            throw new Error("Illegal State: StaticProvider/Directive nodes need to be children of elements or anchors, at index " + node.nodeIndex + "!");
         }
     }
     if (node.query) {
         if (node.flags & 67108864 /* TypeContentQuery */ &&
             (!parent || (parent.flags & 16384 /* TypeDirective */) === 0)) {
-            throw new Error("Illegal State: Content Query nodes need to be children of directives, at index " + node.index + "!");
+            throw new Error("Illegal State: Content Query nodes need to be children of directives, at index " + node.nodeIndex + "!");
         }
         if (node.flags & 134217728 /* TypeViewQuery */ && parent) {
-            throw new Error("Illegal State: View Query nodes have to be top level nodes, at index " + node.index + "!");
+            throw new Error("Illegal State: View Query nodes have to be top level nodes, at index " + node.nodeIndex + "!");
         }
     }
     if (node.childCount) {
-        var /** @type {?} */ parentEnd = parent ? parent.index + parent.childCount : nodeCount - 1;
-        if (node.index <= parentEnd && node.index + node.childCount > parentEnd) {
-            throw new Error("Illegal State: childCount of node leads outside of parent, at index " + node.index + "!");
+        var /** @type {?} */ parentEnd = parent ? parent.nodeIndex + parent.childCount : nodeCount - 1;
+        if (node.nodeIndex <= parentEnd && node.nodeIndex + node.childCount > parentEnd) {
+            throw new Error("Illegal State: childCount of node leads outside of parent, at index " + node.nodeIndex + "!");
         }
     }
 }
@@ -71990,7 +74487,7 @@ function createViewNodes(view) {
     var /** @type {?} */ renderHost;
     if (isComponentView(view)) {
         var /** @type {?} */ hostDef = view.parentNodeDef;
-        renderHost = asElementData(/** @type {?} */ ((view.parent)), /** @type {?} */ ((((hostDef)).parent)).index).renderElement;
+        renderHost = asElementData(/** @type {?} */ ((view.parent)), /** @type {?} */ ((((hostDef)).parent)).nodeIndex).renderElement;
     }
     var /** @type {?} */ def = view.def;
     var /** @type {?} */ nodes = view.nodes;
@@ -72024,8 +74521,11 @@ function createViewNodes(view) {
             case 1024 /* TypeFactoryProvider */:
             case 2048 /* TypeUseExistingProvider */:
             case 256 /* TypeValueProvider */: {
-                var /** @type {?} */ instance = createProviderInstance(view, nodeDef);
-                nodeData = ({ instance: instance });
+                nodeData = nodes[i];
+                if (!nodeData && !(nodeDef.flags & 4096 /* LazyProvider */)) {
+                    var /** @type {?} */ instance = createProviderInstance(view, nodeDef);
+                    nodeData = ({ instance: instance });
+                }
                 break;
             }
             case 16 /* TypePipe */: {
@@ -72034,11 +74534,14 @@ function createViewNodes(view) {
                 break;
             }
             case 16384 /* TypeDirective */: {
-                var /** @type {?} */ instance = createDirectiveInstance(view, nodeDef);
-                nodeData = ({ instance: instance });
+                nodeData = nodes[i];
+                if (!nodeData) {
+                    var /** @type {?} */ instance = createDirectiveInstance(view, nodeDef);
+                    nodeData = ({ instance: instance });
+                }
                 if (nodeDef.flags & 32768 /* Component */) {
-                    var /** @type {?} */ compView = asElementData(view, /** @type {?} */ ((nodeDef.parent)).index).componentView;
-                    initView(compView, instance, instance);
+                    var /** @type {?} */ compView = asElementData(view, /** @type {?} */ ((nodeDef.parent)).nodeIndex).componentView;
+                    initView(compView, nodeData.instance, nodeData.instance);
                 }
                 break;
             }
@@ -72176,26 +74679,20 @@ function markProjectedViewsForCheck(view) {
  * @return {?}
  */
 function checkAndUpdateNodeInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9) {
-    var /** @type {?} */ changed = false;
     switch (nodeDef.flags & 201347067 /* Types */) {
         case 1 /* TypeElement */:
-            changed = checkAndUpdateElementInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
-            break;
+            return checkAndUpdateElementInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
         case 2 /* TypeText */:
-            changed = checkAndUpdateTextInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
-            break;
+            return checkAndUpdateTextInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
         case 16384 /* TypeDirective */:
-            changed =
-                checkAndUpdateDirectiveInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
-            break;
+            return checkAndUpdateDirectiveInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
         case 32 /* TypePureArray */:
         case 64 /* TypePureObject */:
         case 128 /* TypePurePipe */:
-            changed =
-                checkAndUpdatePureExpressionInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
-            break;
+            return checkAndUpdatePureExpressionInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
+        default:
+            throw 'unreachable';
     }
-    return changed;
 }
 /**
  * @param {?} view
@@ -72204,34 +74701,20 @@ function checkAndUpdateNodeInline(view, nodeDef, v0, v1, v2, v3, v4, v5, v6, v7,
  * @return {?}
  */
 function checkAndUpdateNodeDynamic(view, nodeDef, values) {
-    var /** @type {?} */ changed = false;
     switch (nodeDef.flags & 201347067 /* Types */) {
         case 1 /* TypeElement */:
-            changed = checkAndUpdateElementDynamic(view, nodeDef, values);
-            break;
+            return checkAndUpdateElementDynamic(view, nodeDef, values);
         case 2 /* TypeText */:
-            changed = checkAndUpdateTextDynamic(view, nodeDef, values);
-            break;
+            return checkAndUpdateTextDynamic(view, nodeDef, values);
         case 16384 /* TypeDirective */:
-            changed = checkAndUpdateDirectiveDynamic(view, nodeDef, values);
-            break;
+            return checkAndUpdateDirectiveDynamic(view, nodeDef, values);
         case 32 /* TypePureArray */:
         case 64 /* TypePureObject */:
         case 128 /* TypePurePipe */:
-            changed = checkAndUpdatePureExpressionDynamic(view, nodeDef, values);
-            break;
+            return checkAndUpdatePureExpressionDynamic(view, nodeDef, values);
+        default:
+            throw 'unreachable';
     }
-    if (changed) {
-        // Update oldValues after all bindings have been updated,
-        // as a setter for a property might update other properties.
-        var /** @type {?} */ bindLen = nodeDef.bindings.length;
-        var /** @type {?} */ bindingStart = nodeDef.bindingIndex;
-        var /** @type {?} */ oldValues = view.oldValues;
-        for (var /** @type {?} */ i = 0; i < bindLen; i++) {
-            oldValues[bindingStart + i] = values[i];
-        }
-    }
-    return changed;
 }
 /**
  * @param {?} view
@@ -72316,9 +74799,9 @@ function checkNoChangesNodeDynamic(view, nodeDef, values) {
  * @return {?}
  */
 function checkNoChangesQuery(view, nodeDef) {
-    var /** @type {?} */ queryList = asQueryList(view, nodeDef.index);
+    var /** @type {?} */ queryList = asQueryList(view, nodeDef.nodeIndex);
     if (queryList.dirty) {
-        throw expressionChangedAfterItHasBeenCheckedError(Services.createDebugContext(view, nodeDef.index), "Query " + ((nodeDef.query)).id + " not dirty", "Query " + ((nodeDef.query)).id + " dirty", (view.state & 1 /* BeforeFirstCheck */) !== 0);
+        throw expressionChangedAfterItHasBeenCheckedError(Services.createDebugContext(view, nodeDef.nodeIndex), "Query " + ((nodeDef.query)).id + " not dirty", "Query " + ((nodeDef.query)).id + " dirty", (view.state & 1 /* BeforeFirstCheck */) !== 0);
     }
 }
 /**
@@ -72511,7 +74994,7 @@ function execQueriesAction(view, queryFlags, staticDynamicQueryFlag, checkType) 
     for (var /** @type {?} */ i = 0; i < nodeCount; i++) {
         var /** @type {?} */ nodeDef = view.def.nodes[i];
         if ((nodeDef.flags & queryFlags) && (nodeDef.flags & staticDynamicQueryFlag)) {
-            Services.setCurrentNode(view, nodeDef.index);
+            Services.setCurrentNode(view, nodeDef.nodeIndex);
             switch (checkType) {
                 case 0 /* CheckAndUpdate */:
                     checkAndUpdateQuery(view, nodeDef);
@@ -72732,7 +75215,7 @@ function applyProviderOverridesToView(def) {
             }
             if (lastElementDef && nodeDef.flags & 3840 /* CatProviderNoDirective */ &&
                 providerOverrides.has(/** @type {?} */ ((nodeDef.provider)).token)) {
-                elIndicesWithOverwrittenProviders.push(/** @type {?} */ ((lastElementDef)).index);
+                elIndicesWithOverwrittenProviders.push(/** @type {?} */ ((lastElementDef)).nodeIndex);
                 lastElementDef = null;
             }
         }
@@ -72751,9 +75234,6 @@ function applyProviderOverridesToView(def) {
                 return;
             }
             if (nodeDef.flags & 3840 /* CatProviderNoDirective */) {
-                // Make all providers lazy, so that we don't get into trouble
-                // with ordering problems of providers on the same element
-                nodeDef.flags |= 4096 /* LazyProvider */;
                 var /** @type {?} */ provider = ((nodeDef.provider));
                 var /** @type {?} */ override = providerOverrides.get(provider.token);
                 if (override) {
@@ -72770,7 +75250,8 @@ function applyProviderOverridesToView(def) {
  * @return {?}
  */
 function applyProviderOverridesToNgModule(def) {
-    if (providerOverrides.size === 0 || !hasOverrrides(def)) {
+    var _a = calcHasOverrides(def), hasOverrides = _a.hasOverrides, hasDeprecatedOverrides = _a.hasDeprecatedOverrides;
+    if (!hasOverrides) {
         return def;
     }
     // clone the whole view definition,
@@ -72782,8 +75263,20 @@ function applyProviderOverridesToNgModule(def) {
      * @param {?} def
      * @return {?}
      */
-    function hasOverrrides(def) {
-        return def.providers.some(function (node) { return !!(node.flags & 3840 /* CatProviderNoDirective */) && providerOverrides.has(node.token); });
+    function calcHasOverrides(def) {
+        var /** @type {?} */ hasOverrides = false;
+        var /** @type {?} */ hasDeprecatedOverrides = false;
+        if (providerOverrides.size === 0) {
+            return { hasOverrides: hasOverrides, hasDeprecatedOverrides: hasDeprecatedOverrides };
+        }
+        def.providers.forEach(function (node) {
+            var /** @type {?} */ override = providerOverrides.get(node.token);
+            if ((node.flags & 3840 /* CatProviderNoDirective */) && override) {
+                hasOverrides = true;
+                hasDeprecatedOverrides = hasDeprecatedOverrides || override.deprecatedBehavior;
+            }
+        });
+        return { hasOverrides: hasOverrides, hasDeprecatedOverrides: hasDeprecatedOverrides };
     }
     /**
      * @param {?} def
@@ -72792,9 +75285,12 @@ function applyProviderOverridesToNgModule(def) {
     function applyProviderOverrides(def) {
         for (var /** @type {?} */ i = 0; i < def.providers.length; i++) {
             var /** @type {?} */ provider = def.providers[i];
-            // Make all providers lazy, so that we don't get into trouble
-            // with ordering problems of providers on the same element
-            provider.flags |= 4096 /* LazyProvider */;
+            if (hasDeprecatedOverrides) {
+                // We had a bug where me made
+                // all providers lazy. Keep this logic behind a flag
+                // for migrating existing users.
+                provider.flags |= 4096 /* LazyProvider */;
+            }
             var /** @type {?} */ override = providerOverrides.get(provider.token);
             if (override) {
                 provider.flags = (provider.flags & ~3840 /* CatProviderNoDirective */) | override.flags;
@@ -72806,7 +75302,7 @@ function applyProviderOverridesToNgModule(def) {
 }
 /**
  * @param {?} view
- * @param {?} nodeIndex
+ * @param {?} checkIndex
  * @param {?} argStyle
  * @param {?=} v0
  * @param {?=} v1
@@ -72820,16 +75316,16 @@ function applyProviderOverridesToNgModule(def) {
  * @param {?=} v9
  * @return {?}
  */
-function prodCheckAndUpdateNode(view, nodeIndex, argStyle, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9) {
-    var /** @type {?} */ nodeDef = view.def.nodes[nodeIndex];
+function prodCheckAndUpdateNode(view, checkIndex, argStyle, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9) {
+    var /** @type {?} */ nodeDef = view.def.nodes[checkIndex];
     checkAndUpdateNode(view, nodeDef, argStyle, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
     return (nodeDef.flags & 224 /* CatPureExpression */) ?
-        asPureExpressionData(view, nodeIndex).value :
+        asPureExpressionData(view, checkIndex).value :
         undefined;
 }
 /**
  * @param {?} view
- * @param {?} nodeIndex
+ * @param {?} checkIndex
  * @param {?} argStyle
  * @param {?=} v0
  * @param {?=} v1
@@ -72843,11 +75339,11 @@ function prodCheckAndUpdateNode(view, nodeIndex, argStyle, v0, v1, v2, v3, v4, v
  * @param {?=} v9
  * @return {?}
  */
-function prodCheckNoChangesNode(view, nodeIndex, argStyle, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9) {
-    var /** @type {?} */ nodeDef = view.def.nodes[nodeIndex];
+function prodCheckNoChangesNode(view, checkIndex, argStyle, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9) {
+    var /** @type {?} */ nodeDef = view.def.nodes[checkIndex];
     checkNoChangesNode(view, nodeDef, argStyle, v0, v1, v2, v3, v4, v5, v6, v7, v8, v9);
     return (nodeDef.flags & 224 /* CatPureExpression */) ?
-        asPureExpressionData(view, nodeIndex).value :
+        asPureExpressionData(view, checkIndex).value :
         undefined;
 }
 /**
@@ -72939,7 +75435,7 @@ function debugUpdateDirectives(view, checkType) {
             debugSetCurrentNode(view, nextDirectiveWithBinding(view, nodeIndex));
         }
         return (nodeDef.flags & 224 /* CatPureExpression */) ?
-            asPureExpressionData(view, nodeDef.index).value :
+            asPureExpressionData(view, nodeDef.nodeIndex).value :
             undefined;
     }
 }
@@ -72977,7 +75473,7 @@ function debugUpdateRenderer(view, checkType) {
             debugSetCurrentNode(view, nextRenderNodeWithBinding(view, nodeIndex));
         }
         return (nodeDef.flags & 224 /* CatPureExpression */) ?
-            asPureExpressionData(view, nodeDef.index).value :
+            asPureExpressionData(view, nodeDef.nodeIndex).value :
             undefined;
     }
 }
@@ -73003,7 +75499,7 @@ function debugCheckAndUpdateNode(view, nodeDef, argStyle, givenValues) {
                 }
             }
             var /** @type {?} */ elDef = ((nodeDef.parent));
-            var /** @type {?} */ el = asElementData(view, elDef.index).renderElement;
+            var /** @type {?} */ el = asElementData(view, elDef.nodeIndex).renderElement;
             if (!((elDef.element)).name) {
                 // a comment.
                 view.renderer.setValue(el, "bindings=" + JSON.stringify(bindingValues, null, 2));
@@ -73129,7 +75625,7 @@ var DebugContext_ = (function () {
          */
         get: function () {
             // Has to be done lazily as we use the DebugContext also during creation of elements...
-            return asElementData(this.elView, this.elDef.index).componentView || this.view;
+            return asElementData(this.elView, this.elDef.nodeIndex).componentView || this.view;
         },
         enumerable: true,
         configurable: true
@@ -73165,7 +75661,7 @@ var DebugContext_ = (function () {
         get: function () {
             var /** @type {?} */ tokens = [];
             if (this.elDef) {
-                for (var /** @type {?} */ i = this.elDef.index + 1; i <= this.elDef.index + this.elDef.childCount; i++) {
+                for (var /** @type {?} */ i = this.elDef.nodeIndex + 1; i <= this.elDef.nodeIndex + this.elDef.childCount; i++) {
                     var /** @type {?} */ childDef = this.elView.def.nodes[i];
                     if (childDef.flags & 20224 /* CatProvider */) {
                         tokens.push(/** @type {?} */ ((childDef.provider)).token);
@@ -73186,7 +75682,7 @@ var DebugContext_ = (function () {
             var /** @type {?} */ references = {};
             if (this.elDef) {
                 collectReferences(this.elView, this.elDef, references);
-                for (var /** @type {?} */ i = this.elDef.index + 1; i <= this.elDef.index + this.elDef.childCount; i++) {
+                for (var /** @type {?} */ i = this.elDef.nodeIndex + 1; i <= this.elDef.nodeIndex + this.elDef.childCount; i++) {
                     var /** @type {?} */ childDef = this.elView.def.nodes[i];
                     if (childDef.flags & 20224 /* CatProvider */) {
                         collectReferences(this.elView, childDef, references);
@@ -73235,11 +75731,11 @@ var DebugContext_ = (function () {
         var /** @type {?} */ logNodeIndex;
         if (this.nodeDef.flags & 2 /* TypeText */) {
             logViewDef = this.view.def;
-            logNodeIndex = this.nodeDef.index;
+            logNodeIndex = this.nodeDef.nodeIndex;
         }
         else {
             logViewDef = this.elView.def;
-            logNodeIndex = this.elDef.index;
+            logNodeIndex = this.elDef.nodeIndex;
         }
         // Note: we only generate a log function for text and element nodes
         // to make the generated code as small as possible.
@@ -73287,7 +75783,7 @@ function findHostElement(view) {
         view = ((view.parent));
     }
     if (view.parent) {
-        return asElementData(view.parent, /** @type {?} */ ((viewParentEl(view))).index);
+        return asElementData(view.parent, /** @type {?} */ ((viewParentEl(view))).nodeIndex);
     }
     return null;
 }
@@ -73721,6 +76217,11 @@ var NgModuleFactory_ = (function (_super) {
  * within a template by referencing the name of the trigger followed by the expression value that
  * the
  * trigger is bound to (in the form of `[\@triggerName]="expression"`.
+ *
+ * Animation trigger bindings strigify values and then match the previous and current values against
+ * any linked transitions. If a boolean value is provided into the trigger binding then it will both
+ * be represented as `1` or `true` and `0` or `false` for a true and false boolean values
+ * respectively.
  *
  * ### Usage
  *
@@ -74207,6 +76708,21 @@ function keyframes$1(steps) {
  * ])
  * ```
  *
+ * ### Boolean values
+ * if a trigger binding value is a boolean value then it can be matched using a transition
+ * expression that compares `true` and `false` or `1` and `0`.
+ *
+ * ```
+ * // in the template
+ * <div [\@openClose]="open ? true : false">...</div>
+ *
+ * // in the component metadata
+ * trigger('openClose', [
+ *   state('true', style({ height: '*' })),
+ *   state('false', style({ height: '0px' })),
+ *   transition('false <=> true', animate(500))
+ * ])
+ * ```
  * {\@example core/animation/ts/dsl/animation_example.ts region='Component'}
  *
  * \@experimental Animation support is experimental.
@@ -74231,7 +76747,7 @@ function transition$1(stateChangeExpr, steps, options) {
  * var fadeAnimation = animation([
  *   style({ opacity: '{{ start }}' }),
  *   animate('{{ time }}',
- *     style({ opacity: '{{ end }}'))
+ *     style({ opacity: '{{ end }}'}))
  * ], { params: { time: '1000ms', start: 0, end: 1 }});
  * ```
  *
@@ -74735,16 +77251,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ɵr", function() { return REQUIRED_VALIDATOR; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__ = __webpack_require__("../../../../rxjs/observable/forkJoin.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__ = __webpack_require__("../../../../rxjs/observable/fromPromise.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__ = __webpack_require__("../../../../rxjs/operator/map.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__ = __webpack_require__("../../../../rxjs/_esm5/observable/forkJoin.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__ = __webpack_require__("../../../../rxjs/_esm5/observable/fromPromise.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/operator/map.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -75218,7 +77731,7 @@ var Validators = (function () {
             return null;
         return function (control) {
             var /** @type {?} */ observables = _executeAsyncValidators(control, presentValidators).map(toObservable);
-            return __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__["map"].call(Object(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__["forkJoin"])(observables), _mergeErrors);
+            return __WEBPACK_IMPORTED_MODULE_4_rxjs_operator_map__["a" /* map */].call(Object(__WEBPACK_IMPORTED_MODULE_2_rxjs_observable_forkJoin__["a" /* forkJoin */])(observables), _mergeErrors);
         };
     };
     return Validators;
@@ -75235,7 +77748,7 @@ function isPresent(o) {
  * @return {?}
  */
 function toObservable(r) {
-    var /** @type {?} */ obs = Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["ɵisPromise"])(r) ? Object(__WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__["fromPromise"])(r) : r;
+    var /** @type {?} */ obs = Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["ɵisPromise"])(r) ? Object(__WEBPACK_IMPORTED_MODULE_3_rxjs_observable_fromPromise__["a" /* fromPromise */])(r) : r;
     if (!(Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["ɵisObservable"])(obs))) {
         throw new Error("Expected validator to return Promise or Observable.");
     }
@@ -78625,6 +81138,13 @@ var resolvedPromise = Promise.resolve(null);
  * triggered a form submission. The `ngSubmit` event will be emitted with the original form
  * submission event.
  *
+ * In template driven forms, all `<form>` tags are automatically tagged as `NgForm`.
+ * If you want to import the `FormsModule` but skip its usage in some forms,
+ * for example, to use native HTML5 validation, you can add `ngNoForm` and the `<form>`
+ * tags won't create an `NgForm` directive. In reactive forms, using `ngNoForm` is
+ * unnecessary because the `<form>` tags are inert. In that case, you would
+ * refrain from using the `formGroup` directive.
+ *
  * {\@example forms/ts/simpleForm/simple_form_example.ts region='Component'}
  *
  * * **npm package**: `\@angular/forms`
@@ -80669,7 +83189,7 @@ FormBuilder.ctorParameters = function () { return []; };
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -80865,7 +83385,7 @@ ReactiveFormsModule.ctorParameters = function () { return []; };
 /* unused harmony export ConnectionBackend */
 /* unused harmony export XSRFStrategy */
 /* unused harmony export Request */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return Response; });
+/* unused harmony export Response */
 /* unused harmony export QueryEncoder */
 /* unused harmony export URLSearchParams */
 /* unused harmony export VERSION */
@@ -80877,12 +83397,11 @@ ReactiveFormsModule.ctorParameters = function () { return []; };
 /* unused harmony export ɵd */
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("../../../../rxjs/Observable.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -81923,7 +84442,7 @@ var JSONPConnection_ = (function (_super) {
             throw new TypeError(JSONP_ERR_WRONG_METHOD);
         }
         _this.request = req;
-        _this.response = new __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["Observable"](function (responseObserver) {
+        _this.response = new __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["a" /* Observable */](function (responseObserver) {
             _this.readyState = ReadyState.Loading;
             var id = _this._id = _dom.nextRequestID();
             _dom.exposeConnection(id, _this);
@@ -82066,7 +84585,7 @@ var XHRConnection = (function () {
     function XHRConnection(req, browserXHR, baseResponseOptions) {
         var _this = this;
         this.request = req;
-        this.response = new __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["Observable"](function (responseObserver) {
+        this.response = new __WEBPACK_IMPORTED_MODULE_2_rxjs_Observable__["a" /* Observable */](function (responseObserver) {
             var _xhr = browserXHR.build();
             _xhr.open(RequestMethod[req.method].toUpperCase(), req.url);
             if (req.withCredentials != null) {
@@ -83037,7 +85556,7 @@ JsonpModule.ctorParameters = function () { return []; };
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -83083,7 +85602,7 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_1__angular_core__["Version"]('4.4.4'
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -83216,7 +85735,7 @@ var CachedResourceLoader = (function (_super) {
 /**
  * @stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -83305,7 +85824,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -83417,8 +85936,6 @@ var DomAdapter = (function () {
         enumerable: true,
         configurable: true
     });
-    ;
-    ;
     /**
      * @abstract
      * @param {?} nodeA
@@ -85784,7 +88301,6 @@ var EventManagerPlugin = (function () {
         }
         return this.addEventListener(target, eventName, handler);
     };
-    ;
     return EventManagerPlugin;
 }());
 /**
@@ -85972,7 +88488,6 @@ var DomRendererFactory2 = (function () {
         this.rendererByCompId = new Map();
         this.defaultRenderer = new DefaultDomRenderer2(eventManager);
     }
-    ;
     /**
      * @param {?} element
      * @param {?} type
@@ -87712,7 +90227,7 @@ var By = (function () {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.
@@ -87805,46 +90320,28 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_tslib__ = __webpack_require__("../../../../tslib/tslib.es6.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common__ = __webpack_require__("../../../common/@angular/common.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__ = __webpack_require__("../../../../rxjs/BehaviorSubject.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__("../../../../rxjs/Subject.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__ = __webpack_require__("../../../../rxjs/observable/from.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__ = __webpack_require__("../../../../rxjs/observable/of.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__ = __webpack_require__("../../../../rxjs/operator/concatMap.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__ = __webpack_require__("../../../../rxjs/operator/every.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__ = __webpack_require__("../../../../rxjs/operator/first.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__ = __webpack_require__("../../../../rxjs/operator/last.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__ = __webpack_require__("../../../../rxjs/operator/map.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__ = __webpack_require__("../../../../rxjs/operator/mergeMap.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__ = __webpack_require__("../../../../rxjs/operator/reduce.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__ = __webpack_require__("../../../../rxjs/Observable.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__ = __webpack_require__("../../../../rxjs/operator/catch.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__ = __webpack_require__("../../../../rxjs/operator/concatAll.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__ = __webpack_require__("../../../../rxjs/util/EmptyError.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__ = __webpack_require__("../../../../rxjs/observable/fromPromise.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__ = __webpack_require__("../../../../rxjs/operator/mergeAll.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__ = __webpack_require__("../../../../rxjs/_esm5/BehaviorSubject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__ = __webpack_require__("../../../../rxjs/_esm5/Subject.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__ = __webpack_require__("../../../../rxjs/_esm5/observable/from.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__ = __webpack_require__("../../../../rxjs/_esm5/observable/of.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__ = __webpack_require__("../../../../rxjs/_esm5/operator/concatMap.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__ = __webpack_require__("../../../../rxjs/_esm5/operator/every.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__ = __webpack_require__("../../../../rxjs/_esm5/operator/first.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__ = __webpack_require__("../../../../rxjs/_esm5/operator/last.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/operator/map.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__ = __webpack_require__("../../../../rxjs/_esm5/operator/mergeMap.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__ = __webpack_require__("../../../../rxjs/_esm5/operator/reduce.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__ = __webpack_require__("../../../../rxjs/_esm5/Observable.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__ = __webpack_require__("../../../../rxjs/_esm5/operator/catch.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__ = __webpack_require__("../../../../rxjs/_esm5/operator/concatAll.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__ = __webpack_require__("../../../../rxjs/_esm5/util/EmptyError.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__ = __webpack_require__("../../../../rxjs/_esm5/observable/fromPromise.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__ = __webpack_require__("../../../../rxjs/_esm5/operator/mergeAll.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__angular_platform_browser__ = __webpack_require__("../../../platform-browser/@angular/platform-browser.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__ = __webpack_require__("../../../../rxjs/operator/filter.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__ = __webpack_require__("../../../../rxjs/_esm5/operator/filter.js");
 
 /**
- * @license Angular v4.4.4
+ * @license Angular v4.4.6
  * (c) 2010-2017 Google, Inc. https://angular.io/
  * License: MIT
  */
@@ -88446,13 +90943,13 @@ function forEach(map$$1, callback) {
  */
 function waitForMap(obj, fn) {
     if (Object.keys(obj).length === 0) {
-        return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])({});
+        return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])({});
     }
     var /** @type {?} */ waitHead = [];
     var /** @type {?} */ waitTail = [];
     var /** @type {?} */ res = {};
     forEach(obj, function (a, k) {
-        var /** @type {?} */ mapped = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(fn(k, a), function (r) { return res[k] = r; });
+        var /** @type {?} */ mapped = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(fn(k, a), function (r) { return res[k] = r; });
         if (k === PRIMARY_OUTLET) {
             waitHead.push(mapped);
         }
@@ -88460,17 +90957,17 @@ function waitForMap(obj, fn) {
             waitTail.push(mapped);
         }
     });
-    var /** @type {?} */ concat$ = __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__["concatAll"].call(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"].apply(void 0, waitHead.concat(waitTail)));
-    var /** @type {?} */ last$ = __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__["last"].call(concat$);
-    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(last$, function () { return res; });
+    var /** @type {?} */ concat$ = __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__["a" /* concatAll */].call(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */].apply(void 0, waitHead.concat(waitTail)));
+    var /** @type {?} */ last$ = __WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__["a" /* last */].call(concat$);
+    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(last$, function () { return res; });
 }
 /**
  * @param {?} observables
  * @return {?}
  */
 function andObservables(observables) {
-    var /** @type {?} */ merged$ = __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__["mergeAll"].call(observables);
-    return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["every"].call(merged$, function (result) { return result === true; });
+    var /** @type {?} */ merged$ = __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__["a" /* mergeAll */].call(observables);
+    return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["a" /* every */].call(merged$, function (result) { return result === true; });
 }
 /**
  * @template T
@@ -88485,9 +90982,9 @@ function wrapIntoObservable(value) {
         // Use `Promise.resolve()` to wrap promise-like instances.
         // Required ie when a Resolver returns a AngularJS `$q` promise to correctly trigger the
         // change detection.
-        return Object(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__["fromPromise"])(Promise.resolve(value));
+        return Object(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__["a" /* fromPromise */])(Promise.resolve(value));
     }
-    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(/** @type {?} */ (value));
+    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(/** @type {?} */ (value));
 }
 /**
  * @license
@@ -89214,28 +91711,28 @@ var AbsoluteRedirect = (function () {
  * @return {?}
  */
 function noMatch(segmentGroup) {
-    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["Observable"](function (obs) { return obs.error(new NoMatch(segmentGroup)); });
+    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["a" /* Observable */](function (obs) { return obs.error(new NoMatch(segmentGroup)); });
 }
 /**
  * @param {?} newTree
  * @return {?}
  */
 function absoluteRedirect(newTree) {
-    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["Observable"](function (obs) { return obs.error(new AbsoluteRedirect(newTree)); });
+    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["a" /* Observable */](function (obs) { return obs.error(new AbsoluteRedirect(newTree)); });
 }
 /**
  * @param {?} redirectTo
  * @return {?}
  */
 function namedOutletsRedirect(redirectTo) {
-    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["Observable"](function (obs) { return obs.error(new Error("Only absolute redirects can have named outlets. redirectTo: '" + redirectTo + "'")); });
+    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["a" /* Observable */](function (obs) { return obs.error(new Error("Only absolute redirects can have named outlets. redirectTo: '" + redirectTo + "'")); });
 }
 /**
  * @param {?} route
  * @return {?}
  */
 function canLoadFails(route) {
-    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["Observable"](function (obs) { return obs.error(navigationCancelingError("Cannot load children because the guard of the route \"path: '" + route.path + "'\" returned false")); });
+    return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["a" /* Observable */](function (obs) { return obs.error(navigationCancelingError("Cannot load children because the guard of the route \"path: '" + route.path + "'\" returned false")); });
 }
 /**
  * Returns the `UrlTree` with the redirection applied.
@@ -89273,8 +91770,8 @@ var ApplyRedirects = (function () {
     ApplyRedirects.prototype.apply = function () {
         var _this = this;
         var /** @type {?} */ expanded$ = this.expandSegmentGroup(this.ngModule, this.config, this.urlTree.root, PRIMARY_OUTLET);
-        var /** @type {?} */ urlTrees$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup, _this.urlTree.queryParams, /** @type {?} */ ((_this.urlTree.fragment))); });
-        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["_catch"].call(urlTrees$, function (e) {
+        var /** @type {?} */ urlTrees$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup, _this.urlTree.queryParams, /** @type {?} */ ((_this.urlTree.fragment))); });
+        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["a" /* _catch */].call(urlTrees$, function (e) {
             if (e instanceof AbsoluteRedirect) {
                 // after an absolute redirect we do not apply any more redirects!
                 _this.allowRedirects = false;
@@ -89294,8 +91791,8 @@ var ApplyRedirects = (function () {
     ApplyRedirects.prototype.match = function (tree) {
         var _this = this;
         var /** @type {?} */ expanded$ = this.expandSegmentGroup(this.ngModule, this.config, tree.root, PRIMARY_OUTLET);
-        var /** @type {?} */ mapped$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup, tree.queryParams, /** @type {?} */ ((tree.fragment))); });
-        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["_catch"].call(mapped$, function (e) {
+        var /** @type {?} */ mapped$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(expanded$, function (rootSegmentGroup) { return _this.createUrlTree(rootSegmentGroup, tree.queryParams, /** @type {?} */ ((tree.fragment))); });
+        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["a" /* _catch */].call(mapped$, function (e) {
             if (e instanceof NoMatch) {
                 throw _this.noMatchError(e);
             }
@@ -89331,7 +91828,7 @@ var ApplyRedirects = (function () {
      */
     ApplyRedirects.prototype.expandSegmentGroup = function (ngModule, routes, segmentGroup, outlet) {
         if (segmentGroup.segments.length === 0 && segmentGroup.hasChildren()) {
-            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(this.expandChildren(ngModule, routes, segmentGroup), function (children) { return new UrlSegmentGroup([], children); });
+            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(this.expandChildren(ngModule, routes, segmentGroup), function (children) { return new UrlSegmentGroup([], children); });
         }
         return this.expandSegment(ngModule, segmentGroup, routes, segmentGroup.segments, outlet, true);
     };
@@ -89356,22 +91853,22 @@ var ApplyRedirects = (function () {
      */
     ApplyRedirects.prototype.expandSegment = function (ngModule, segmentGroup, routes, segments, outlet, allowRedirects) {
         var _this = this;
-        var /** @type {?} */ routes$ = __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"].apply(void 0, routes);
-        var /** @type {?} */ processedRoutes$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(routes$, function (r) {
+        var /** @type {?} */ routes$ = __WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */].apply(void 0, routes);
+        var /** @type {?} */ processedRoutes$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(routes$, function (r) {
             var /** @type {?} */ expanded$ = _this.expandSegmentAgainstRoute(ngModule, segmentGroup, routes, r, segments, outlet, allowRedirects);
-            return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["_catch"].call(expanded$, function (e) {
+            return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["a" /* _catch */].call(expanded$, function (e) {
                 if (e instanceof NoMatch) {
-                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null);
+                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null);
                 }
                 throw e;
             });
         });
-        var /** @type {?} */ concattedProcessedRoutes$ = __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__["concatAll"].call(processedRoutes$);
-        var /** @type {?} */ first$ = __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["first"].call(concattedProcessedRoutes$, function (s) { return !!s; });
-        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["_catch"].call(first$, function (e, _) {
-            if (e instanceof __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__["EmptyError"]) {
+        var /** @type {?} */ concattedProcessedRoutes$ = __WEBPACK_IMPORTED_MODULE_16_rxjs_operator_concatAll__["a" /* concatAll */].call(processedRoutes$);
+        var /** @type {?} */ first$ = __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["a" /* first */].call(concattedProcessedRoutes$, function (s) { return !!s; });
+        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["a" /* _catch */].call(first$, function (e, _) {
+            if (e instanceof __WEBPACK_IMPORTED_MODULE_17_rxjs_util_EmptyError__["a" /* EmptyError */]) {
                 if (_this.noLeftoversInUrl(segmentGroup, segments, outlet)) {
-                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(new UrlSegmentGroup([], {}));
+                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(new UrlSegmentGroup([], {}));
                 }
                 throw new NoMatch(segmentGroup);
             }
@@ -89437,7 +91934,7 @@ var ApplyRedirects = (function () {
         if (((route.redirectTo)).startsWith('/')) {
             return absoluteRedirect(newTree);
         }
-        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(this.lineralizeSegments(route, newTree), function (newSegments) {
+        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(this.lineralizeSegments(route, newTree), function (newSegments) {
             var /** @type {?} */ group = new UrlSegmentGroup(newSegments, {});
             return _this.expandSegment(ngModule, group, routes, newSegments, outlet, false);
         });
@@ -89460,7 +91957,7 @@ var ApplyRedirects = (function () {
         if (((route.redirectTo)).startsWith('/')) {
             return absoluteRedirect(newTree);
         }
-        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(this.lineralizeSegments(route, newTree), function (newSegments) {
+        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(this.lineralizeSegments(route, newTree), function (newSegments) {
             return _this.expandSegment(ngModule, segmentGroup, routes, newSegments.concat(segments.slice(lastChild)), outlet, false);
         });
     };
@@ -89475,31 +91972,31 @@ var ApplyRedirects = (function () {
         var _this = this;
         if (route.path === '**') {
             if (route.loadChildren) {
-                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(this.configLoader.load(ngModule.injector, route), function (cfg) {
+                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(this.configLoader.load(ngModule.injector, route), function (cfg) {
                     route._loadedConfig = cfg;
                     return new UrlSegmentGroup(segments, {});
                 });
             }
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(new UrlSegmentGroup(segments, {}));
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(new UrlSegmentGroup(segments, {}));
         }
         var _a = match(rawSegmentGroup, route, segments), matched = _a.matched, consumedSegments = _a.consumedSegments, lastChild = _a.lastChild;
         if (!matched)
             return noMatch(rawSegmentGroup);
         var /** @type {?} */ rawSlicedSegments = segments.slice(lastChild);
         var /** @type {?} */ childConfig$ = this.getChildConfig(ngModule, route);
-        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(childConfig$, function (routerConfig) {
+        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(childConfig$, function (routerConfig) {
             var /** @type {?} */ childModule = routerConfig.module;
             var /** @type {?} */ childConfig = routerConfig.routes;
             var _a = split(rawSegmentGroup, consumedSegments, rawSlicedSegments, childConfig), segmentGroup = _a.segmentGroup, slicedSegments = _a.slicedSegments;
             if (slicedSegments.length === 0 && segmentGroup.hasChildren()) {
                 var /** @type {?} */ expanded$_1 = _this.expandChildren(childModule, childConfig, segmentGroup);
-                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(expanded$_1, function (children) { return new UrlSegmentGroup(consumedSegments, children); });
+                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(expanded$_1, function (children) { return new UrlSegmentGroup(consumedSegments, children); });
             }
             if (childConfig.length === 0 && slicedSegments.length === 0) {
-                return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(new UrlSegmentGroup(consumedSegments, {}));
+                return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(new UrlSegmentGroup(consumedSegments, {}));
             }
             var /** @type {?} */ expanded$ = _this.expandSegment(childModule, segmentGroup, childConfig, slicedSegments, PRIMARY_OUTLET, true);
-            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(expanded$, function (cs) { return new UrlSegmentGroup(consumedSegments.concat(cs.segments), cs.children); });
+            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(expanded$, function (cs) { return new UrlSegmentGroup(consumedSegments.concat(cs.segments), cs.children); });
         });
     };
     /**
@@ -89511,16 +92008,16 @@ var ApplyRedirects = (function () {
         var _this = this;
         if (route.children) {
             // The children belong to the same module
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(new LoadedRouterConfig(route.children, ngModule));
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(new LoadedRouterConfig(route.children, ngModule));
         }
         if (route.loadChildren) {
             // lazy children belong to the loaded module
             if (route._loadedConfig !== undefined) {
-                return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(route._loadedConfig);
+                return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(route._loadedConfig);
             }
-            return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(runCanLoadGuard(ngModule.injector, route), function (shouldLoad) {
+            return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(runCanLoadGuard(ngModule.injector, route), function (shouldLoad) {
                 if (shouldLoad) {
-                    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(_this.configLoader.load(ngModule.injector, route), function (cfg) {
+                    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(_this.configLoader.load(ngModule.injector, route), function (cfg) {
                         route._loadedConfig = cfg;
                         return cfg;
                     });
@@ -89528,7 +92025,7 @@ var ApplyRedirects = (function () {
                 return canLoadFails(route);
             });
         }
-        return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(new LoadedRouterConfig([], ngModule));
+        return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(new LoadedRouterConfig([], ngModule));
     };
     /**
      * @param {?} route
@@ -89541,7 +92038,7 @@ var ApplyRedirects = (function () {
         while (true) {
             res = res.concat(c.segments);
             if (c.numberOfChildren === 0) {
-                return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(res);
+                return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(res);
             }
             if (c.numberOfChildren > 1 || !c.children[PRIMARY_OUTLET]) {
                 return namedOutletsRedirect(/** @type {?} */ ((route.redirectTo)));
@@ -89655,8 +92152,8 @@ var ApplyRedirects = (function () {
 function runCanLoadGuard(moduleInjector, route) {
     var /** @type {?} */ canLoad = route.canLoad;
     if (!canLoad || canLoad.length === 0)
-        return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(true);
-    var /** @type {?} */ obs = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(canLoad), function (injectionToken) {
+        return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(true);
+    var /** @type {?} */ obs = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(canLoad), function (injectionToken) {
         var /** @type {?} */ guard = moduleInjector.get(injectionToken);
         return wrapIntoObservable(guard.canLoad ? guard.canLoad(route) : guard(route));
     });
@@ -89972,11 +92469,11 @@ var RouterState = (function (_super) {
  */
 function createEmptyState(urlTree, rootComponent) {
     var /** @type {?} */ snapshot = createEmptyStateSnapshot(urlTree, rootComponent);
-    var /** @type {?} */ emptyUrl = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"]([new UrlSegment('', {})]);
-    var /** @type {?} */ emptyParams = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"]({});
-    var /** @type {?} */ emptyData = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"]({});
-    var /** @type {?} */ emptyQueryParams = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"]({});
-    var /** @type {?} */ fragment = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"]('');
+    var /** @type {?} */ emptyUrl = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */]([new UrlSegment('', {})]);
+    var /** @type {?} */ emptyParams = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */]({});
+    var /** @type {?} */ emptyData = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */]({});
+    var /** @type {?} */ emptyQueryParams = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */]({});
+    var /** @type {?} */ fragment = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */]('');
     var /** @type {?} */ activated = new ActivatedRoute(emptyUrl, emptyParams, emptyQueryParams, fragment, emptyData, PRIMARY_OUTLET, rootComponent, snapshot.root);
     activated.snapshot = snapshot.root;
     return new RouterState(new TreeNode(activated, []), snapshot);
@@ -90097,7 +92594,7 @@ var ActivatedRoute = (function () {
          */
         get: function () {
             if (!this._paramMap) {
-                this._paramMap = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(this.params, function (p) { return convertToParamMap(p); });
+                this._paramMap = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(this.params, function (p) { return convertToParamMap(p); });
             }
             return this._paramMap;
         },
@@ -90111,7 +92608,7 @@ var ActivatedRoute = (function () {
         get: function () {
             if (!this._queryParamMap) {
                 this._queryParamMap =
-                    __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(this.queryParams, function (p) { return convertToParamMap(p); });
+                    __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(this.queryParams, function (p) { return convertToParamMap(p); });
             }
             return this._queryParamMap;
         },
@@ -90484,7 +92981,7 @@ function createOrReuseChildren(routeReuseStrategy, curr, prevState) {
  * @return {?}
  */
 function createActivatedRoute(c) {
-    return new ActivatedRoute(new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"](c.url), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"](c.params), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"](c.queryParams), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"](c.fragment), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"](c.data), c.outlet, c.component, c);
+    return new ActivatedRoute(new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](c.url), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](c.params), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](c.queryParams), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](c.fragment), new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](c.data), c.outlet, c.component, c);
 }
 /**
  * @license
@@ -90909,10 +93406,10 @@ var Recognizer = (function () {
             var /** @type {?} */ rootNode = new TreeNode(root, children);
             var /** @type {?} */ routeState = new RouterStateSnapshot(this.url, rootNode);
             this.inheritParamsAndData(routeState._root);
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(routeState);
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(routeState);
         }
         catch (e) {
-            return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["Observable"](function (obs) { return obs.error(e); });
+            return new __WEBPACK_IMPORTED_MODULE_14_rxjs_Observable__["a" /* Observable */](function (obs) { return obs.error(e); });
         }
     };
     /**
@@ -91357,7 +93854,7 @@ var RouterConfigLoader = (function () {
             this.onLoadStartListener(route);
         }
         var /** @type {?} */ moduleFactory$ = this.loadModuleFactory(/** @type {?} */ ((route.loadChildren)));
-        return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(moduleFactory$, function (factory) {
+        return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(moduleFactory$, function (factory) {
             if (_this.onLoadEndListener) {
                 _this.onLoadEndListener(route);
             }
@@ -91372,15 +93869,15 @@ var RouterConfigLoader = (function () {
     RouterConfigLoader.prototype.loadModuleFactory = function (loadChildren) {
         var _this = this;
         if (typeof loadChildren === 'string') {
-            return Object(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__["fromPromise"])(this.loader.load(loadChildren));
+            return Object(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__["a" /* fromPromise */])(this.loader.load(loadChildren));
         }
         else {
-            return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(wrapIntoObservable(loadChildren()), function (t) {
+            return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(wrapIntoObservable(loadChildren()), function (t) {
                 if (t instanceof __WEBPACK_IMPORTED_MODULE_2__angular_core__["NgModuleFactory"]) {
-                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(t);
+                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(t);
                 }
                 else {
-                    return Object(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__["fromPromise"])(_this.compiler.compileModuleAsync(t));
+                    return Object(__WEBPACK_IMPORTED_MODULE_18_rxjs_observable_fromPromise__["a" /* fromPromise */])(_this.compiler.compileModuleAsync(t));
                 }
             });
         }
@@ -91477,7 +93974,7 @@ function defaultErrorHandler(error) {
  * @return {?}
  */
 function defaultRouterHook(snapshot) {
-    return (Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null));
+    return (Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null));
 }
 /**
  * \@whatItDoes Provides the navigation and url manipulation capabilities.
@@ -91506,7 +94003,7 @@ var Router = (function () {
         this.rootContexts = rootContexts;
         this.location = location;
         this.config = config;
-        this.navigations = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["BehaviorSubject"](/** @type {?} */ ((null)));
+        this.navigations = new __WEBPACK_IMPORTED_MODULE_3_rxjs_BehaviorSubject__["a" /* BehaviorSubject */](/** @type {?} */ ((null)));
         this.routerEvents = new __WEBPACK_IMPORTED_MODULE_4_rxjs_Subject__["Subject"]();
         this.navigationId = 0;
         /**
@@ -91824,7 +94321,7 @@ var Router = (function () {
      */
     Router.prototype.processNavigations = function () {
         var _this = this;
-        __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["concatMap"]
+        __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["a" /* concatMap */]
             .call(this.navigations, function (nav) {
             if (nav) {
                 _this.executeScheduledNavigation(nav);
@@ -91833,7 +94330,7 @@ var Router = (function () {
                 return nav.promise.catch(function () { });
             }
             else {
-                return (Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null));
+                return (Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null));
             }
         })
             .subscribe(function () { });
@@ -91924,22 +94421,22 @@ var Router = (function () {
             if (!precreatedState) {
                 var /** @type {?} */ moduleInjector = _this.ngModule.injector;
                 var /** @type {?} */ redirectsApplied$ = applyRedirects(moduleInjector, _this.configLoader, _this.urlSerializer, url, _this.config);
-                urlAndSnapshot$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(redirectsApplied$, function (appliedUrl) {
-                    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(recognize(_this.rootComponentType, _this.config, appliedUrl, _this.serializeUrl(appliedUrl)), function (snapshot) {
+                urlAndSnapshot$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(redirectsApplied$, function (appliedUrl) {
+                    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(recognize(_this.rootComponentType, _this.config, appliedUrl, _this.serializeUrl(appliedUrl)), function (snapshot) {
                         _this.routerEvents.next(new RoutesRecognized(id, _this.serializeUrl(url), _this.serializeUrl(appliedUrl), snapshot));
                         return { appliedUrl: appliedUrl, snapshot: snapshot };
                     });
                 });
             }
             else {
-                urlAndSnapshot$ = Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])({ appliedUrl: url, snapshot: precreatedState });
+                urlAndSnapshot$ = Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])({ appliedUrl: url, snapshot: precreatedState });
             }
-            var /** @type {?} */ beforePreactivationDone$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(urlAndSnapshot$, function (p) {
-                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(_this.hooks.beforePreactivation(p.snapshot), function () { return p; });
+            var /** @type {?} */ beforePreactivationDone$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(urlAndSnapshot$, function (p) {
+                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(_this.hooks.beforePreactivation(p.snapshot), function () { return p; });
             });
             // run preactivation: guards and data resolvers
             var /** @type {?} */ preActivation;
-            var /** @type {?} */ preactivationTraverse$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(beforePreactivationDone$, function (_a) {
+            var /** @type {?} */ preactivationTraverse$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(beforePreactivationDone$, function (_a) {
                 var appliedUrl = _a.appliedUrl, snapshot = _a.snapshot;
                 var /** @type {?} */ moduleInjector = _this.ngModule.injector;
                 preActivation =
@@ -91947,36 +94444,36 @@ var Router = (function () {
                 preActivation.traverse(_this.rootContexts);
                 return { appliedUrl: appliedUrl, snapshot: snapshot };
             });
-            var /** @type {?} */ preactivationCheckGuards$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(preactivationTraverse$, function (_a) {
+            var /** @type {?} */ preactivationCheckGuards$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(preactivationTraverse$, function (_a) {
                 var appliedUrl = _a.appliedUrl, snapshot = _a.snapshot;
                 if (_this.navigationId !== id)
-                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(false);
+                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(false);
                 _this.triggerEvent(new GuardsCheckStart(id, _this.serializeUrl(url), appliedUrl, snapshot));
-                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(preActivation.checkGuards(), function (shouldActivate) {
+                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(preActivation.checkGuards(), function (shouldActivate) {
                     _this.triggerEvent(new GuardsCheckEnd(id, _this.serializeUrl(url), appliedUrl, snapshot, shouldActivate));
                     return { appliedUrl: appliedUrl, snapshot: snapshot, shouldActivate: shouldActivate };
                 });
             });
-            var /** @type {?} */ preactivationResolveData$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(preactivationCheckGuards$, function (p) {
+            var /** @type {?} */ preactivationResolveData$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(preactivationCheckGuards$, function (p) {
                 if (_this.navigationId !== id)
-                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(false);
+                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(false);
                 if (p.shouldActivate && preActivation.isActivating()) {
                     _this.triggerEvent(new ResolveStart(id, _this.serializeUrl(url), p.appliedUrl, p.snapshot));
-                    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(preActivation.resolveData(), function () {
+                    return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(preActivation.resolveData(), function () {
                         _this.triggerEvent(new ResolveEnd(id, _this.serializeUrl(url), p.appliedUrl, p.snapshot));
                         return p;
                     });
                 }
                 else {
-                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(p);
+                    return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(p);
                 }
             });
-            var /** @type {?} */ preactivationDone$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(preactivationResolveData$, function (p) {
-                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(_this.hooks.afterPreactivation(p.snapshot), function () { return p; });
+            var /** @type {?} */ preactivationDone$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(preactivationResolveData$, function (p) {
+                return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(_this.hooks.afterPreactivation(p.snapshot), function () { return p; });
             });
             // create router state
             // this operation has side effects => route state is being affected
-            var /** @type {?} */ routerState$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(preactivationDone$, function (_a) {
+            var /** @type {?} */ routerState$ = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(preactivationDone$, function (_a) {
                 var appliedUrl = _a.appliedUrl, snapshot = _a.snapshot, shouldActivate = _a.shouldActivate;
                 if (shouldActivate) {
                     var /** @type {?} */ state = createRouterState(_this.routeReuseStrategy, snapshot, _this.currentRouterState);
@@ -92113,10 +94610,10 @@ var PreActivation = (function () {
     PreActivation.prototype.checkGuards = function () {
         var _this = this;
         if (!this.isDeactivating() && !this.isActivating()) {
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(true);
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(true);
         }
         var /** @type {?} */ canDeactivate$ = this.runCanDeactivateChecks();
-        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(canDeactivate$, function (canDeactivate) { return canDeactivate ? _this.runCanActivateChecks() : Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(false); });
+        return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(canDeactivate$, function (canDeactivate) { return canDeactivate ? _this.runCanActivateChecks() : Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(false); });
     };
     /**
      * @return {?}
@@ -92124,10 +94621,10 @@ var PreActivation = (function () {
     PreActivation.prototype.resolveData = function () {
         var _this = this;
         if (!this.isActivating())
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null);
-        var /** @type {?} */ checks$ = Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(this.canActivateChecks);
-        var /** @type {?} */ runningChecks$ = __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["concatMap"].call(checks$, function (check) { return _this.runResolve(check.route); });
-        return __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__["reduce"].call(runningChecks$, function (_, __) { return _; });
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null);
+        var /** @type {?} */ checks$ = Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(this.canActivateChecks);
+        var /** @type {?} */ runningChecks$ = __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["a" /* concatMap */].call(checks$, function (check) { return _this.runResolve(check.route); });
+        return __WEBPACK_IMPORTED_MODULE_13_rxjs_operator_reduce__["a" /* reduce */].call(runningChecks$, function (_, __) { return _; });
     };
     /**
      * @return {?}
@@ -92258,18 +94755,18 @@ var PreActivation = (function () {
      */
     PreActivation.prototype.runCanDeactivateChecks = function () {
         var _this = this;
-        var /** @type {?} */ checks$ = Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(this.canDeactivateChecks);
-        var /** @type {?} */ runningChecks$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(checks$, function (check) { return _this.runCanDeactivate(check.component, check.route); });
-        return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["every"].call(runningChecks$, function (result) { return result === true; });
+        var /** @type {?} */ checks$ = Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(this.canDeactivateChecks);
+        var /** @type {?} */ runningChecks$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(checks$, function (check) { return _this.runCanDeactivate(check.component, check.route); });
+        return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["a" /* every */].call(runningChecks$, function (result) { return result === true; });
     };
     /**
      * @return {?}
      */
     PreActivation.prototype.runCanActivateChecks = function () {
         var _this = this;
-        var /** @type {?} */ checks$ = Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(this.canActivateChecks);
-        var /** @type {?} */ runningChecks$ = __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["concatMap"].call(checks$, function (check) { return andObservables(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])([_this.runCanActivateChild(check.path), _this.runCanActivate(check.route)])); });
-        return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["every"].call(runningChecks$, function (result) { return result === true; });
+        var /** @type {?} */ checks$ = Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(this.canActivateChecks);
+        var /** @type {?} */ runningChecks$ = __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["a" /* concatMap */].call(checks$, function (check) { return andObservables(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])([_this.runCanActivateChild(check.path), _this.runCanActivate(check.route)])); });
+        return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["a" /* every */].call(runningChecks$, function (result) { return result === true; });
     };
     /**
      * @param {?} future
@@ -92279,8 +94776,8 @@ var PreActivation = (function () {
         var _this = this;
         var /** @type {?} */ canActivate = future._routeConfig ? future._routeConfig.canActivate : null;
         if (!canActivate || canActivate.length === 0)
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(true);
-        var /** @type {?} */ obs = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(canActivate), function (c) {
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(true);
+        var /** @type {?} */ obs = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(canActivate), function (c) {
             var /** @type {?} */ guard = _this.getToken(c, future);
             var /** @type {?} */ observable;
             if (guard.canActivate) {
@@ -92289,7 +94786,7 @@ var PreActivation = (function () {
             else {
                 observable = wrapIntoObservable(guard(future, _this.future));
             }
-            return __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["first"].call(observable);
+            return __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["a" /* first */].call(observable);
         });
         return andObservables(obs);
     };
@@ -92304,8 +94801,8 @@ var PreActivation = (function () {
             .reverse()
             .map(function (p) { return _this.extractCanActivateChild(p); })
             .filter(function (_) { return _ !== null; });
-        return andObservables(__WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(canActivateChildGuards), function (d) {
-            var /** @type {?} */ obs = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(d.guards), function (c) {
+        return andObservables(__WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(canActivateChildGuards), function (d) {
+            var /** @type {?} */ obs = __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(d.guards), function (c) {
                 var /** @type {?} */ guard = _this.getToken(c, d.node);
                 var /** @type {?} */ observable;
                 if (guard.canActivateChild) {
@@ -92314,7 +94811,7 @@ var PreActivation = (function () {
                 else {
                     observable = wrapIntoObservable(guard(future, _this.future));
                 }
-                return __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["first"].call(observable);
+                return __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["a" /* first */].call(observable);
             });
             return andObservables(obs);
         }));
@@ -92338,8 +94835,8 @@ var PreActivation = (function () {
         var _this = this;
         var /** @type {?} */ canDeactivate = curr && curr._routeConfig ? curr._routeConfig.canDeactivate : null;
         if (!canDeactivate || canDeactivate.length === 0)
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(true);
-        var /** @type {?} */ canDeactivate$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(canDeactivate), function (c) {
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(true);
+        var /** @type {?} */ canDeactivate$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(canDeactivate), function (c) {
             var /** @type {?} */ guard = _this.getToken(c, curr);
             var /** @type {?} */ observable;
             if (guard.canDeactivate) {
@@ -92349,9 +94846,9 @@ var PreActivation = (function () {
             else {
                 observable = wrapIntoObservable(guard(component, curr, _this.curr, _this.future));
             }
-            return __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["first"].call(observable);
+            return __WEBPACK_IMPORTED_MODULE_9_rxjs_operator_first__["a" /* first */].call(observable);
         });
-        return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["every"].call(canDeactivate$, function (result) { return result === true; });
+        return __WEBPACK_IMPORTED_MODULE_8_rxjs_operator_every__["a" /* every */].call(canDeactivate$, function (result) { return result === true; });
     };
     /**
      * @param {?} future
@@ -92359,7 +94856,7 @@ var PreActivation = (function () {
      */
     PreActivation.prototype.runResolve = function (future) {
         var /** @type {?} */ resolve = future._resolve;
-        return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(this.resolveNode(resolve, future), function (resolvedData) {
+        return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(this.resolveNode(resolve, future), function (resolvedData) {
             future._resolvedData = resolvedData;
             future.data = Object.assign({}, future.data, inheritedParamsDataResolve(future).resolve);
             return null;
@@ -92374,23 +94871,23 @@ var PreActivation = (function () {
         var _this = this;
         var /** @type {?} */ keys = Object.keys(resolve);
         if (keys.length === 0) {
-            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])({});
+            return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])({});
         }
         if (keys.length === 1) {
             var /** @type {?} */ key_1 = keys[0];
-            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(this.getResolver(resolve[key_1], future), function (value) {
+            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(this.getResolver(resolve[key_1], future), function (value) {
                 return _a = {}, _a[key_1] = value, _a;
                 var _a;
             });
         }
         var /** @type {?} */ data = {};
-        var /** @type {?} */ runningResolvers$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(keys), function (key) {
-            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(_this.getResolver(resolve[key], future), function (value) {
+        var /** @type {?} */ runningResolvers$ = __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(keys), function (key) {
+            return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(_this.getResolver(resolve[key], future), function (value) {
                 data[key] = value;
                 return value;
             });
         });
-        return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["map"].call(__WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__["last"].call(runningResolvers$), function () { return data; });
+        return __WEBPACK_IMPORTED_MODULE_11_rxjs_operator_map__["a" /* map */].call(__WEBPACK_IMPORTED_MODULE_10_rxjs_operator_last__["a" /* last */].call(runningResolvers$), function () { return data; });
     };
     /**
      * @param {?} injectionToken
@@ -93127,19 +95624,20 @@ var RouterLinkActive = (function () {
         var _this = this;
         if (!this.links || !this.linksWithHrefs || !this.router.navigated)
             return;
-        var /** @type {?} */ hasActiveLinks = this.hasActiveLinks();
-        // react only when status has changed to prevent unnecessary dom updates
-        if (this.active !== hasActiveLinks) {
-            this.classes.forEach(function (c) {
-                if (hasActiveLinks) {
-                    _this.renderer.addClass(_this.element.nativeElement, c);
-                }
-                else {
-                    _this.renderer.removeClass(_this.element.nativeElement, c);
-                }
-            });
-            Promise.resolve(hasActiveLinks).then(function (active) { return _this.active = active; });
-        }
+        Promise.resolve().then(function () {
+            var /** @type {?} */ hasActiveLinks = _this.hasActiveLinks();
+            if (_this.active !== hasActiveLinks) {
+                _this.active = hasActiveLinks;
+                _this.classes.forEach(function (c) {
+                    if (hasActiveLinks) {
+                        _this.renderer.addClass(_this.element.nativeElement, c);
+                    }
+                    else {
+                        _this.renderer.removeClass(_this.element.nativeElement, c);
+                    }
+                });
+            }
+        });
     };
     /**
      * @param {?} router
@@ -93555,7 +96053,7 @@ var PreloadAllModules = (function () {
      * @return {?}
      */
     PreloadAllModules.prototype.preload = function (route, fn) {
-        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["_catch"].call(fn(), function () { return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null); });
+        return __WEBPACK_IMPORTED_MODULE_15_rxjs_operator_catch__["a" /* _catch */].call(fn(), function () { return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null); });
     };
     return PreloadAllModules;
 }());
@@ -93576,7 +96074,7 @@ var NoPreloading = (function () {
      * @param {?} fn
      * @return {?}
      */
-    NoPreloading.prototype.preload = function (route, fn) { return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null); };
+    NoPreloading.prototype.preload = function (route, fn) { return Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null); };
     return NoPreloading;
 }());
 /**
@@ -93607,14 +96105,13 @@ var RouterPreloader = (function () {
         var onEndLoad = function (r) { return router.triggerEvent(new RouteConfigLoadEnd(r)); };
         this.loader = new RouterConfigLoader(moduleLoader, compiler, onStartLoad, onEndLoad);
     }
-    ;
     /**
      * @return {?}
      */
     RouterPreloader.prototype.setUpPreloading = function () {
         var _this = this;
-        var /** @type {?} */ navigations$ = __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__["filter"].call(this.router.events, function (e) { return e instanceof NavigationEnd; });
-        this.subscription = __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["concatMap"].call(navigations$, function () { return _this.preload(); }).subscribe(function () { });
+        var /** @type {?} */ navigations$ = __WEBPACK_IMPORTED_MODULE_21_rxjs_operator_filter__["a" /* filter */].call(this.router.events, function (e) { return e instanceof NavigationEnd; });
+        this.subscription = __WEBPACK_IMPORTED_MODULE_7_rxjs_operator_concatMap__["a" /* concatMap */].call(navigations$, function () { return _this.preload(); }).subscribe(function () { });
     };
     /**
      * @return {?}
@@ -93650,7 +96147,7 @@ var RouterPreloader = (function () {
                 res.push(this.processRoutes(ngModule, route.children));
             }
         }
-        return __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__["mergeAll"].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["from"])(res));
+        return __WEBPACK_IMPORTED_MODULE_19_rxjs_operator_mergeAll__["a" /* mergeAll */].call(Object(__WEBPACK_IMPORTED_MODULE_5_rxjs_observable_from__["a" /* from */])(res));
     };
     /**
      * @param {?} ngModule
@@ -93661,7 +96158,7 @@ var RouterPreloader = (function () {
         var _this = this;
         return this.preloadingStrategy.preload(route, function () {
             var /** @type {?} */ loaded$ = _this.loader.load(ngModule.injector, route);
-            return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["mergeMap"].call(loaded$, function (config) {
+            return __WEBPACK_IMPORTED_MODULE_12_rxjs_operator_mergeMap__["a" /* mergeMap */].call(loaded$, function (config) {
                 route._loadedConfig = config;
                 return _this.processRoutes(config.module, config.routes);
             });
@@ -93986,7 +96483,7 @@ var RouterInitializer = (function () {
                         // subsequent navigations should not be delayed
                     }
                     else {
-                        return (Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["of"])(null));
+                        return (Object(__WEBPACK_IMPORTED_MODULE_6_rxjs_observable_of__["a" /* of */])(null));
                     }
                 };
                 router.initialNavigation();
@@ -94097,7 +96594,7 @@ function provideRouterInitializer() {
 /**
  * \@stable
  */
-var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["Version"]('4.4.4');
+var VERSION = new __WEBPACK_IMPORTED_MODULE_2__angular_core__["Version"]('4.4.6');
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.

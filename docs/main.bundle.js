@@ -57,7 +57,7 @@ AppRoutingModule = __decorate([
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Service Document and Metadata\">\n    <ov4-metadata></ov4-metadata>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\r\n  <h1>\r\n    Welcome to {{title}}!\r\n  </h1>\r\n</div>\r\n\r\n<h2>Usage Examples</h2>\r\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\r\n<p>\r\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\r\n</p>\r\n<p><b><i>\r\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\r\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\r\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\r\n</i></b></p>\r\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\r\n  on workload.</p>\r\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\r\n\r\n<p-tabView>\r\n  <p-tabPanel header=\"Basic read\">\r\n    <ov4-basic-read></ov4-basic-read>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Basic write\">\r\n    <ov4-basic-write></ov4-basic-write>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Advanced read\">\r\n    <ov4-adv-read></ov4-adv-read>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Advanced write\">\r\n    <ov4-adv-write></ov4-adv-write>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Service Document and Metadata\">\r\n    <ov4-metadata></ov4-metadata>\r\n  </p-tabPanel>\r\n</p-tabView>\r\n\r\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -900,7 +900,7 @@ var ExampleData = (function () {
 /***/ "../../../../../src/app/docs/example/example.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>"
+module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\r\n\r\n<div *ngFor=\"let example of examples\">\r\n  <h3>{{example.title}}</h3>\r\n  <h4>Query</h4>\r\n  <span>{{example.query}}</span>\r\n  <h4>Code</h4>\r\n  <pre class=\"code\">{{example.code}}</pre>\r\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\r\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\r\n  <hr/>\r\n</div>"
 
 /***/ }),
 
@@ -2758,17 +2758,12 @@ ODataResponse.ODATA_COUNT = '@odata.count';
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataService; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_add_operator_map__ = __webpack_require__("../../../../rxjs/add/operator/map.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_rxjs_add_operator_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_catch__ = __webpack_require__("../../../../rxjs/add/operator/catch.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_catch___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_catch__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__ = __webpack_require__("../../../../rxjs/add/observable/throw.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_add_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/map.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_catch__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/catch.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__ = __webpack_require__("../../../../rxjs/_esm5/add/observable/throw.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Observable__ = __webpack_require__("../../../../rxjs/Observable.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_rxjs_Observable___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_rxjs_Observable__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2785,7 +2780,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-
 var ODataService = ODataService_1 = (function () {
     function ODataService(http) {
         this.http = http;
@@ -2793,35 +2787,30 @@ var ODataService = ODataService_1 = (function () {
     ODataService.prototype.get = function (odataQuery, requestOptionsArgs) {
         var url = odataQuery.toString();
         return this.http.get(url, requestOptionsArgs)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
-            .catch(this.handleError);
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.post = function (odataQuery, body, requestOptionsArgs) {
         var url = odataQuery.toString();
         return this.http.post(url, body, requestOptionsArgs)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
-            .catch(this.handleError);
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.patch = function (odataQuery, body, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
         var args = this.mergeETag(requestOptionsArgs, etag);
         return this.http.patch(url, body, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
-            .catch(this.handleError);
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.put = function (odataQuery, body, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
         var args = this.mergeETag(requestOptionsArgs, etag);
         return this.http.put(url, body, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
-            .catch(this.handleError);
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.delete = function (odataQuery, etag, requestOptionsArgs) {
         var url = odataQuery.toString();
         var args = this.mergeETag(requestOptionsArgs, etag);
         return this.http.delete(url, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_7__odata_response_odata_response__["a" /* ODataResponse */](response); })
-            .catch(this.handleError);
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.mergeETag = function (args, etag) {
         if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(etag)) {
@@ -2855,18 +2844,6 @@ var ODataService = ODataService_1 = (function () {
         // override responseType
         args.responseType = args2.responseType;
         return args;
-    };
-    ODataService.prototype.handleError = function (error) {
-        var errMsg;
-        if (error instanceof __WEBPACK_IMPORTED_MODULE_4__angular_http__["d" /* Response */]) {
-            var body = error.json() || '';
-            var err = body.error || JSON.stringify(body, null, 4);
-            errMsg = error.status + " - " + (error.statusText || '') + " - " + JSON.stringify(err, null, 4);
-        }
-        else {
-            errMsg = error.message ? error.message : error.toString();
-        }
-        return __WEBPACK_IMPORTED_MODULE_6_rxjs_Observable__["Observable"].throw(errMsg);
     };
     return ODataService;
 }());
