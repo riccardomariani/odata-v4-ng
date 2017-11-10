@@ -21,7 +21,11 @@ export class ODataResponse {
     getBodyAsJson(): any {
         const contentType: string = this.response.headers.get('Content-Type');
         if (contentType.includes('json')) {
-            return JSON.parse(this.getBodyAsText());
+            try {
+                return JSON.parse(this.getBodyAsText());
+            } catch (error) {
+                return null;
+            }
         }
         return null;
     }
