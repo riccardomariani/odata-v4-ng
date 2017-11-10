@@ -10,6 +10,7 @@ import { Observable } from 'rxjs/Observable';
 import { ODataQueryBatch } from './odata-query-batch';
 import { ODataQueryAbstract } from './odata-query-abstract';
 import { Search } from '../query-options/search/search';
+import { HttpOptions } from '../odata-service/http-options';
 
 export class ODataQuery extends ODataQueryAbstract {
   // QUERY OPTIONS SEPARATOR
@@ -237,24 +238,24 @@ export class ODataQuery extends ODataQueryAbstract {
 
   // QUERY EXECUTION
 
-  get(requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.get(this, requestOptionsArgs);
+  get(options?: HttpOptions): Observable<ODataResponse> {
+    return this.odataService.get(this, options);
   }
 
-  post(body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.post(this, body, requestOptionsArgs);
+  post(body: any, options?: HttpOptions): Observable<ODataResponse> {
+    return this.odataService.post(this, body, options);
   }
 
-  patch(body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.patch(this, body, etag, requestOptionsArgs);
+  patch(body: any, etag?: string, options?: HttpOptions): Observable<ODataResponse> {
+    return this.odataService.patch(this, body, etag, options);
   }
 
-  put(body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.put(this, body, etag, requestOptionsArgs);
+  put(body: any, etag?: string, options?: HttpOptions): Observable<ODataResponse> {
+    return this.odataService.put(this, body, etag, options);
   }
 
-  delete(etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
-    return this.odataService.delete(this, etag, requestOptionsArgs);
+  delete(etag?: string, options?: HttpOptions): Observable<ODataResponse> {
+    return this.odataService.delete(this, etag, options);
   }
 
   toString(): string {

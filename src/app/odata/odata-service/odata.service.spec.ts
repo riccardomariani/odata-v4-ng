@@ -1,12 +1,11 @@
-import { HttpModule } from '@angular/http';
+import { ODataModule } from '../odata.module';
 import { TestBed, inject } from '@angular/core/testing';
 import { ODataService } from './odata.service';
 
 describe('OdataService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ODataService],
-      imports: [HttpModule]
+      imports: [ODataModule]
     });
   });
 

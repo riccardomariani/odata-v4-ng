@@ -1,4 +1,4 @@
-import { HttpModule } from '@angular/http';
+import { ODataModule } from '../odata.module';
 import { ODataService } from '../odata-service/odata.service';
 import { TestBed } from '@angular/core/testing';
 import { ODataQuery } from './odata-query';
@@ -19,8 +19,7 @@ describe('OdataQuery', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpModule],
-      providers: [ODataService]
+      imports: [ODataModule]
     });
 
     odataService = TestBed.get(ODataService);

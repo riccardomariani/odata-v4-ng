@@ -20,6 +20,7 @@ export * from './src/app/odata/odata-response/entity-collection';
 export * from './src/app/odata/odata-response/metadata';
 export * from './src/app/odata/odata-response/odata-response';
 
+export * from './src/app/odata/odata-service/http-options';
 export * from './src/app/odata/odata-service/odata.service';
 
 export * from './src/app/odata/query-options/filter/filter-comparison';

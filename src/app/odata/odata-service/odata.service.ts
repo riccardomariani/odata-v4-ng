@@ -1,93 +1,94 @@
+import { HttpOptions } from './http-options';
 import { Utils } from '../utils/utils';
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/observable/throw';
-import { Response, ResponseContentType, RequestOptionsArgs, Http, Headers } from '@angular/http';
+import { ODataQueryAbstract } from '../odata-query/odata-query-abstract';
+import { ODataResponse } from '../odata-response/odata-response';
+import { RequestOptionsArgs } from '@angular/http';
+import { ODataQuery } from '../odata-query/odata-query';
+import { HttpParams, HttpHeaders, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { ODataQuery } from '../odata-query/odata-query';
-import { ODataResponse } from '../odata-response/odata-response';
-import { ODataQueryAbstract } from '../odata-query/odata-query-abstract';
-import { ErrorObservable } from 'rxjs/observable/ErrorObservable';
+import 'rxjs/add/operator/map';
 
 @Injectable()
 export class ODataService {
   private static readonly IF_MATCH_HEADER = 'If-Match';
 
-  constructor(private http: Http) { }
+  constructor(private http: HttpClient) { }
 
-  get(odataQuery: ODataQuery, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+  get(odataQuery: ODataQuery, options: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    return this.http.get(url, requestOptionsArgs)
+    return this.http.get(url, options)
       .map(response => new ODataResponse(response));
   }
 
-  post(odataQuery: ODataQueryAbstract, body: any, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+  post(odataQuery: ODataQueryAbstract, body: any, options: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    return this.http.post(url, body, requestOptionsArgs)
+    return this.http.post(url, body, options)
       .map(response => new ODataResponse(response));
   }
 
-  patch(odataQuery: ODataQuery, body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+  patch(odataQuery: ODataQuery, body: any, etag?: string, options: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
-    return this.http.patch(url, body, args)
+    const newOptions: HttpOptions = this.mergeETag(options, etag);
+    return this.http.patch(url, body, options)
       .map(response => new ODataResponse(response));
   }
 
-  put(odataQuery: ODataQuery, body: any, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+  put(odataQuery: ODataQuery, body: any, etag?: string, options: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
-    return this.http.put(url, body, args)
+    const newOptions: HttpOptions = this.mergeETag(options, etag);
+    return this.http.put(url, body, options)
       .map(response => new ODataResponse(response));
   }
 
-  delete(odataQuery: ODataQuery, etag?: string, requestOptionsArgs?: RequestOptionsArgs): Observable<ODataResponse> {
+  delete(odataQuery: ODataQuery, etag?: string, options: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const args: RequestOptionsArgs = this.mergeETag(requestOptionsArgs, etag);
-    return this.http.delete(url, args)
+    const newOptions: HttpOptions = this.mergeETag(options, etag);
+    return this.http.delete(url, options)
       .map(response => new ODataResponse(response));
   }
 
-  protected mergeETag(args: RequestOptionsArgs, etag: string): RequestOptionsArgs {
+  protected mergeETag(options: HttpOptions, etag: string): HttpOptions {
     if (Utils.isNullOrUndefined(etag)) {
-      return args;
+      return options;
     }
 
-    if (Utils.isNullOrUndefined(args)) {
-      args = {};
+    if (Utils.isNullOrUndefined(options)) {
+      options = new HttpOptions();
     }
-    if (Utils.isNullOrUndefined(args.headers)) {
-      args.headers = new Headers();
+    if (Utils.isNullOrUndefined(options.headers)) {
+      options.headers = new HttpHeaders();
     }
 
-    args.headers.set(ODataService.IF_MATCH_HEADER, etag);
+    options.headers.set(ODataService.IF_MATCH_HEADER, etag);
 
-    return args;
+    return options;
   }
 
-  protected mergeOverride(args1: RequestOptionsArgs, args2: RequestOptionsArgs): RequestOptionsArgs {
-    if (Utils.isNullOrUndefined(args1)) {
-      return args2;
+  protected mergeOverride(options1: HttpOptions, options2: HttpOptions): HttpOptions {
+    if (Utils.isNullOrUndefined(options1)) {
+      return options2;
     }
-    if (Utils.isNullOrUndefined(args2)) {
-      return args1;
+    if (Utils.isNullOrUndefined(options2)) {
+      return options1;
     }
 
-    const args: RequestOptionsArgs = { headers: new Headers(args1.headers) };
+    const options: HttpOptions = new HttpOptions();
 
-    // merge/override headers
-    const headers2: Headers = args2.headers;
-    for (const key of headers2.keys()) {
-      args.headers.set(key, headers2.get(key));
+    // merge headers
+    for (const key of options1.headers.keys()) {
+      options.headers.append(key, options1.headers.getAll(key));
+    }
+    for (const key of options2.headers.keys()) {
+      options.headers.append(key, options2.headers.getAll(key));
     }
 
     // override withCredentials
-    args.withCredentials = args2.withCredentials;
+    options.withCredentials = options2.withCredentials;
 
     // override responseType
-    args.responseType = args2.responseType;
+    options.responseType = options2.responseType;
 
-    return args;
+    return options;
   }
 }

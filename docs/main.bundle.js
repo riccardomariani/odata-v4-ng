@@ -1081,11 +1081,12 @@ var ODataQueryAbstract = (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataQueryBatch; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__("../../../common/@angular/common/http.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query-abstract.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_uuid__ = __webpack_require__("../../../../uuid/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_uuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_uuid__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__ = __webpack_require__("../../../../../src/app/odata/odata-service/http-options.ts");
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1100,6 +1101,7 @@ var __extends = (this && this.__extends) || (function () {
 
 
 
+
 var Method;
 (function (Method) {
     Method[Method["GET"] = 0] = "GET";
@@ -1109,11 +1111,11 @@ var Method;
     Method[Method["DELETE"] = 4] = "DELETE";
 })(Method || (Method = {}));
 var Request = (function () {
-    function Request(method, odataQuery, body, requestOptionsArgs) {
+    function Request(method, odataQuery, body, options) {
         this.method = method;
         this.odataQuery = odataQuery;
         this.body = body;
-        this.requestOptionsArgs = requestOptionsArgs;
+        this.options = options;
     }
     return Request;
 }());
@@ -1131,38 +1133,39 @@ var ODataQueryBatch = (function (_super) {
         _this.changesetID = 1;
         return _this;
     }
-    ODataQueryBatch.prototype.get = function (odataQuery, requestOptionsArgs) {
-        this.requests.push(new Request(Method.GET, odataQuery, null, requestOptionsArgs));
+    ODataQueryBatch.prototype.get = function (odataQuery, options) {
+        this.requests.push(new Request(Method.GET, odataQuery, null, options));
         return this;
     };
-    ODataQueryBatch.prototype.post = function (odataQuery, body, requestOptionsArgs) {
-        this.requests.push(new Request(Method.POST, odataQuery, body, requestOptionsArgs));
+    ODataQueryBatch.prototype.post = function (odataQuery, body, options) {
+        this.requests.push(new Request(Method.POST, odataQuery, body, options));
         return this;
     };
-    ODataQueryBatch.prototype.put = function (odataQuery, body, requestOptionsArgs) {
-        this.requests.push(new Request(Method.PUT, odataQuery, body, requestOptionsArgs));
+    ODataQueryBatch.prototype.put = function (odataQuery, body, options) {
+        this.requests.push(new Request(Method.PUT, odataQuery, body, options));
         return this;
     };
-    ODataQueryBatch.prototype.patch = function (odataQuery, body, requestOptionsArgs) {
-        this.requests.push(new Request(Method.PATCH, odataQuery, body, requestOptionsArgs));
+    ODataQueryBatch.prototype.patch = function (odataQuery, body, options) {
+        this.requests.push(new Request(Method.PATCH, odataQuery, body, options));
         return this;
     };
-    ODataQueryBatch.prototype.delete = function (odataQuery, requestOptionsArgs) {
-        this.requests.push(new Request(Method.DELETE, odataQuery, null, requestOptionsArgs));
+    ODataQueryBatch.prototype.delete = function (odataQuery, options) {
+        this.requests.push(new Request(Method.DELETE, odataQuery, null, options));
         return this;
     };
-    ODataQueryBatch.prototype.execute = function (requestOptionsArgs) {
+    ODataQueryBatch.prototype.execute = function (options) {
+        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */](); }
         // set headers
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(requestOptionsArgs)) {
-            requestOptionsArgs = {};
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options)) {
+            options = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */]();
         }
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(requestOptionsArgs.headers)) {
-            requestOptionsArgs.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_http__["a" /* Headers */]({
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options.headers)) {
+            options.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]({
                 CONTENT_TYPE: ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary
             });
         }
         // send request
-        return this.odataService.post(this, this.getBody(), requestOptionsArgs);
+        return this.odataService.post(this, this.getBody(), options);
     };
     ODataQueryBatch.prototype.toString = function () {
         return this.queryString;
@@ -1173,7 +1176,7 @@ var ODataQueryBatch = (function (_super) {
             var request = _a[_i];
             var method = request.method;
             var odataQuery = request.odataQuery;
-            var requestOptionsArgs = request.requestOptionsArgs;
+            var options = request.options;
             var body = request.body;
             if (method === Method.GET) {
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
@@ -1190,9 +1193,9 @@ var ODataQueryBatch = (function (_super) {
             else {
                 // get If-Match
                 var ifMatch = null;
-                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(requestOptionsArgs)
-                    && __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(requestOptionsArgs.headers)) {
-                    ifMatch = requestOptionsArgs.headers.get(ODataQueryBatch.IF_MATCH);
+                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(options)
+                    && __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(options.headers)) {
+                    ifMatch = options.headers.get(ODataQueryBatch.IF_MATCH);
                 }
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
                     this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_3_uuid___default()();
@@ -1442,20 +1445,20 @@ var ODataQuery = (function (_super) {
         return this;
     };
     // QUERY EXECUTION
-    ODataQuery.prototype.get = function (requestOptionsArgs) {
-        return this.odataService.get(this, requestOptionsArgs);
+    ODataQuery.prototype.get = function (options) {
+        return this.odataService.get(this, options);
     };
-    ODataQuery.prototype.post = function (body, requestOptionsArgs) {
-        return this.odataService.post(this, body, requestOptionsArgs);
+    ODataQuery.prototype.post = function (body, options) {
+        return this.odataService.post(this, body, options);
     };
-    ODataQuery.prototype.patch = function (body, etag, requestOptionsArgs) {
-        return this.odataService.patch(this, body, etag, requestOptionsArgs);
+    ODataQuery.prototype.patch = function (body, etag, options) {
+        return this.odataService.patch(this, body, etag, options);
     };
-    ODataQuery.prototype.put = function (body, etag, requestOptionsArgs) {
-        return this.odataService.put(this, body, etag, requestOptionsArgs);
+    ODataQuery.prototype.put = function (body, etag, options) {
+        return this.odataService.put(this, body, etag, options);
     };
-    ODataQuery.prototype.delete = function (etag, requestOptionsArgs) {
-        return this.odataService.delete(this, etag, requestOptionsArgs);
+    ODataQuery.prototype.delete = function (etag, options) {
+        return this.odataService.delete(this, etag, options);
     };
     ODataQuery.prototype.toString = function () {
         var res = this.queryString;
@@ -2668,15 +2671,15 @@ var ODataResponse = (function () {
     ODataResponse.prototype.getBodyAsJson = function () {
         var contentType = this.response.headers.get('Content-Type');
         if (contentType.includes('json')) {
-            return this.response.json();
+            return JSON.parse(this.getBodyAsText());
         }
         return null;
     };
     ODataResponse.prototype.getBodyAsText = function () {
-        return this.response.text();
+        return this.response.body;
     };
     ODataResponse.prototype.toMetadata = function () {
-        var xml = this.response.text();
+        var xml = this.getBodyAsText();
         return new __WEBPACK_IMPORTED_MODULE_2__metadata__["a" /* Metadata */](xml);
     };
     ODataResponse.prototype.toEntitySet = function () {
@@ -2702,7 +2705,7 @@ var ODataResponse = (function () {
             return null;
         }
         else {
-            return JSON.parse(this.response.text());
+            return JSON.parse(this.getBodyAsText());
         }
     };
     ODataResponse.prototype.toComplexValue = function () {
@@ -2752,18 +2755,40 @@ ODataResponse.ODATA_COUNT = '@odata.count';
 
 /***/ }),
 
+/***/ "../../../../../src/app/odata/odata-service/http-options.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HttpOptions; });
+var HttpOptions = (function () {
+    function HttpOptions(headers, observe, params, reportProgress, responseType, withCredentials) {
+        if (observe === void 0) { observe = 'response'; }
+        if (responseType === void 0) { responseType = 'text'; }
+        this.headers = headers;
+        this.observe = observe;
+        this.params = params;
+        this.reportProgress = reportProgress;
+        this.responseType = responseType;
+        this.withCredentials = withCredentials;
+    }
+    return HttpOptions;
+}());
+
+//# sourceMappingURL=http-options.js.map
+
+/***/ }),
+
 /***/ "../../../../../src/app/odata/odata-service/odata.service.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataService; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_rxjs_add_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/map.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_catch__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/catch.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_rxjs_add_observable_throw__ = __webpack_require__("../../../../rxjs/_esm5/add/observable/throw.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__http_options__ = __webpack_require__("../../../../../src/app/odata/odata-service/http-options.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common_http__ = __webpack_require__("../../../common/@angular/common/http.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__ = __webpack_require__("../../../../rxjs/_esm5/add/operator/map.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2779,78 +2804,85 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-
 var ODataService = ODataService_1 = (function () {
     function ODataService(http) {
         this.http = http;
     }
-    ODataService.prototype.get = function (odataQuery, requestOptionsArgs) {
+    ODataService.prototype.get = function (odataQuery, options) {
+        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        return this.http.get(url, requestOptionsArgs)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        return this.http.get(url, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.post = function (odataQuery, body, requestOptionsArgs) {
+    ODataService.prototype.post = function (odataQuery, body, options) {
+        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        return this.http.post(url, body, requestOptionsArgs)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        return this.http.post(url, body, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.patch = function (odataQuery, body, etag, requestOptionsArgs) {
+    ODataService.prototype.patch = function (odataQuery, body, etag, options) {
+        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var args = this.mergeETag(requestOptionsArgs, etag);
-        return this.http.patch(url, body, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var newOptions = this.mergeETag(options, etag);
+        return this.http.patch(url, body, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.put = function (odataQuery, body, etag, requestOptionsArgs) {
+    ODataService.prototype.put = function (odataQuery, body, etag, options) {
+        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var args = this.mergeETag(requestOptionsArgs, etag);
-        return this.http.put(url, body, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var newOptions = this.mergeETag(options, etag);
+        return this.http.put(url, body, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.delete = function (odataQuery, etag, requestOptionsArgs) {
+    ODataService.prototype.delete = function (odataQuery, etag, options) {
+        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var args = this.mergeETag(requestOptionsArgs, etag);
-        return this.http.delete(url, args)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_6__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var newOptions = this.mergeETag(options, etag);
+        return this.http.delete(url, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.mergeETag = function (args, etag) {
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(etag)) {
-            return args;
+    ODataService.prototype.mergeETag = function (options, etag) {
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(etag)) {
+            return options;
         }
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args)) {
-            args = {};
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options)) {
+            options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */]();
         }
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args.headers)) {
-            args.headers = new __WEBPACK_IMPORTED_MODULE_4__angular_http__["a" /* Headers */]();
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options.headers)) {
+            options.headers = new __WEBPACK_IMPORTED_MODULE_3__angular_common_http__["c" /* HttpHeaders */]();
         }
-        args.headers.set(ODataService_1.IF_MATCH_HEADER, etag);
-        return args;
+        options.headers.set(ODataService_1.IF_MATCH_HEADER, etag);
+        return options;
     };
-    ODataService.prototype.mergeOverride = function (args1, args2) {
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args1)) {
-            return args2;
+    ODataService.prototype.mergeOverride = function (options1, options2) {
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options1)) {
+            return options2;
         }
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNullOrUndefined(args2)) {
-            return args1;
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options2)) {
+            return options1;
         }
-        var args = { headers: new __WEBPACK_IMPORTED_MODULE_4__angular_http__["a" /* Headers */](args1.headers) };
-        // merge/override headers
-        var headers2 = args2.headers;
-        for (var _i = 0, _a = headers2.keys(); _i < _a.length; _i++) {
+        var options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */]();
+        // merge headers
+        for (var _i = 0, _a = options1.headers.keys(); _i < _a.length; _i++) {
             var key = _a[_i];
-            args.headers.set(key, headers2.get(key));
+            options.headers.append(key, options1.headers.getAll(key));
+        }
+        for (var _b = 0, _c = options2.headers.keys(); _b < _c.length; _b++) {
+            var key = _c[_b];
+            options.headers.append(key, options2.headers.getAll(key));
         }
         // override withCredentials
-        args.withCredentials = args2.withCredentials;
+        options.withCredentials = options2.withCredentials;
         // override responseType
-        args.responseType = args2.responseType;
-        return args;
+        options.responseType = options2.responseType;
+        return options;
     };
     return ODataService;
 }());
 ODataService.IF_MATCH_HEADER = 'If-Match';
 ODataService = ODataService_1 = __decorate([
-    Object(__WEBPACK_IMPORTED_MODULE_5__angular_core__["Injectable"])(),
-    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_4__angular_http__["b" /* Http */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_4__angular_http__["b" /* Http */]) === "function" && _a || Object])
+    Object(__WEBPACK_IMPORTED_MODULE_4__angular_core__["Injectable"])(),
+    __metadata("design:paramtypes", [typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_3__angular_common_http__["a" /* HttpClient */] !== "undefined" && __WEBPACK_IMPORTED_MODULE_3__angular_common_http__["a" /* HttpClient */]) === "function" && _a || Object])
 ], ODataService);
 
 var ODataService_1, _a;
@@ -2863,7 +2895,7 @@ var ODataService_1, _a;
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataModule; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_http__ = __webpack_require__("../../../http/@angular/http.es5.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__("../../../common/@angular/common/http.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("../../../core/@angular/core.es5.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__("../../../common/@angular/common.es5.js");
@@ -2886,7 +2918,7 @@ ODataModule = __decorate([
     Object(__WEBPACK_IMPORTED_MODULE_2__angular_core__["NgModule"])({
         imports: [
             __WEBPACK_IMPORTED_MODULE_3__angular_common__["CommonModule"],
-            __WEBPACK_IMPORTED_MODULE_0__angular_http__["c" /* HttpModule */]
+            __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["b" /* HttpClientModule */]
         ],
         providers: [__WEBPACK_IMPORTED_MODULE_1__odata_service_odata_service__["a" /* ODataService */]]
     })

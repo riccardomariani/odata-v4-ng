@@ -1,3 +1,4 @@
+import { HttpResponse } from '@angular/common/http';
 import { Utils } from '../utils/utils';
 import { Response } from '@angular/http';
 import { EntitySet } from './entity-collection';
@@ -7,9 +8,9 @@ export class ODataResponse {
     static readonly VALUE = 'value';
     static readonly ODATA_COUNT = '@odata.count';
 
-    private response: Response;
+    private response: HttpResponse<string>;
 
-    constructor(response: Response) {
+    constructor(response: HttpResponse<string>) {
         this.response = response;
     }
 
@@ -20,17 +21,17 @@ export class ODataResponse {
     getBodyAsJson(): any {
         const contentType: string = this.response.headers.get('Content-Type');
         if (contentType.includes('json')) {
-            return this.response.json();
+            return JSON.parse(this.getBodyAsText());
         }
         return null;
     }
 
     getBodyAsText(): string {
-        return this.response.text();
+        return this.response.body;
     }
 
     toMetadata(): Metadata {
-        const xml: string = this.response.text();
+        const xml: string = this.getBodyAsText();
         return new Metadata(xml);
     }
 
@@ -58,7 +59,7 @@ export class ODataResponse {
             }
             return null;
         } else {
-            return <T>JSON.parse(this.response.text());
+            return <T>JSON.parse(this.getBodyAsText());
         }
     }
 
