@@ -23,7 +23,7 @@ export class FilterFunction extends FilterHasProperty implements Filter {
             return `${this.functionName}(${this.property},${Utils.getValueURI(this.value, false)})`;
         } else if (Utils.isNotNullNorUndefined(this.property)) {
             return `${this.functionName}(${this.property})`;
-        } else if (Utils.isNotNullNorUndefined(this.property)) {
+        } else if (Utils.isNotNullNorUndefined(this.value)) {
             return `${this.functionName}(${Utils.getValueURI(this.value, false)})`;
         } else {
             return `${this.functionName}()`;

@@ -4,7 +4,7 @@
         "entryFile": "public_api.ts",
         "flatModuleFile": "index",
         "externals": {
-            "uuid": "uuid"
+            "angular2-uuid": "angular2-uuid"
         }
     }
 }

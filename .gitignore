@@ -42,3 +42,5 @@ testem.log
 Thumbs.db
 
 .ng_build/*
+run-sonar-scanner.sh
+.scannerwork/

@@ -180,7 +180,7 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  batch(requestOptionsArgs?: RequestOptionsArgs): ODataQueryBatch {
+  batch(httpOptions?: HttpOptions): ODataQueryBatch {
     return new ODataQueryBatch(this.odataService, this.serviceRoot);
   }
 

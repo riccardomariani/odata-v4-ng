@@ -38,7 +38,7 @@ var routes = [
         children: []
     }
 ];
-var AppRoutingModule = (function () {
+var AppRoutingModule = /** @class */ (function () {
     function AppRoutingModule() {
     }
     AppRoutingModule = __decorate([
@@ -57,7 +57,7 @@ var AppRoutingModule = (function () {
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\r\n  <h1>\r\n    Welcome to {{title}}!\r\n  </h1>\r\n</div>\r\n\r\n<h2>Usage Examples</h2>\r\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\r\n<p>\r\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\r\n</p>\r\n<p><b><i>\r\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\r\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\r\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\r\n</i></b></p>\r\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\r\n  on workload.</p>\r\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\r\n\r\n<p-tabView>\r\n  <p-tabPanel header=\"Basic read\">\r\n    <ov4-basic-read></ov4-basic-read>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Basic write\">\r\n    <ov4-basic-write></ov4-basic-write>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Advanced read\">\r\n    <ov4-adv-read></ov4-adv-read>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Advanced write\">\r\n    <ov4-adv-write></ov4-adv-write>\r\n  </p-tabPanel>\r\n  <p-tabPanel header=\"Service Document and Metadata\">\r\n    <ov4-metadata></ov4-metadata>\r\n  </p-tabPanel>\r\n</p-tabView>\r\n\r\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Service Document and Metadata\">\n    <ov4-metadata></ov4-metadata>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -79,7 +79,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-var AppComponent = (function () {
+var AppComponent = /** @class */ (function () {
     function AppComponent() {
         this.title = 'odata-v4-ng';
         this.serviceRoot = __WEBPACK_IMPORTED_MODULE_1__docs_example_example_data__["b" /* SERVICE_ROOT */];
@@ -135,7 +135,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
-var AppModule = (function () {
+var AppModule = /** @class */ (function () {
     function AppModule() {
     }
     AppModule = __decorate([
@@ -199,7 +199,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-var AdvReadComponent = (function (_super) {
+var AdvReadComponent = /** @class */ (function (_super) {
     __extends(AdvReadComponent, _super);
     function AdvReadComponent(odataService) {
         var _this = _super.call(this, odataService) || this;
@@ -321,7 +321,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var EXECUTE_BATCH = "example.subscr = example.odataQuery.execute().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
-var AdvWriteComponent = (function (_super) {
+var AdvWriteComponent = /** @class */ (function (_super) {
     __extends(AdvWriteComponent, _super);
     function AdvWriteComponent(odataService) {
         var _this = _super.call(this, odataService) || this;
@@ -405,7 +405,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var EXECUTE_GET = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
-var BasicReadComponent = (function (_super) {
+var BasicReadComponent = /** @class */ (function (_super) {
     __extends(BasicReadComponent, _super);
     function BasicReadComponent(odataService) {
         var _this = _super.call(this, odataService) || this;
@@ -676,7 +676,7 @@ var EXECUTE_UPDATE_ENTITY_ETAG = "example.subscr = example.odataQuery.patch({\n 
 var EXECUTE_CREATE_RELATIONSHIP = "example.subscr = example.odataQuery.post({\n  '@odata.id': new ODataQuery(odataService, SERVICE_ROOT).entitySet('People').entityKey('\\'vincentcalabrese\\'').toString()\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
 var EXECUTE_CHANGE_RELATIONSHIP = "example.subscr = example.odataQuery.put({\n  '@odata.id': new ODataQuery(odataService, SERVICE_ROOT).entitySet('Airlines').entityKey('\\'FM\\'').toString()\n}).subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = odataResponse.toString();\n  },\n  (error: string) => {\n    example.response = error;\n  }\n  );";
 var EXECUTE_BOUND_ACTION = "example.subscr = example.odataQuery.post({\n    'userName': 'scottketchum',\n    'tripId': 1001\n  }).subscribe(\n    (odataResponse: ODataResponse) => {\n      example.response = odataResponse.toString();\n    },\n    (error: string) => {\n      example.response = error;\n    }\n    );";
-var BasicWriteComponent = (function (_super) {
+var BasicWriteComponent = /** @class */ (function (_super) {
     __extends(BasicWriteComponent, _super);
     function BasicWriteComponent(odataService) {
         var _this = _super.call(this, odataService) || this;
@@ -883,7 +883,7 @@ var BasicWriteComponent = (function (_super) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SERVICE_ROOT; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ExampleData; });
 var SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
-var ExampleData = (function () {
+var ExampleData = /** @class */ (function () {
     function ExampleData() {
     }
     return ExampleData;
@@ -896,7 +896,7 @@ var ExampleData = (function () {
 /***/ "../../../../../src/app/docs/example/example.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\r\n\r\n<div *ngFor=\"let example of examples\">\r\n  <h3>{{example.title}}</h3>\r\n  <h4>Query</h4>\r\n  <span>{{example.query}}</span>\r\n  <h4>Code</h4>\r\n  <pre class=\"code\">{{example.code}}</pre>\r\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\r\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\r\n  <hr/>\r\n</div>"
+module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>"
 
 /***/ }),
 
@@ -918,7 +918,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-var ExampleComponent = (function () {
+var ExampleComponent = /** @class */ (function () {
     function ExampleComponent(odataService) {
         this.odataService = odataService;
         this.executeEnabled = true;
@@ -990,7 +990,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 var EXECUTE_GET_TO_METADATA = "example.odataQuery.get().subscribe(\n  (odataResponse: ODataResponse) => {\n    example.response = JSON.stringify(odataResponse.toMetadata(), null, 4);\n  },\n  (error: string) => {\n    example.response = error;\n  }\n);";
-var MetadataComponent = (function (_super) {
+var MetadataComponent = /** @class */ (function (_super) {
     __extends(MetadataComponent, _super);
     function MetadataComponent(odataService) {
         var _this = _super.call(this, odataService) || this;
@@ -1054,7 +1054,7 @@ var MetadataComponent = (function (_super) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataQueryAbstract; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 
-var ODataQueryAbstract = (function () {
+var ODataQueryAbstract = /** @class */ (function () {
     function ODataQueryAbstract(odataService, serviceRoot) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataService, 'odataService');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
@@ -1074,12 +1074,14 @@ var ODataQueryAbstract = (function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* unused harmony export Method */
+/* unused harmony export BatchRequest */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataQueryBatch; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__("../../../common/esm5/http.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query-abstract.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_uuid__ = __webpack_require__("../../../../uuid/index.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_uuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_uuid__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__ = __webpack_require__("../../../../angular2-uuid/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angular2_uuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_angular2_uuid__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__ = __webpack_require__("../../../../../src/app/odata/odata-service/http-options.ts");
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -1104,16 +1106,17 @@ var Method;
     Method[Method["PATCH"] = 3] = "PATCH";
     Method[Method["DELETE"] = 4] = "DELETE";
 })(Method || (Method = {}));
-var Request = (function () {
-    function Request(method, odataQuery, body, options) {
+var BatchRequest = /** @class */ (function () {
+    function BatchRequest(method, odataQuery, body, options) {
         this.method = method;
         this.odataQuery = odataQuery;
         this.body = body;
         this.options = options;
     }
-    return Request;
+    return BatchRequest;
 }());
-var ODataQueryBatch = (function (_super) {
+
+var ODataQueryBatch = /** @class */ (function (_super) {
     __extends(ODataQueryBatch, _super);
     function ODataQueryBatch(odataService, serviceRoot) {
         var _this = _super.call(this, odataService, serviceRoot) || this;
@@ -1122,29 +1125,34 @@ var ODataQueryBatch = (function (_super) {
         __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
         _this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(serviceRoot, ODataQueryBatch.$BATCH);
         _this.requests = [];
-        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + __WEBPACK_IMPORTED_MODULE_3_uuid___default()();
+        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__["UUID"].UUID();
         _this.changesetBoundary = null;
         _this.changesetID = 1;
         return _this;
     }
-    ODataQueryBatch.prototype.get = function (odataQuery, options) {
-        this.requests.push(new Request(Method.GET, odataQuery, null, options));
+    ODataQueryBatch.prototype.get = function (odataQuery, httpOptions) {
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        this.requests.push(new BatchRequest(Method.GET, odataQuery, undefined, httpOptions));
         return this;
     };
-    ODataQueryBatch.prototype.post = function (odataQuery, body, options) {
-        this.requests.push(new Request(Method.POST, odataQuery, body, options));
+    ODataQueryBatch.prototype.post = function (odataQuery, body, httpOptions) {
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        this.requests.push(new BatchRequest(Method.POST, odataQuery, body, httpOptions));
         return this;
     };
-    ODataQueryBatch.prototype.put = function (odataQuery, body, options) {
-        this.requests.push(new Request(Method.PUT, odataQuery, body, options));
+    ODataQueryBatch.prototype.put = function (odataQuery, body, httpOptions) {
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        this.requests.push(new BatchRequest(Method.PUT, odataQuery, body, httpOptions));
         return this;
     };
-    ODataQueryBatch.prototype.patch = function (odataQuery, body, options) {
-        this.requests.push(new Request(Method.PATCH, odataQuery, body, options));
+    ODataQueryBatch.prototype.patch = function (odataQuery, body, httpOptions) {
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        this.requests.push(new BatchRequest(Method.PATCH, odataQuery, body, httpOptions));
         return this;
     };
-    ODataQueryBatch.prototype.delete = function (odataQuery, options) {
-        this.requests.push(new Request(Method.DELETE, odataQuery, null, options));
+    ODataQueryBatch.prototype.delete = function (odataQuery, httpOptions) {
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        this.requests.push(new BatchRequest(Method.DELETE, odataQuery, undefined, httpOptions));
         return this;
     };
     ODataQueryBatch.prototype.execute = function (options) {
@@ -1154,10 +1162,9 @@ var ODataQueryBatch = (function (_super) {
             options = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */]();
         }
         if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options.headers)) {
-            options.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]({
-                CONTENT_TYPE: ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary
-            });
+            options.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]();
         }
+        options.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
         // send request
         return this.odataService.post(this, this.getBody(), options);
     };
@@ -1192,12 +1199,10 @@ var ODataQueryBatch = (function (_super) {
                     ifMatch = options.headers.get(ODataQueryBatch.IF_MATCH);
                 }
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
-                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_3_uuid___default()();
+                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__["UUID"].UUID();
                     res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.NEWLINE;
-                }
-                else {
                 }
                 res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
@@ -1266,7 +1271,7 @@ var __extends = (this && this.__extends) || (function () {
 
 
 
-var ODataQuery = (function (_super) {
+var ODataQuery = /** @class */ (function (_super) {
     __extends(ODataQuery, _super);
     function ODataQuery(odataService, serviceRoot) {
         var _this = _super.call(this, odataService, serviceRoot) || this;
@@ -1394,7 +1399,7 @@ var ODataQuery = (function (_super) {
         this.addSegment(ODataQuery.ACTION_CALL);
         return this;
     };
-    ODataQuery.prototype.batch = function (requestOptionsArgs) {
+    ODataQuery.prototype.batch = function (httpOptions) {
         return new __WEBPACK_IMPORTED_MODULE_2__odata_query_batch__["a" /* ODataQueryBatch */](this.odataService, this.serviceRoot);
     };
     // QUERY OPTIONS
@@ -1507,7 +1512,7 @@ var ODataQuery = (function (_super) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuotedString; });
-var QuotedString = (function () {
+var QuotedString = /** @class */ (function () {
     function QuotedString(value) {
         this.value = value;
     }
@@ -1539,14 +1544,14 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var CsdlAnnotable = (function () {
+var CsdlAnnotable = /** @class */ (function () {
     function CsdlAnnotable(annotationList) {
         this.annotationList = annotationList;
     }
     return CsdlAnnotable;
 }());
 
-var CsdlAnnotations = (function (_super) {
+var CsdlAnnotations = /** @class */ (function (_super) {
     __extends(CsdlAnnotations, _super);
     function CsdlAnnotations(target, annotationList, qualifier) {
         var _this = _super.call(this, annotationList) || this;
@@ -1557,7 +1562,7 @@ var CsdlAnnotations = (function (_super) {
     return CsdlAnnotations;
 }(CsdlAnnotable));
 
-var CsdlAnnotation = (function () {
+var CsdlAnnotation = /** @class */ (function () {
     function CsdlAnnotation(term, qualifier) {
         this.term = term;
         this.qualifier = qualifier;
@@ -1565,7 +1570,7 @@ var CsdlAnnotation = (function () {
     return CsdlAnnotation;
 }());
 
-var CsdlTerm = (function () {
+var CsdlTerm = /** @class */ (function () {
     function CsdlTerm(name, type, baseTerm, defaultValue, appliesTo, nullable, maxLength, precision, scale, srid) {
         this.name = name;
         this.type = type;
@@ -1590,7 +1595,7 @@ var CsdlTerm = (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEntityContainer; });
-var CsdlEntityContainer = (function () {
+var CsdlEntityContainer = /** @class */ (function () {
     function CsdlEntityContainer(name, extend, entitySets, singletons, functionImports, actionImports) {
         this.name = name;
         this.extend = extend;
@@ -1611,7 +1616,7 @@ var CsdlEntityContainer = (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEntitySet; });
-var CsdlEntitySet = (function () {
+var CsdlEntitySet = /** @class */ (function () {
     function CsdlEntitySet(name, entityType, navigationPropertyBinding, includeInServiceDocument) {
         this.name = name;
         this.entityType = entityType;
@@ -1631,7 +1636,7 @@ var CsdlEntitySet = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlEnumType; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlEnumMember; });
-var CsdlEnumType = (function () {
+var CsdlEnumType = /** @class */ (function () {
     function CsdlEnumType(name, members, underlyingType, isFlags) {
         this.name = name;
         this.members = members;
@@ -1641,7 +1646,7 @@ var CsdlEnumType = (function () {
     return CsdlEnumType;
 }());
 
-var CsdlEnumMember = (function () {
+var CsdlEnumMember = /** @class */ (function () {
     function CsdlEnumMember(name, value) {
         this.name = name;
         this.value = value;
@@ -1663,7 +1668,7 @@ var CsdlEnumMember = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return CsdlActionImport; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return CsdlParameter; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return CsdlReturnType; });
-var CsdlFunction = (function () {
+var CsdlFunction = /** @class */ (function () {
     function CsdlFunction(name, returnType, isBound, entitySetPath, isComposable, parameters) {
         this.name = name;
         this.returnType = returnType;
@@ -1675,7 +1680,7 @@ var CsdlFunction = (function () {
     return CsdlFunction;
 }());
 
-var CsdlAction = (function () {
+var CsdlAction = /** @class */ (function () {
     function CsdlAction(name, returnType, isBound, entitySetPath, parameters) {
         this.name = name;
         this.returnType = returnType;
@@ -1686,7 +1691,7 @@ var CsdlAction = (function () {
     return CsdlAction;
 }());
 
-var CsdlFunctionImport = (function () {
+var CsdlFunctionImport = /** @class */ (function () {
     function CsdlFunctionImport(name, functionName, entitySet, IncludeInServiceDocument) {
         this.name = name;
         this.functionName = functionName;
@@ -1696,7 +1701,7 @@ var CsdlFunctionImport = (function () {
     return CsdlFunctionImport;
 }());
 
-var CsdlActionImport = (function () {
+var CsdlActionImport = /** @class */ (function () {
     function CsdlActionImport(name, action, entitySet) {
         this.name = name;
         this.action = action;
@@ -1705,7 +1710,7 @@ var CsdlActionImport = (function () {
     return CsdlActionImport;
 }());
 
-var CsdlParameter = (function () {
+var CsdlParameter = /** @class */ (function () {
     function CsdlParameter(name, type, nullable, maxLength, precision, scale, srid) {
         this.name = name;
         this.type = type;
@@ -1718,7 +1723,7 @@ var CsdlParameter = (function () {
     return CsdlParameter;
 }());
 
-var CsdlReturnType = (function () {
+var CsdlReturnType = /** @class */ (function () {
     function CsdlReturnType(type, nullable, maxLength, precision, scale, srid) {
         this.type = type;
         this.nullable = nullable;
@@ -1739,7 +1744,7 @@ var CsdlReturnType = (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlNavigationPropertyBinding; });
-var CsdlNavigationPropertyBinding = (function () {
+var CsdlNavigationPropertyBinding = /** @class */ (function () {
     function CsdlNavigationPropertyBinding(path, target) {
         this.path = path;
         this.target = target;
@@ -1770,7 +1775,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 
-var CsdlReference = (function (_super) {
+var CsdlReference = /** @class */ (function (_super) {
     __extends(CsdlReference, _super);
     function CsdlReference(uri, includes, includeAnnotations, annotationList) {
         var _this = _super.call(this, annotationList) || this;
@@ -1782,7 +1787,7 @@ var CsdlReference = (function (_super) {
     return CsdlReference;
 }(__WEBPACK_IMPORTED_MODULE_0__csdl_annotation__["a" /* CsdlAnnotable */]));
 
-var CsdlInclude = (function () {
+var CsdlInclude = /** @class */ (function () {
     function CsdlInclude(namespace, alias) {
         this.namespace = namespace;
         this.alias = alias;
@@ -1790,7 +1795,7 @@ var CsdlInclude = (function () {
     return CsdlInclude;
 }());
 
-var CsdlIncludeAnnotations = (function () {
+var CsdlIncludeAnnotations = /** @class */ (function () {
     function CsdlIncludeAnnotations(termNamespace, qualifier, targetNamespace) {
         this.termNamespace = termNamespace;
         this.qualifier = qualifier;
@@ -1820,7 +1825,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 
-var CsdlSchema = (function (_super) {
+var CsdlSchema = /** @class */ (function (_super) {
     __extends(CsdlSchema, _super);
     function CsdlSchema(namespace, alias, enumTypes, complexTypes, entityTypes, functions, actions, entityContainer, typeDefinitions, terms, annotationsList, annotationList) {
         var _this = _super.call(this, annotationList) || this;
@@ -1849,7 +1854,7 @@ var CsdlSchema = (function (_super) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CsdlSingleton; });
-var CsdlSingleton = (function () {
+var CsdlSingleton = /** @class */ (function () {
     function CsdlSingleton(name, type, navigationPropertyBindings) {
         this.name = name;
         this.type = type;
@@ -1881,7 +1886,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var CsdlStructuralProperty = (function () {
+var CsdlStructuralProperty = /** @class */ (function () {
     function CsdlStructuralProperty(name, type, nullable) {
         this.name = name;
         this.type = type;
@@ -1890,7 +1895,7 @@ var CsdlStructuralProperty = (function () {
     return CsdlStructuralProperty;
 }());
 
-var CsdlProperty = (function (_super) {
+var CsdlProperty = /** @class */ (function (_super) {
     __extends(CsdlProperty, _super);
     function CsdlProperty(name, type, nullable, maxLength, precision, scale, unicode, srid, defaultValue) {
         var _this = _super.call(this, name, type, nullable) || this;
@@ -1905,7 +1910,7 @@ var CsdlProperty = (function (_super) {
     return CsdlProperty;
 }(CsdlStructuralProperty));
 
-var CsdlNavigationProperty = (function (_super) {
+var CsdlNavigationProperty = /** @class */ (function (_super) {
     __extends(CsdlNavigationProperty, _super);
     function CsdlNavigationProperty(name, type, nullable, partner, containsTarget, referentialConstraints, onDelete) {
         var _this = _super.call(this, name, type, nullable) || this;
@@ -1918,7 +1923,7 @@ var CsdlNavigationProperty = (function (_super) {
     return CsdlNavigationProperty;
 }(CsdlStructuralProperty));
 
-var CsdlReferentialConstraint = (function () {
+var CsdlReferentialConstraint = /** @class */ (function () {
     function CsdlReferentialConstraint(property, referencedProperty) {
         this.property = property;
         this.referencedProperty = referencedProperty;
@@ -1926,7 +1931,7 @@ var CsdlReferentialConstraint = (function () {
     return CsdlReferentialConstraint;
 }());
 
-var CsdlOnDelete = (function () {
+var CsdlOnDelete = /** @class */ (function () {
     function CsdlOnDelete(action) {
         this.action = action;
     }
@@ -1956,7 +1961,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var CsdlStructuredType = (function () {
+var CsdlStructuredType = /** @class */ (function () {
     function CsdlStructuredType(name, properties, navigationProperties, baseType, openType, abstract) {
         this.name = name;
         this.properties = properties;
@@ -1968,7 +1973,7 @@ var CsdlStructuredType = (function () {
     return CsdlStructuredType;
 }());
 
-var CsdlComplexType = (function (_super) {
+var CsdlComplexType = /** @class */ (function (_super) {
     __extends(CsdlComplexType, _super);
     function CsdlComplexType(name, properties, navigationProperties, baseType, openType, abstract) {
         return _super.call(this, name, properties, navigationProperties, baseType, openType, abstract) || this;
@@ -1976,7 +1981,7 @@ var CsdlComplexType = (function (_super) {
     return CsdlComplexType;
 }(CsdlStructuredType));
 
-var CsdlEntityType = (function (_super) {
+var CsdlEntityType = /** @class */ (function (_super) {
     __extends(CsdlEntityType, _super);
     function CsdlEntityType(name, key, properties, navigationProperties, baseType, openType, abstract, hasStream) {
         var _this = _super.call(this, name, properties, navigationProperties, baseType, openType, abstract) || this;
@@ -1987,14 +1992,14 @@ var CsdlEntityType = (function (_super) {
     return CsdlEntityType;
 }(CsdlStructuredType));
 
-var CsdlKey = (function () {
+var CsdlKey = /** @class */ (function () {
     function CsdlKey(propertyRefs) {
         this.propertyRefs = propertyRefs;
     }
     return CsdlKey;
 }());
 
-var CsdlPropertyRef = (function () {
+var CsdlPropertyRef = /** @class */ (function () {
     function CsdlPropertyRef(name, alias) {
         this.name = name;
         this.alias = alias;
@@ -2023,7 +2028,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 
-var CsdlTypeDefinition = (function (_super) {
+var CsdlTypeDefinition = /** @class */ (function (_super) {
     __extends(CsdlTypeDefinition, _super);
     function CsdlTypeDefinition(name, underlayingType, maxLength, precision, scale, unicode, srid, annotationList) {
         var _this = _super.call(this, annotationList) || this;
@@ -2050,7 +2055,7 @@ var CsdlTypeDefinition = (function (_super) {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return EntitySet; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 
-var EntitySet = (function () {
+var EntitySet = /** @class */ (function () {
     function EntitySet(entities, count) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entities, 'entities');
         this.entities = entities;
@@ -2107,7 +2112,7 @@ var FieldType;
     FieldType[FieldType["ATTRIBUTE"] = 0] = "ATTRIBUTE";
     FieldType[FieldType["TAG"] = 1] = "TAG";
 })(FieldType || (FieldType = {}));
-var Field = (function () {
+var Field = /** @class */ (function () {
     function Field(name, fieldType) {
         this.name = name;
         this.fieldType = fieldType;
@@ -2115,7 +2120,7 @@ var Field = (function () {
     return Field;
 }());
 
-var Metadata = (function () {
+var Metadata = /** @class */ (function () {
     function Metadata(xml) {
         try {
             var parser = new DOMParser();
@@ -2655,7 +2660,7 @@ var Metadata = (function () {
 
 
 
-var ODataResponse = (function () {
+var ODataResponse = /** @class */ (function () {
     function ODataResponse(response) {
         this.response = response;
     }
@@ -2759,7 +2764,7 @@ var ODataResponse = (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HttpOptions; });
-var HttpOptions = (function () {
+var HttpOptions = /** @class */ (function () {
     function HttpOptions(headers, observe, params, reportProgress, responseType, withCredentials) {
         if (observe === void 0) { observe = 'response'; }
         if (responseType === void 0) { responseType = 'text'; }
@@ -2803,42 +2808,42 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
-var ODataService = (function () {
+var ODataService = /** @class */ (function () {
     function ODataService(http) {
         this.http = http;
     }
     ODataService_1 = ODataService;
-    ODataService.prototype.get = function (odataQuery, options) {
-        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
+    ODataService.prototype.get = function (odataQuery, httpOptions) {
+        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        return this.http.get(url, options)
+        return this.http.get(url, httpOptions)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.post = function (odataQuery, body, options) {
-        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
+    ODataService.prototype.post = function (odataQuery, body, httpOptions) {
+        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        return this.http.post(url, body, options)
+        return this.http.post(url, body, httpOptions)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.patch = function (odataQuery, body, etag, options) {
-        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
+    ODataService.prototype.patch = function (odataQuery, body, etag, httpOptions) {
+        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var newOptions = this.mergeETag(options, etag);
-        return this.http.patch(url, body, options)
+        var newHttpOptions = this.mergeETag(httpOptions, etag);
+        return this.http.patch(url, body, newHttpOptions)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.put = function (odataQuery, body, etag, options) {
-        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
+    ODataService.prototype.put = function (odataQuery, body, etag, httpOptions) {
+        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var newOptions = this.mergeETag(options, etag);
-        return this.http.put(url, body, options)
+        var newHttpOptions = this.mergeETag(httpOptions, etag);
+        return this.http.put(url, body, newHttpOptions)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.delete = function (odataQuery, etag, options) {
-        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
+    ODataService.prototype.delete = function (odataQuery, etag, httpOptions) {
+        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var newOptions = this.mergeETag(options, etag);
-        return this.http.delete(url, options)
+        var newHttpOptions = this.mergeETag(httpOptions, etag);
+        return this.http.delete(url, newHttpOptions)
             .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.mergeETag = function (options, etag) {
@@ -2909,7 +2914,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
-var ODataModule = (function () {
+var ODataModule = /** @class */ (function () {
     function ODataModule() {
     }
     ODataModule = __decorate([
@@ -2937,7 +2942,7 @@ var ODataModule = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 
 
-var Expand = (function () {
+var Expand = /** @class */ (function () {
     function Expand(entitySet) {
         __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entitySet, 'entitySet');
         __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(entitySet, 'entitySet');
@@ -3002,7 +3007,7 @@ var Expand = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return FilterString; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 
-var FilterString = (function () {
+var FilterString = /** @class */ (function () {
     function FilterString(filter) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(filter, 'filter');
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(filter, 'filter');
@@ -3069,7 +3074,7 @@ var Order;
     Order[Order["ASC"] = 0] = "ASC";
     Order[Order["DESC"] = 1] = "DESC";
 })(Order || (Order = {}));
-var Orderby = (function () {
+var Orderby = /** @class */ (function () {
     function Orderby(property, order) {
         __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(property, 'property');
         this.property = property;
@@ -3102,7 +3107,7 @@ var Orderby = (function () {
 
 
 
-var QueryOptions = (function () {
+var QueryOptions = /** @class */ (function () {
     function QueryOptions(separator) {
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(separator, 'separator');
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(separator, 'separator');
@@ -3307,7 +3312,7 @@ var QueryOptions = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__odata_query_quoted_string__ = __webpack_require__("../../../../../src/app/odata/odata-query/quoted-string.ts");
 
 
-var Utils = (function () {
+var Utils = /** @class */ (function () {
     function Utils() {
     }
     Utils.isNull = function (value) {
