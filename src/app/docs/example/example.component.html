@@ -1,4 +1,4 @@
-<!-- <input type="button" value="Execute all queries" (click)="executeAllGet()"> -->
+<input type="button" value="Execute all queries" (click)="executeAllGet()">
 
 <div *ngFor="let example of examples">
   <h3>{{example.title}}</h3>
@@ -6,7 +6,9 @@
   <span>{{example.query}}</span>
   <h4>Code</h4>
   <pre class="code">{{example.code}}</pre>
-  <h4 *ngIf="executeEnabled">Response <input type="button" value="Execute query" (click)="execute(example)"></h4>
+  <h4 *ngIf="executeEnabled">Response
+    <input type="button" value="Execute query" (click)="execute(example)">
+  </h4>
   <textarea *ngIf="executeEnabled" class="response" readonly="true">{{example.response}}</textarea>
   <hr/>
 </div>

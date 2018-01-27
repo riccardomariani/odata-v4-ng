@@ -1,26 +1,22 @@
 import { HttpResponse } from '@angular/common/http';
+
 import { Utils } from '../utils/utils';
-import { Response } from '@angular/http';
 import { EntitySet } from './entity-collection';
 import { Metadata } from './metadata';
+import { ODataResponseAbstract } from './odata-response-abstract';
+import { ODataResponseBatch } from './odata-response-batch';
 
-export class ODataResponse {
-    static readonly VALUE = 'value';
-    static readonly ODATA_COUNT = '@odata.count';
+export class ODataResponse extends ODataResponseAbstract {
+    private static readonly VALUE = 'value';
+    private static readonly ODATA_COUNT = '@odata.count';
 
-    private response: HttpResponse<string>;
-
-    constructor(response: HttpResponse<string>) {
-        this.response = response;
-    }
-
-    isOk(): boolean {
-        return this.response.ok;
+    constructor(httpResponse: HttpResponse<string>) {
+        super(httpResponse);
     }
 
     getBodyAsJson(): any {
-        const contentType: string = this.response.headers.get('Content-Type');
-        if (contentType.includes('json')) {
+        const contentType: string = this.getHttpResponse().headers.get('Content-Type');
+        if (Utils.isNotNullNorUndefined(contentType) && contentType.includes('json')) {
             try {
                 return JSON.parse(this.getBodyAsText());
             } catch (error) {
@@ -28,10 +24,6 @@ export class ODataResponse {
             }
         }
         return null;
-    }
-
-    getBodyAsText(): string {
-        return this.response.body;
     }
 
     toMetadata(): Metadata {
@@ -75,29 +67,8 @@ export class ODataResponse {
         return Number(this.getBodyAsText());
     }
 
-    toString(): string {
-        let res = `${this.response.status} ${this.response.statusText}\n`;
-
-        const headers = this.response.headers;
-        for (const key of headers.keys()) {
-            res += key + ': ';
-            let valueString = '';
-            for (const value of headers.getAll(key)) {
-                if (valueString.length) {
-                    valueString += ' ';
-                }
-                valueString += value;
-            }
-            res += valueString + '\n';
-        }
-
-        const json = this.getBodyAsJson();
-        if (Utils.isNotNullNorUndefined(json)) {
-            res += JSON.stringify(json, null, 4);
-        } else {
-            res += this.getBodyAsText();
-        }
-        return res;
+    toODataResponseBatch(): ODataResponseBatch {
+        return new ODataResponseBatch(this.getHttpResponse());
     }
 
     protected toObject<T>(): T {

@@ -57,7 +57,7 @@ var AppRoutingModule = /** @class */ (function () {
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p><b><i>\n  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>\n  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>\n  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n</i></b></p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Service Document and Metadata\">\n    <ov4-metadata></ov4-metadata>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
+module.exports = "<div style=\"text-align:center\">\n  <h1>\n    Welcome to {{title}}!\n  </h1>\n</div>\n\n<h2>Usage Examples</h2>\n<p> In \"app.module.ts\" import ODataModule and then inject the ODataService where you want to use this library.</p>\n<p>\n  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT):\n  <a href=\"https://services.odata.org/V4/TripPinServiceRW\">{{serviceRoot}}.</a>\n  <br/> Metadata of this service is here:\n  <a href=\"https://services.odata.org/V4/TripPinServiceRW/$metadata\">{{serviceRoot}}/$metadata.</a>\n</p>\n<p>\n  <b>\n    <i>\n      Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly\n      not valid.\n      <br/> The lack of validity is due to the certificate host name not matching the actual host name of the service.\n      <br/> Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.\n    </i>\n  </b>\n</p>\n<p>To run the example queries and get the response, click on the \"Execute query\" button. Service response could be slow depending\n  on workload.</p>\n<p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>\n\n<p-tabView>\n  <p-tabPanel header=\"Basic Read\">\n    <ov4-basic-read></ov4-basic-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Basic Write\">\n    <ov4-basic-write></ov4-basic-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced Read\">\n    <ov4-adv-read></ov4-adv-read>\n  </p-tabPanel>\n  <p-tabPanel header=\"Advanced Write\">\n    <ov4-adv-write></ov4-adv-write>\n  </p-tabPanel>\n  <p-tabPanel header=\"Service Document and Metadata\">\n    <ov4-metadata></ov4-metadata>\n  </p-tabPanel>\n  <p-tabPanel header=\"Batch\">\n    <ov4-batch></ov4-batch>\n  </p-tabPanel>\n</p-tabView>\n\n<router-outlet></router-outlet>"
 
 /***/ }),
 
@@ -104,19 +104,21 @@ var AppComponent = /** @class */ (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("../../../platform-browser/esm5/platform-browser.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__ = __webpack_require__("../../../../../src/app/odata/odata.module.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__docs_basic_read_basic_read_component__ = __webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__docs_basic_write_basic_write_component__ = __webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__docs_adv_read_adv_read_component__ = __webpack_require__("../../../../../src/app/docs/adv-read/adv-read.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__docs_adv_write_adv_write_component__ = __webpack_require__("../../../../../src/app/docs/adv-write/adv-write.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_primeng_primeng__ = __webpack_require__("../../../../primeng/primeng.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_primeng_primeng___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_primeng_primeng__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__docs_example_example_component__ = __webpack_require__("../../../../../src/app/docs/example/example.component.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__docs_metadata_metadata_component__ = __webpack_require__("../../../../../src/app/docs/metadata/metadata.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_forms__ = __webpack_require__("../../../forms/esm5/forms.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__ = __webpack_require__("../../../platform-browser/esm5/platform-browser.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_primeng_primeng__ = __webpack_require__("../../../../primeng/primeng.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_primeng_primeng___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_primeng_primeng__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__docs_adv_read_adv_read_component__ = __webpack_require__("../../../../../src/app/docs/adv-read/adv-read.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__docs_adv_write_adv_write_component__ = __webpack_require__("../../../../../src/app/docs/adv-write/adv-write.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__docs_basic_read_basic_read_component__ = __webpack_require__("../../../../../src/app/docs/basic-read/basic-read.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__docs_basic_write_basic_write_component__ = __webpack_require__("../../../../../src/app/docs/basic-write/basic-write.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__docs_batch_batch_component__ = __webpack_require__("../../../../../src/app/docs/batch/batch.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__docs_example_example_component__ = __webpack_require__("../../../../../src/app/docs/example/example.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__docs_metadata_metadata_component__ = __webpack_require__("../../../../../src/app/docs/metadata/metadata.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__odata_odata_module__ = __webpack_require__("../../../../../src/app/odata/odata.module.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -135,27 +137,32 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
+
 var AppModule = /** @class */ (function () {
     function AppModule() {
     }
     AppModule = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["NgModule"])({
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["NgModule"])({
             declarations: [
-                __WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */],
-                __WEBPACK_IMPORTED_MODULE_10__docs_example_example_component__["a" /* ExampleComponent */],
-                __WEBPACK_IMPORTED_MODULE_5__docs_basic_read_basic_read_component__["a" /* BasicReadComponent */],
-                __WEBPACK_IMPORTED_MODULE_6__docs_basic_write_basic_write_component__["a" /* BasicWriteComponent */],
-                __WEBPACK_IMPORTED_MODULE_7__docs_adv_read_adv_read_component__["a" /* AdvReadComponent */],
-                __WEBPACK_IMPORTED_MODULE_8__docs_adv_write_adv_write_component__["a" /* AdvWriteComponent */],
-                __WEBPACK_IMPORTED_MODULE_11__docs_metadata_metadata_component__["a" /* MetadataComponent */]
+                __WEBPACK_IMPORTED_MODULE_5__app_component__["a" /* AppComponent */],
+                __WEBPACK_IMPORTED_MODULE_11__docs_example_example_component__["a" /* ExampleComponent */],
+                __WEBPACK_IMPORTED_MODULE_8__docs_basic_read_basic_read_component__["a" /* BasicReadComponent */],
+                __WEBPACK_IMPORTED_MODULE_9__docs_basic_write_basic_write_component__["a" /* BasicWriteComponent */],
+                __WEBPACK_IMPORTED_MODULE_6__docs_adv_read_adv_read_component__["a" /* AdvReadComponent */],
+                __WEBPACK_IMPORTED_MODULE_7__docs_adv_write_adv_write_component__["a" /* AdvWriteComponent */],
+                __WEBPACK_IMPORTED_MODULE_12__docs_metadata_metadata_component__["a" /* MetadataComponent */],
+                __WEBPACK_IMPORTED_MODULE_10__docs_batch_batch_component__["a" /* BatchComponent */],
             ],
             imports: [
-                __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["BrowserModule"],
-                __WEBPACK_IMPORTED_MODULE_2__app_routing_module__["a" /* AppRoutingModule */],
-                __WEBPACK_IMPORTED_MODULE_4__odata_odata_module__["a" /* ODataModule */],
-                __WEBPACK_IMPORTED_MODULE_9_primeng_primeng__["TabViewModule"]
+                __WEBPACK_IMPORTED_MODULE_2__angular_platform_browser__["BrowserModule"],
+                __WEBPACK_IMPORTED_MODULE_4__app_routing_module__["a" /* AppRoutingModule */],
+                __WEBPACK_IMPORTED_MODULE_13__odata_odata_module__["a" /* ODataModule */],
+                __WEBPACK_IMPORTED_MODULE_3_primeng_primeng__["TabViewModule"],
+                __WEBPACK_IMPORTED_MODULE_3_primeng_primeng__["InputTextModule"],
+                __WEBPACK_IMPORTED_MODULE_1__angular_forms__["FormsModule"]
             ],
-            bootstrap: [__WEBPACK_IMPORTED_MODULE_3__app_component__["a" /* AppComponent */]]
+            bootstrap: [__WEBPACK_IMPORTED_MODULE_5__app_component__["a" /* AppComponent */]]
         })
     ], AppModule);
     return AppModule;
@@ -876,6 +883,132 @@ var BasicWriteComponent = /** @class */ (function (_super) {
 
 /***/ }),
 
+/***/ "../../../../../src/app/docs/batch/batch.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<span class=\"ui-float-label\">\n  <input id=\"service-root\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"serviceRoot\">\n  <label for=\"service-root\">Service Root</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-set\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entitySet\">\n  <label for=\"entity-set\">Entity Set</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-id\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityId\">\n  <label for=\"entity-id\">Entity ID</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-property-patch\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityPropertyPatch\">\n  <label for=\"entity-property-patch\">Entity property to change using PATCH</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-property-put\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityPropertyPut\">\n  <label for=\"entity-property-put\">Entity property to change using PUT</label>\n</span>\n<br/>\n<input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllQueries()\">\n<div *ngFor=\"let batchItem of batchData\">\n  <h4>{{batchItem.requestDescription}} Batch Response</h4>\n  <textarea class=\"response\" readonly=\"true\">{{batchItem.responseBatch.toString()}}</textarea>\n  <h4>{{batchItem.requestDescription}} Batch Response Parts</h4>\n  <textarea *ngFor=\"let response of batchItem.responses\" class=\"response\" readonly=\"true\">{{response?.toString()}}</textarea>\n</div>"
+
+/***/ }),
+
+/***/ "../../../../../src/app/docs/batch/batch.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* unused harmony export BatchItem */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return BatchComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_rxjs_add_observable_concat__ = __webpack_require__("../../../../rxjs/_esm5/add/observable/concat.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__ = __webpack_require__("../../../../../src/app/odata/odata-query/odata-query.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__ = __webpack_require__("../../../../../src/app/odata/odata-service/odata.service.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+var BatchItem = /** @class */ (function () {
+    function BatchItem(requestDescription, observable, responseBatch, responses) {
+        this.requestDescription = requestDescription;
+        this.observable = observable;
+        this.responseBatch = responseBatch;
+        this.responses = responses;
+    }
+    return BatchItem;
+}());
+
+var BatchComponent = /** @class */ (function () {
+    function BatchComponent(odataService) {
+        this.odataService = odataService;
+        this.batchData = [];
+    }
+    BatchComponent.prototype.ngOnInit = function () { };
+    BatchComponent.prototype.ngOnDestroy = function () { };
+    BatchComponent.prototype.executeAllQueries = function () {
+        var batchData = [];
+        // POST
+        var odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        var odataQuery = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).entitySet(this.entitySet);
+        var body1 = {};
+        body1[this.entityId] = 'id1';
+        var body2 = {};
+        body2[this.entityId] = 'id2';
+        odataQueryBatch.post(odataQuery, body1).post(odataQuery, body2);
+        batchData.push(new BatchItem('Add ' + this.entitySet, odataQueryBatch.execute(), null, null));
+        // GET
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        odataQueryBatch.get(odataQuery);
+        batchData.push(new BatchItem('Get ' + this.entitySet, odataQueryBatch.execute(), null, null));
+        // PATCH
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        var odataQuery1 = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).entitySet(this.entitySet).entityKey('\'id1\'');
+        var odataQuery2 = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).entitySet(this.entitySet).entityKey('\'id2\'');
+        body1 = {};
+        body1[this.entityPropertyPatch] = 'patch1';
+        body2 = {};
+        body2[this.entityPropertyPatch] = 'patch2';
+        odataQueryBatch.patch(odataQuery1, body1).patch(odataQuery2, body2);
+        batchData.push(new BatchItem('Update ' + this.entitySet + ' using PATCH', odataQueryBatch.execute(), null, null));
+        // GET
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        odataQueryBatch.get(odataQuery);
+        batchData.push(new BatchItem('Get ' + this.entitySet, odataQueryBatch.execute(), null, null));
+        // PUT
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        body1 = {};
+        body1[this.entityPropertyPut] = 'put1';
+        body2 = {};
+        body2[this.entityPropertyPut] = 'put2';
+        odataQueryBatch.put(odataQuery1, body1).put(odataQuery2, body2);
+        batchData.push(new BatchItem('Update ' + this.entitySet + ' using PUT', odataQueryBatch.execute(), null, null));
+        // GET
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        odataQueryBatch.get(odataQuery);
+        batchData.push(new BatchItem('Get ' + this.entitySet, odataQueryBatch.execute(), null, null));
+        // DELETE
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        odataQueryBatch.delete(odataQuery1).delete(odataQuery2);
+        batchData.push(new BatchItem('Delete ' + this.entitySet, odataQueryBatch.execute(), null, null));
+        // GET
+        odataQueryBatch = new __WEBPACK_IMPORTED_MODULE_2__odata_odata_query_odata_query__["a" /* ODataQuery */](this.odataService, this.serviceRoot).batch();
+        odataQueryBatch.get(odataQuery);
+        batchData.push(new BatchItem('Get ' + this.entitySet, odataQueryBatch.execute(), null, null));
+        this.execute(0, batchData);
+    };
+    BatchComponent.prototype.execute = function (index, batchData) {
+        var _this = this;
+        var batchItem = batchData[index];
+        batchItem.observable.subscribe(function (odataResponse) {
+            batchItem.responseBatch = odataResponse;
+            batchItem.responses = odataResponse.toODataResponseBatch().getODataResponses();
+            if (index === batchData.length - 1) {
+                _this.batchData = batchData;
+            }
+            else {
+                _this.execute(++index, batchData);
+            }
+        });
+    };
+    BatchComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["Component"])({
+            selector: 'ov4-batch',
+            template: __webpack_require__("../../../../../src/app/docs/batch/batch.component.html")
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_3__odata_odata_service_odata_service__["a" /* ODataService */]])
+    ], BatchComponent);
+    return BatchComponent;
+}());
+
+
+
+/***/ }),
+
 /***/ "../../../../../src/app/docs/example/example-data.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -896,7 +1029,7 @@ var ExampleData = /** @class */ (function () {
 /***/ "../../../../../src/app/docs/example/example.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<!-- <input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\"> -->\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"executeEnabled\">Response <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\"></h4>\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>"
+module.exports = "<input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllGet()\">\n\n<div *ngFor=\"let example of examples\">\n  <h3>{{example.title}}</h3>\n  <h4>Query</h4>\n  <span>{{example.query}}</span>\n  <h4>Code</h4>\n  <pre class=\"code\">{{example.code}}</pre>\n  <h4 *ngIf=\"executeEnabled\">Response\n    <input type=\"button\" value=\"Execute query\" (click)=\"execute(example)\">\n  </h4>\n  <textarea *ngIf=\"executeEnabled\" class=\"response\" readonly=\"true\">{{example.response}}</textarea>\n  <hr/>\n</div>"
 
 /***/ }),
 
@@ -1155,18 +1288,18 @@ var ODataQueryBatch = /** @class */ (function (_super) {
         this.requests.push(new BatchRequest(Method.DELETE, odataQuery, undefined, httpOptions));
         return this;
     };
-    ODataQueryBatch.prototype.execute = function (options) {
-        if (options === void 0) { options = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */](); }
+    ODataQueryBatch.prototype.execute = function (httpOptions) {
+        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */](); }
         // set headers
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options)) {
-            options = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */]();
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions)) {
+            httpOptions = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */]();
         }
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options.headers)) {
-            options.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]();
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions.headers)) {
+            httpOptions.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]();
         }
-        options.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
+        httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
         // send request
-        return this.odataService.post(this, this.getBody(), options);
+        return this.odataService.post(this, this.getBody(), httpOptions);
     };
     ODataQueryBatch.prototype.toString = function () {
         return this.queryString;
@@ -1181,13 +1314,14 @@ var ODataQueryBatch = /** @class */ (function (_super) {
             var body = request.body;
             if (method === Method.GET) {
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
-                    res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+                    res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
                     this.changesetBoundary = null;
                 }
-                res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
+                res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
+                res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
-                res += Method[method] + ' ' + odataQuery + ODataQueryBatch.NEWLINE;
+                res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
             }
@@ -1200,15 +1334,16 @@ var ODataQueryBatch = /** @class */ (function (_super) {
                 }
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
                     this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__["UUID"].UUID();
-                    res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
+                    res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.NEWLINE;
                 }
-                res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+                res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
+                res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_ID + ': ' + this.changesetID++ + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.NEWLINE;
-                res += Method[method] + ' ' + odataQuery + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
+                res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
                 if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(ifMatch)) {
                     res += ODataQueryBatch.IF_MATCH + ': ' + ifMatch + ODataQueryBatch.NEWLINE;
@@ -1219,14 +1354,14 @@ var ODataQueryBatch = /** @class */ (function (_super) {
         }
         if (res.length) {
             if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
-                res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+                res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
                 this.changesetBoundary = null;
             }
-            res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary;
+            res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX;
         }
         return res;
     };
-    ODataQueryBatch.BOUNDARY_PREFIX = '--';
+    ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX = '--';
     ODataQueryBatch.BATCH_PREFIX = 'batch_';
     ODataQueryBatch.CHANGESET_PREFIX = 'changeset_';
     ODataQueryBatch.NEWLINE = '\r\n';
@@ -1235,11 +1370,13 @@ var ODataQueryBatch = /** @class */ (function (_super) {
     // HEADERS
     ODataQueryBatch.HTTP11 = 'HTTP/1.1';
     ODataQueryBatch.CONTENT_TYPE = 'Content-Type';
+    ODataQueryBatch.CONTENT_TRANSFER_ENCODING = 'Content-Transfer-Encoding';
     ODataQueryBatch.CONTENT_ID = 'Content-ID';
     ODataQueryBatch.IF_MATCH = 'If-Match';
     // HEADER VALUES
     ODataQueryBatch.MULTIPART_MIXED = 'multipart/mixed;boundary=';
     ODataQueryBatch.APPLICATION_HTTP = 'application/http';
+    ODataQueryBatch.BINARY = 'binary';
     ODataQueryBatch.APPLICATION_JSON = 'application/json';
     return ODataQueryBatch;
 }(__WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__["a" /* ODataQueryAbstract */]));
@@ -2649,6 +2786,220 @@ var Metadata = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "../../../../../src/app/odata/odata-response/odata-response-abstract.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataResponseAbstract; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+
+var ODataResponseAbstract = /** @class */ (function () {
+    function ODataResponseAbstract(httpResponse) {
+        this.httpResponse = httpResponse;
+    }
+    ODataResponseAbstract.prototype.getHttpResponse = function () {
+        return this.httpResponse;
+    };
+    ODataResponseAbstract.prototype.isOk = function () {
+        return this.httpResponse.ok;
+    };
+    ODataResponseAbstract.prototype.getBodyAsJson = function () {
+        return null;
+    };
+    ODataResponseAbstract.prototype.getBodyAsText = function () {
+        return this.httpResponse.body;
+    };
+    ODataResponseAbstract.prototype.toString = function () {
+        var res = this.httpResponse.status + " " + this.httpResponse.statusText + "\n";
+        var headers = this.httpResponse.headers;
+        for (var _i = 0, _a = headers.keys(); _i < _a.length; _i++) {
+            var key = _a[_i];
+            res += key + ': ';
+            var valueString = '';
+            for (var _b = 0, _c = headers.getAll(key); _b < _c.length; _b++) {
+                var value = _c[_b];
+                if (valueString.length) {
+                    valueString += ' ';
+                }
+                valueString += value;
+            }
+            res += valueString + '\n';
+        }
+        var json = this.getBodyAsJson();
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(json)) {
+            res += JSON.stringify(json, null, 4);
+        }
+        else {
+            res += this.getBodyAsText();
+        }
+        return res;
+    };
+    return ODataResponseAbstract;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/odata/odata-response/odata-response-batch.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataResponseBatch; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__("../../../common/esm5/http.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_response__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_response_abstract__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response-abstract.ts");
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+var ODataResponseBatch = /** @class */ (function (_super) {
+    __extends(ODataResponseBatch, _super);
+    function ODataResponseBatch(httpResponse) {
+        var _this = _super.call(this, httpResponse) || this;
+        _this.odataResponses = [];
+        _this.parseResponses();
+        return _this;
+    }
+    ODataResponseBatch.prototype.getODataResponses = function () {
+        return this.odataResponses;
+    };
+    ODataResponseBatch.prototype.parseResponses = function () {
+        var contentType = this.getHttpResponse().headers.get(ODataResponseBatch.CONTENT_TYPE);
+        var boundaryDelimiterBatch = this.getBoundaryDelimiter(contentType);
+        var boundaryEndBatch = this.getBoundaryEnd(boundaryDelimiterBatch);
+        var batchBody = this.getBodyAsText();
+        var batchBodyLines = batchBody.split(ODataResponseBatch.NEWLINE);
+        var odataResponseCS;
+        var contentId;
+        var boundaryDelimiterCS;
+        var boundaryEndCS;
+        var batchPartStartIndex;
+        for (var index = 0; index < batchBodyLines.length; index++) {
+            var batchBodyLine = batchBodyLines[index];
+            if (batchBodyLine.startsWith(ODataResponseBatch.CONTENT_TYPE)) {
+                var contentTypeValue = this.getHeaderValue(batchBodyLine);
+                if (contentTypeValue === ODataResponseBatch.MULTIPART_MIXED) {
+                    odataResponseCS = [];
+                    contentId = undefined;
+                    boundaryDelimiterCS = this.getBoundaryDelimiter(batchBodyLine);
+                    boundaryEndCS = this.getBoundaryEnd(boundaryDelimiterCS);
+                    batchPartStartIndex = undefined;
+                }
+                continue;
+            }
+            else if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(odataResponseCS) && batchBodyLine.startsWith(ODataResponseBatch.CONTENT_ID)) {
+                contentId = Number(this.getHeaderValue(batchBodyLine));
+            }
+            else if (batchBodyLine.startsWith(ODataResponseBatch.HTTP11)) {
+                batchPartStartIndex = index;
+            }
+            else if (batchBodyLine === boundaryDelimiterBatch || batchBodyLine === boundaryDelimiterCS
+                || batchBodyLine === boundaryEndBatch || batchBodyLine === boundaryEndCS) {
+                if (!batchPartStartIndex) {
+                    continue;
+                }
+                var odataResponse = this.createODataResponse(batchBodyLines, batchPartStartIndex, index - 1);
+                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(odataResponseCS)) {
+                    odataResponseCS[contentId] = odataResponse;
+                }
+                else {
+                    this.odataResponses.push(odataResponse);
+                }
+                if (batchBodyLine === boundaryDelimiterBatch || batchBodyLine === boundaryDelimiterCS) {
+                    batchPartStartIndex = index + 1;
+                }
+                else if (batchBodyLine === boundaryEndBatch || batchBodyLine === boundaryEndCS) {
+                    if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(odataResponseCS)) {
+                        for (var _i = 0, odataResponseCS_1 = odataResponseCS; _i < odataResponseCS_1.length; _i++) {
+                            var response = odataResponseCS_1[_i];
+                            if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(response)) {
+                                this.odataResponses.push(response);
+                            }
+                        }
+                    }
+                    odataResponseCS = undefined;
+                    boundaryDelimiterCS = undefined;
+                    boundaryEndCS = undefined;
+                    batchPartStartIndex = undefined;
+                }
+            }
+        }
+    };
+    ODataResponseBatch.prototype.getHeaderValue = function (header) {
+        var res = header.split(';')[0].trim();
+        res = res.split(':')[1].trim();
+        return res;
+    };
+    ODataResponseBatch.prototype.getBoundaryDelimiter = function (contentType) {
+        var contentTypeParts = contentType.split(';');
+        if (contentTypeParts.length === 2) {
+            var boundary = contentType.split(';')[1].trim();
+            var boundaryDelimiter = ODataResponseBatch.BOUNDARY_PREFIX_SUFFIX + boundary.split('=')[1];
+            return boundaryDelimiter;
+        }
+        else {
+            return '';
+        }
+    };
+    ODataResponseBatch.prototype.getBoundaryEnd = function (boundaryDelimiter) {
+        if (!boundaryDelimiter.length) {
+            return '';
+        }
+        var boundaryEnd = boundaryDelimiter + ODataResponseBatch.BOUNDARY_PREFIX_SUFFIX;
+        return boundaryEnd;
+    };
+    ODataResponseBatch.prototype.createODataResponse = function (batchBodyLines, batchPartStartIndex, batchPartEndIndex) {
+        var index = batchPartStartIndex;
+        var statusLine = batchBodyLines[index];
+        var statusLineParts = batchBodyLines[index].split(' ');
+        var status = statusLineParts[1];
+        var statusTextIndex = statusLine.indexOf(status) + status.length + 1;
+        var statusText = statusLine.substring(statusTextIndex);
+        var httpHeaders = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]();
+        for (++index; index <= batchPartEndIndex; index++) {
+            var batchBodyLine = batchBodyLines[index];
+            if (batchBodyLine === '') {
+                break;
+            }
+            var batchBodyLineParts = batchBodyLine.split(':');
+            httpHeaders = httpHeaders.set(batchBodyLineParts[0].trim(), batchBodyLineParts[1].trim());
+        }
+        var body = '';
+        for (; index <= batchPartEndIndex; index++) {
+            body += batchBodyLines[index];
+        }
+        return new __WEBPACK_IMPORTED_MODULE_2__odata_response__["a" /* ODataResponse */](new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["d" /* HttpResponse */]({
+            body: body,
+            headers: httpHeaders,
+            status: Number(status),
+            statusText: statusText
+        }));
+    };
+    ODataResponseBatch.CONTENT_TYPE = 'Content-Type';
+    ODataResponseBatch.CONTENT_ID = 'Content-ID';
+    ODataResponseBatch.HTTP11 = 'HTTP/1.1';
+    ODataResponseBatch.BOUNDARY_PREFIX_SUFFIX = '--';
+    ODataResponseBatch.NEWLINE = '\r\n';
+    ODataResponseBatch.MULTIPART_MIXED = 'multipart/mixed';
+    return ODataResponseBatch;
+}(__WEBPACK_IMPORTED_MODULE_3__odata_response_abstract__["a" /* ODataResponseAbstract */]));
+
+
+
+/***/ }),
+
 /***/ "../../../../../src/app/odata/odata-response/odata-response.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -2657,19 +3008,31 @@ var Metadata = /** @class */ (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("../../../../../src/app/odata/utils/utils.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__entity_collection__ = __webpack_require__("../../../../../src/app/odata/odata-response/entity-collection.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__metadata__ = __webpack_require__("../../../../../src/app/odata/odata-response/metadata.ts");
-
-
-
-var ODataResponse = /** @class */ (function () {
-    function ODataResponse(response) {
-        this.response = response;
-    }
-    ODataResponse.prototype.isOk = function () {
-        return this.response.ok;
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_response_abstract__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response-abstract.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_response_batch__ = __webpack_require__("../../../../../src/app/odata/odata-response/odata-response-batch.ts");
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
+})();
+
+
+
+
+
+var ODataResponse = /** @class */ (function (_super) {
+    __extends(ODataResponse, _super);
+    function ODataResponse(httpResponse) {
+        return _super.call(this, httpResponse) || this;
+    }
     ODataResponse.prototype.getBodyAsJson = function () {
-        var contentType = this.response.headers.get('Content-Type');
-        if (contentType.includes('json')) {
+        var contentType = this.getHttpResponse().headers.get('Content-Type');
+        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(contentType) && contentType.includes('json')) {
             try {
                 return JSON.parse(this.getBodyAsText());
             }
@@ -2678,9 +3041,6 @@ var ODataResponse = /** @class */ (function () {
             }
         }
         return null;
-    };
-    ODataResponse.prototype.getBodyAsText = function () {
-        return this.response.body;
     };
     ODataResponse.prototype.toMetadata = function () {
         var xml = this.getBodyAsText();
@@ -2718,30 +3078,8 @@ var ODataResponse = /** @class */ (function () {
     ODataResponse.prototype.toCount = function () {
         return Number(this.getBodyAsText());
     };
-    ODataResponse.prototype.toString = function () {
-        var res = this.response.status + " " + this.response.statusText + "\n";
-        var headers = this.response.headers;
-        for (var _i = 0, _a = headers.keys(); _i < _a.length; _i++) {
-            var key = _a[_i];
-            res += key + ': ';
-            var valueString = '';
-            for (var _b = 0, _c = headers.getAll(key); _b < _c.length; _b++) {
-                var value = _c[_b];
-                if (valueString.length) {
-                    valueString += ' ';
-                }
-                valueString += value;
-            }
-            res += valueString + '\n';
-        }
-        var json = this.getBodyAsJson();
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(json)) {
-            res += JSON.stringify(json, null, 4);
-        }
-        else {
-            res += this.getBodyAsText();
-        }
-        return res;
+    ODataResponse.prototype.toODataResponseBatch = function () {
+        return new __WEBPACK_IMPORTED_MODULE_4__odata_response_batch__["a" /* ODataResponseBatch */](this.getHttpResponse());
     };
     ODataResponse.prototype.toObject = function () {
         var json = this.getBodyAsJson();
@@ -2753,7 +3091,7 @@ var ODataResponse = /** @class */ (function () {
     ODataResponse.VALUE = 'value';
     ODataResponse.ODATA_COUNT = '@odata.count';
     return ODataResponse;
-}());
+}(__WEBPACK_IMPORTED_MODULE_3__odata_response_abstract__["a" /* ODataResponseAbstract */]));
 
 
 

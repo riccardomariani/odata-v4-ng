@@ -51,7 +51,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\n.code {\n  margin: 0;\n}\n.response {\n  width: 50%;\n  height: 150px;\n}\n", ""]);
+exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\n.code {\n  margin: 0;\n}\n.response {\n  width: 100%;\n  height: 200px;\n}\n.ui-float-label {\n  margin-bottom: 20px;\n}\n", ""]);
 
 // exports
 
@@ -177,6 +177,9 @@ function toComment(sourceMap) {
 /***/ (function(module, exports) {
 
 module.exports = function escape(url) {
+    if (typeof url !== 'string') {
+        return url
+    }
     // If url is already wrapped in quotes, remove them
     if (/^['"].*['"]$/.test(url)) {
         url = url.slice(1, -1);

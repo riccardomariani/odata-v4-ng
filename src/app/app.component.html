@@ -7,32 +7,43 @@
 <h2>Usage Examples</h2>
 <p> In "app.module.ts" import ODataModule and then inject the ODataService where you want to use this library.</p>
 <p>
-  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT): <a href="https://services.odata.org/V4/TripPinServiceRW">{{serviceRoot}}.</a><br/>  Metadata of this service is here: <a href="https://services.odata.org/V4/TripPinServiceRW/$metadata">{{serviceRoot}}/$metadata.</a>
+  All examples in this page are based on the publicly available OData V4 sample service TripPin (SERVICE_ROOT):
+  <a href="https://services.odata.org/V4/TripPinServiceRW">{{serviceRoot}}.</a>
+  <br/> Metadata of this service is here:
+  <a href="https://services.odata.org/V4/TripPinServiceRW/$metadata">{{serviceRoot}}/$metadata.</a>
 </p>
-<p><b><i>
-  Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly not valid.<br/>
-  The lack of validity is due to the certificate host name not matching the actual host name of the service.<br/>
-  Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.
-</i></b></p>
+<p>
+  <b>
+    <i>
+      Attention to make these examples working you need to visit the TripPin service page and accept the certificate which is surprisingly
+      not valid.
+      <br/> The lack of validity is due to the certificate host name not matching the actual host name of the service.
+      <br/> Anyway the TripPin service has been created by Microsoft so it should be safe accepting the certificate.
+    </i>
+  </b>
+</p>
 <p>To run the example queries and get the response, click on the "Execute query" button. Service response could be slow depending
   on workload.</p>
 <p>Any feedback is highly appreciated and please report issues! Thanks so much!</p>
 
 <p-tabView>
-  <p-tabPanel header="Basic read">
+  <p-tabPanel header="Basic Read">
     <ov4-basic-read></ov4-basic-read>
   </p-tabPanel>
-  <p-tabPanel header="Basic write">
+  <p-tabPanel header="Basic Write">
     <ov4-basic-write></ov4-basic-write>
   </p-tabPanel>
-  <p-tabPanel header="Advanced read">
+  <p-tabPanel header="Advanced Read">
     <ov4-adv-read></ov4-adv-read>
   </p-tabPanel>
-  <p-tabPanel header="Advanced write">
+  <p-tabPanel header="Advanced Write">
     <ov4-adv-write></ov4-adv-write>
   </p-tabPanel>
   <p-tabPanel header="Service Document and Metadata">
     <ov4-metadata></ov4-metadata>
+  </p-tabPanel>
+  <p-tabPanel header="Batch">
+    <ov4-batch></ov4-batch>
   </p-tabPanel>
 </p-tabView>
 

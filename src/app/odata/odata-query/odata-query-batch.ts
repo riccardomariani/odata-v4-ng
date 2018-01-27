@@ -21,7 +21,7 @@ export class BatchRequest {
 }
 
 export class ODataQueryBatch extends ODataQueryAbstract {
-  private static readonly BOUNDARY_PREFIX = '--';
+  private static readonly BOUNDARY_PREFIX_SUFFIX = '--';
   private static readonly BATCH_PREFIX = 'batch_';
   private static readonly CHANGESET_PREFIX = 'changeset_';
   private static readonly NEWLINE = '\r\n';
@@ -32,12 +32,14 @@ export class ODataQueryBatch extends ODataQueryAbstract {
   // HEADERS
   private static readonly HTTP11 = 'HTTP/1.1';
   private static readonly CONTENT_TYPE = 'Content-Type';
+  private static readonly CONTENT_TRANSFER_ENCODING = 'Content-Transfer-Encoding';
   private static readonly CONTENT_ID = 'Content-ID';
   private static readonly IF_MATCH = 'If-Match';
 
   // HEADER VALUES
   private static readonly MULTIPART_MIXED = 'multipart/mixed;boundary=';
   private static readonly APPLICATION_HTTP = 'application/http';
+  private static readonly BINARY = 'binary';
   private static readonly APPLICATION_JSON = 'application/json';
 
   // VARIABLES
@@ -88,18 +90,18 @@ export class ODataQueryBatch extends ODataQueryAbstract {
     return this;
   }
 
-  execute(options: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  execute(httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
     // set headers
-    if (Utils.isNullOrUndefined(options)) {
-      options = new HttpOptions();
+    if (Utils.isNullOrUndefined(httpOptions)) {
+      httpOptions = new HttpOptions();
     }
-    if (Utils.isNullOrUndefined(options.headers)) {
-      options.headers = new HttpHeaders();
+    if (Utils.isNullOrUndefined(httpOptions.headers)) {
+      httpOptions.headers = new HttpHeaders();
     }
-    options.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
+    httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
 
     // send request
-    return this.odataService.post(this, this.getBody(), options);
+    return this.odataService.post(this, this.getBody(), httpOptions);
   }
 
   toString(): string {
@@ -117,13 +119,14 @@ export class ODataQueryBatch extends ODataQueryAbstract {
 
       if (method === Method.GET) {
         if (Utils.isNotNullNorUndefined(this.changesetBoundary)) {
-          res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+          res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
           this.changesetBoundary = null;
         }
-        res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
+        res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
+        res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
-        res += Method[method] + ' ' + odataQuery + ODataQueryBatch.NEWLINE;
+        res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
       } else {
@@ -136,16 +139,17 @@ export class ODataQueryBatch extends ODataQueryAbstract {
 
         if (Utils.isNullOrUndefined(this.changesetBoundary)) {
           this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + UUID.UUID();
-          res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
+          res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
           res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
           res += ODataQueryBatch.NEWLINE;
         }
 
-        res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+        res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
+        res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.CONTENT_ID + ': ' + this.changesetID++ + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.NEWLINE;
-        res += Method[method] + ' ' + odataQuery + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
+        res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
         res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
         if (Utils.isNotNullNorUndefined(ifMatch)) {
           res += ODataQueryBatch.IF_MATCH + ': ' + ifMatch + ODataQueryBatch.NEWLINE;
@@ -157,20 +161,12 @@ export class ODataQueryBatch extends ODataQueryAbstract {
 
     if (res.length) {
       if (Utils.isNotNullNorUndefined(this.changesetBoundary)) {
-        res += ODataQueryBatch.BOUNDARY_PREFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+        res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
         this.changesetBoundary = null;
       }
-      res += ODataQueryBatch.BOUNDARY_PREFIX + this.batchBoundary;
+      res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX;
     }
 
     return res;
   }
-
-  // protected initBody(): string {
-  //   let res: string = Method[Method.POST] + ' ' + this.queryString + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
-  //   res += ODataQueryBatch.ODATA_VERSION + ': ' + ODataQueryBatch.ODATA_V4 + ODataQueryBatch.NEWLINE;
-  //   res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary + ODataQueryBatch.NEWLINE;
-  //   res += ODataQueryBatch.NEWLINE;
-  //   return res;
-  // }
 }

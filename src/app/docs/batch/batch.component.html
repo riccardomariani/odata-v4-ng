@@ -1,0 +1,28 @@
+<span class="ui-float-label">
+  <input id="service-root" type="text" size="60" pInputText [(ngModel)]="serviceRoot">
+  <label for="service-root">Service Root</label>
+</span>
+<span class="ui-float-label">
+  <input id="entity-set" type="text" size="60" pInputText [(ngModel)]="entitySet">
+  <label for="entity-set">Entity Set</label>
+</span>
+<span class="ui-float-label">
+  <input id="entity-id" type="text" size="60" pInputText [(ngModel)]="entityId">
+  <label for="entity-id">Entity ID</label>
+</span>
+<span class="ui-float-label">
+  <input id="entity-property-patch" type="text" size="60" pInputText [(ngModel)]="entityPropertyPatch">
+  <label for="entity-property-patch">Entity property to change using PATCH</label>
+</span>
+<span class="ui-float-label">
+  <input id="entity-property-put" type="text" size="60" pInputText [(ngModel)]="entityPropertyPut">
+  <label for="entity-property-put">Entity property to change using PUT</label>
+</span>
+<br/>
+<input type="button" value="Execute all queries" (click)="executeAllQueries()">
+<div *ngFor="let batchItem of batchData">
+  <h4>{{batchItem.requestDescription}} Batch Response</h4>
+  <textarea class="response" readonly="true">{{batchItem.responseBatch.toString()}}</textarea>
+  <h4>{{batchItem.requestDescription}} Batch Response Parts</h4>
+  <textarea *ngFor="let response of batchItem.responses" class="response" readonly="true">{{response?.toString()}}</textarea>
+</div>

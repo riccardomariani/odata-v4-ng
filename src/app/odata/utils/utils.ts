@@ -37,48 +37,48 @@ export class Utils {
         return false;
     }
 
-    static requireNull(fieldValue: any, fieldName: String) {
+    static requireNull(fieldValue: any, fieldName: string) {
         if (fieldValue !== null) {
             throw new Error(fieldName + ' must be null');
         }
     }
 
-    static requireUndefined(fieldValue: any, fieldName: String) {
+    static requireUndefined(fieldValue: any, fieldName: string) {
         if (fieldValue !== undefined) {
             throw new Error(fieldName + ' must be undefined');
         }
     }
 
-    static requireNotNull(fieldValue: any, fieldName: String) {
+    static requireNotNull(fieldValue: any, fieldName: string) {
         if (fieldValue === null) {
             throw new Error(fieldName + ' cannot be null');
         }
     }
 
-    static requireNotUndefined(fieldValue: any, fieldName: String) {
+    static requireNotUndefined(fieldValue: any, fieldName: string) {
         if (fieldValue === undefined) {
             throw new Error(fieldName + ' cannot be undefined');
         }
     }
 
-    static requireNotNullNorUndefined(fieldValue: any, fieldName: String) {
+    static requireNotNullNorUndefined(fieldValue: any, fieldName: string) {
         Utils.requireNotNull(fieldValue, fieldName);
         Utils.requireNotUndefined(fieldValue, fieldName);
     }
 
-    static requireNullOrUndefined(fieldValue: any, fieldName: String) {
+    static requireNullOrUndefined(fieldValue: any, fieldName: string) {
         if (!Utils.isNull(fieldValue) && !Utils.isUndefined(fieldValue)) {
             throw new Error(fieldName + ' must be null or undefined');
         }
     }
 
-    static requireNotEmpty(fieldValue: any, fieldName: String) {
+    static requireNotEmpty(fieldValue: any, fieldName: string) {
         if (Utils.isEmpty(fieldValue)) {
             throw new Error(fieldName + ' cannot be empty');
         }
     }
 
-    static requireNotNegative(fieldValue: number, fieldName: String) {
+    static requireNotNegative(fieldValue: number, fieldName: string) {
         if (fieldValue < 0) {
             throw new Error(fieldName + ' cannot be negative');
         }

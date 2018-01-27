@@ -18,6 +18,8 @@ export * from './src/app/odata/odata-response/csdl/csdl-type-definition';
 
 export * from './src/app/odata/odata-response/entity-collection';
 export * from './src/app/odata/odata-response/metadata';
+export * from './src/app/odata/odata-response/odata-response-abstract';
+export * from './src/app/odata/odata-response/odata-response-batch';
 export * from './src/app/odata/odata-response/odata-response';
 
 export * from './src/app/odata/odata-service/http-options';
