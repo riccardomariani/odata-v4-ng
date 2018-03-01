@@ -2973,8 +2973,8 @@ var ODataResponseBatch = /** @class */ (function (_super) {
             if (batchBodyLine === '') {
                 break;
             }
-            var batchBodyLineParts = batchBodyLine.split(':');
-            httpHeaders = httpHeaders.set(batchBodyLineParts[0].trim(), batchBodyLineParts[1].trim());
+            var batchBodyLineParts = batchBodyLine.split(': ');
+            httpHeaders = httpHeaders.append(batchBodyLineParts[0].trim(), batchBodyLineParts[1].trim());
         }
         var body = '';
         for (; index <= batchPartEndIndex; index++) {

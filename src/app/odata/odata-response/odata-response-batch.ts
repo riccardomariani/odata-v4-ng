@@ -127,8 +127,8 @@ export class ODataResponseBatch extends ODataResponseAbstract {
                 break;
             }
 
-            const batchBodyLineParts: string[] = batchBodyLine.split(':');
-            httpHeaders = httpHeaders.set(batchBodyLineParts[0].trim(), batchBodyLineParts[1].trim());
+            const batchBodyLineParts: string[] = batchBodyLine.split(': ');
+            httpHeaders = httpHeaders.append(batchBodyLineParts[0].trim(), batchBodyLineParts[1].trim());
         }
 
         let body = '';
