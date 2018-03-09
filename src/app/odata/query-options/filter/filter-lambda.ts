@@ -79,7 +79,7 @@ export class FilterLambda extends FilterHasFilter implements Filter {
             if (filterChild instanceof Filter) {
                 this.replaceProperty(filterChild);
             } else {
-                for (const f of <Filter[]>filterChild) {
+                for (const f of filterChild) {
                     this.replaceProperty(f);
                 }
             }
@@ -98,7 +98,7 @@ export class FilterLambda extends FilterHasFilter implements Filter {
             if (filterChild instanceof Filter) {
                 this.replaceProperty(filterChild);
             } else {
-                for (const f of <Filter[]>filterChild) {
+                for (const f of filterChild) {
                     this.replaceProperty(f);
                 }
             }

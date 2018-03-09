@@ -41,6 +41,10 @@ testem.log
 .DS_Store
 Thumbs.db
 
-.ng_build/*
-run-sonar-scanner.sh
+.ng_build/
 .scannerwork/
+.ng_pkg_build/
+
+run-sonar-scanner.sh
+updateAngularCli.sh
+updateAngularProject.sh

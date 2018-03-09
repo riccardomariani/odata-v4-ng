@@ -72,11 +72,6 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  /**
-   * @param {(any | any[])} entityKey
-   * @returns {ODataQuery}
-   * @memberof ODataQuery
-   */
   entityKey(entityKey: any | any[]): ODataQuery {
     if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
       throw new Error('entityKey can only be appended to entitySet or navigationProperty');

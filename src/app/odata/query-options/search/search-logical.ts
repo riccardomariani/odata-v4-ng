@@ -22,7 +22,7 @@ export class SearchLogical extends Search {
         if (Utils.isNullOrUndefined(this.values)) {
             return true;
         }
-        for (const value of <Search[]>this.values) {
+        for (const value of this.values) {
             if (value.isEmpty()) {
                 return true;
             }
