@@ -1,12 +1,13 @@
 import { HttpHeaders } from '@angular/common/http';
-import { ODataResponse } from '../odata-response/odata-response';
-import { ODataQuery } from './odata-query';
-import { Utils } from '../utils/utils';
-import { ODataService } from '../odata-service/odata.service';
-import { Observable } from 'rxjs/Observable';
-import { ODataQueryAbstract } from './odata-query-abstract';
 import { UUID } from 'angular2-uuid';
-import { HttpOptions } from '../odata-service/http-options';
+import { Observable } from 'rxjs/Observable';
+
+import { ODataResponse } from '../odata-response/odata-response';
+import { HttpOptionsI } from '../odata-service/http-options';
+import { ODataService } from '../odata-service/odata.service';
+import { Utils } from '../utils/utils';
+import { ODataQuery } from './odata-query';
+import { ODataQueryAbstract } from './odata-query-abstract';
 
 export enum Method {
   GET, POST, PUT, PATCH, DELETE
@@ -17,7 +18,7 @@ export class BatchRequest {
     public method: Method,
     public odataQuery: ODataQuery,
     public body?: any,
-    public options?: HttpOptions) { }
+    public httpOptions?: HttpOptionsI) { }
 }
 
 export class ODataQueryBatch extends ODataQueryAbstract {
@@ -60,40 +61,40 @@ export class ODataQueryBatch extends ODataQueryAbstract {
     this.changesetID = 1;
   }
 
-  get(odataQuery: ODataQuery, httpOptions?: HttpOptions): ODataQueryBatch {
+  get(odataQuery: ODataQuery, httpOptions?: HttpOptionsI): ODataQueryBatch {
     Utils.requireNotNullNorUndefined(odataQuery, 'odataQuery');
     this.requests.push(new BatchRequest(Method.GET, odataQuery, undefined, httpOptions));
     return this;
   }
 
-  post(odataQuery: ODataQuery, body: any, httpOptions?: HttpOptions): ODataQueryBatch {
+  post(odataQuery: ODataQuery, body: any, httpOptions?: HttpOptionsI): ODataQueryBatch {
     Utils.requireNotNullNorUndefined(odataQuery, 'odataQuery');
     this.requests.push(new BatchRequest(Method.POST, odataQuery, body, httpOptions));
     return this;
   }
 
-  put(odataQuery: ODataQuery, body: any, httpOptions?: HttpOptions): ODataQueryBatch {
+  put(odataQuery: ODataQuery, body: any, httpOptions?: HttpOptionsI): ODataQueryBatch {
     Utils.requireNotNullNorUndefined(odataQuery, 'odataQuery');
     this.requests.push(new BatchRequest(Method.PUT, odataQuery, body, httpOptions));
     return this;
   }
 
-  patch(odataQuery: ODataQuery, body: any, httpOptions?: HttpOptions): ODataQueryBatch {
+  patch(odataQuery: ODataQuery, body: any, httpOptions?: HttpOptionsI): ODataQueryBatch {
     Utils.requireNotNullNorUndefined(odataQuery, 'odataQuery');
     this.requests.push(new BatchRequest(Method.PATCH, odataQuery, body, httpOptions));
     return this;
   }
 
-  delete(odataQuery: ODataQuery, httpOptions?: HttpOptions): ODataQueryBatch {
+  delete(odataQuery: ODataQuery, httpOptions?: HttpOptionsI): ODataQueryBatch {
     Utils.requireNotNullNorUndefined(odataQuery, 'odataQuery');
     this.requests.push(new BatchRequest(Method.DELETE, odataQuery, undefined, httpOptions));
     return this;
   }
 
-  execute(httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  execute(httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     // set headers
     if (Utils.isNullOrUndefined(httpOptions)) {
-      httpOptions = new HttpOptions();
+      httpOptions = {};
     }
     if (Utils.isNullOrUndefined(httpOptions.headers)) {
       httpOptions.headers = new HttpHeaders();
@@ -114,7 +115,7 @@ export class ODataQueryBatch extends ODataQueryAbstract {
     for (const request of this.requests) {
       const method: Method = request.method;
       const odataQuery: ODataQuery = request.odataQuery;
-      const options: HttpOptions = request.options;
+      const httpOptions: HttpOptionsI = request.httpOptions;
       const body: any = request.body;
 
       if (method === Method.GET) {
@@ -132,9 +133,9 @@ export class ODataQueryBatch extends ODataQueryAbstract {
       } else {
         // get If-Match
         let ifMatch = null;
-        if (Utils.isNotNullNorUndefined(options)
-          && Utils.isNotNullNorUndefined(options.headers)) {
-          ifMatch = options.headers.get(ODataQueryBatch.IF_MATCH);
+        if (Utils.isNotNullNorUndefined(httpOptions)
+          && Utils.isNotNullNorUndefined(httpOptions.headers)) {
+          ifMatch = httpOptions.headers.get(ODataQueryBatch.IF_MATCH);
         }
 
         if (Utils.isNullOrUndefined(this.changesetBoundary)) {

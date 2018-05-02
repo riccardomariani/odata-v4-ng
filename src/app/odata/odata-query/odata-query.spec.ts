@@ -1,15 +1,18 @@
-import { ODataModule } from '../odata.module';
-import { ODataService } from '../odata-service/odata.service';
+import { HttpHeaders } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { ODataQuery } from './odata-query';
-import { OperatorComparison } from '../query-options/operator';
+
+import { HttpOptions, HttpOptionsI } from '../odata-service/http-options';
+import { ODataService } from '../odata-service/odata.service';
+import { ODataModule } from '../odata.module';
 import { Expand } from '../query-options/expand';
-import { Orderby, Order } from '../query-options/orderby';
-import { QuotedString } from './quoted-string';
-import { SearchSimple } from '../query-options/search/search-simple';
 import { FilterComparison } from '../query-options/filter/filter-comparison';
 import { FilterContains, FilterEndswith } from '../query-options/filter/filter-function';
 import { FilterLambda, LambdaCollection, LambdaOperator } from '../query-options/filter/filter-lambda';
+import { OperatorComparison } from '../query-options/operator';
+import { Order, Orderby } from '../query-options/orderby';
+import { SearchSimple } from '../query-options/search/search-simple';
+import { ODataQuery } from './odata-query';
+import { QuotedString } from './quoted-string';
 
 const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 const ENTITY_SET = 'People';
@@ -281,13 +284,40 @@ describe('OdataQuery', () => {
       SERVICE_ROOT + '/People(\'russellwhyte\')/Microsoft.OData.SampleService.Models.TripPin.ShareTrip');
   });
 
-  // it('should create batch request', () => {
-  //   const odataQueryBatch: ODataQueryBatch = new ODataQuery(odataService, SERVICE_ROOT).batch()
-  //     .get(new ODataQuery(odataService, SERVICE_ROOT).entitySet('Customers').entityKey(new QuotedString('ALFKI')))
-  //     .post(new ODataQuery(odataService, SERVICE_ROOT).entitySet('Customers'), '<JSON representation of a new Customer>')
-  //     .patch(new ODataQuery(odataService, SERVICE_ROOT).entitySet('Customers').entityKey(new QuotedString('ALFKI')), '<JSON representation of Customer ALFKI>')
-  //     .get(new ODataQuery(odataService, SERVICE_ROOT).entitySet('Products'));
+  it('test get', () => {
+    const odataQuery: ODataQuery = new ODataQuery(odataService, SERVICE_ROOT);
+    spyOn(odataQuery, 'get');
+    spyOn(odataQuery, 'post');
+    spyOn(odataQuery, 'patch');
+    spyOn(odataQuery, 'put');
+    spyOn(odataQuery, 'delete');
 
-  //   expect(odataQueryBatch.toString()).toEqual(SERVICE_ROOT + '/$batch');
-  // });
+    const httpOptions: HttpOptions = new HttpOptions();
+    const httpOptionsI: HttpOptionsI = { headers: new HttpHeaders({ 'test': 'test' }) };
+
+    odataQuery.get(httpOptions);
+    expect(odataQuery.get).toHaveBeenCalledWith(httpOptions);
+    odataQuery.get(httpOptionsI);
+    expect(odataQuery.get).toHaveBeenCalledWith(httpOptionsI);
+
+    odataQuery.post(undefined, httpOptions);
+    expect(odataQuery.post).toHaveBeenCalledWith(undefined, httpOptions);
+    odataQuery.post(undefined, httpOptionsI);
+    expect(odataQuery.post).toHaveBeenCalledWith(undefined, httpOptionsI);
+
+    odataQuery.patch(undefined, undefined, httpOptions);
+    expect(odataQuery.patch).toHaveBeenCalledWith(undefined, undefined, httpOptions);
+    odataQuery.patch(undefined, undefined, httpOptionsI);
+    expect(odataQuery.patch).toHaveBeenCalledWith(undefined, undefined, httpOptionsI);
+
+    odataQuery.put(undefined, undefined, httpOptions);
+    expect(odataQuery.put).toHaveBeenCalledWith(undefined, undefined, httpOptions);
+    odataQuery.put(undefined, undefined, httpOptionsI);
+    expect(odataQuery.put).toHaveBeenCalledWith(undefined, undefined, httpOptionsI);
+
+    odataQuery.delete(undefined, httpOptions);
+    expect(odataQuery.delete).toHaveBeenCalledWith(undefined, httpOptions);
+    odataQuery.delete(undefined, httpOptionsI);
+    expect(odataQuery.delete).toHaveBeenCalledWith(undefined, httpOptionsI);
+  });
 });

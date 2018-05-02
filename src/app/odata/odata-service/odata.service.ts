@@ -1,13 +1,14 @@
-import { HttpOptions } from './http-options';
-import { Utils } from '../utils/utils';
-import { ODataQueryAbstract } from '../odata-query/odata-query-abstract';
-import { ODataResponse } from '../odata-response/odata-response';
-import { RequestOptionsArgs } from '@angular/http';
-import { ODataQuery } from '../odata-query/odata-query';
-import { HttpParams, HttpHeaders, HttpClient } from '@angular/common/http';
+import 'rxjs/add/operator/map';
+
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/map';
+
+import { ODataQuery } from '../odata-query/odata-query';
+import { ODataQueryAbstract } from '../odata-query/odata-query-abstract';
+import { ODataResponse } from '../odata-response/odata-response';
+import { Utils } from '../utils/utils';
+import { HttpOptions, HttpOptionsI } from './http-options';
 
 @Injectable()
 export class ODataService {
@@ -15,80 +16,64 @@ export class ODataService {
 
   constructor(private http: HttpClient) { }
 
-  get(odataQuery: ODataQuery, httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  get(odataQuery: ODataQuery, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    return this.http.get(url, httpOptions)
+    const options: HttpOptions = this.createHttpOptions(httpOptions);
+    return this.http.get(url, options)
       .map(response => new ODataResponse(response));
   }
 
-  post(odataQuery: ODataQueryAbstract, body: any, httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  post(odataQuery: ODataQueryAbstract, body: any, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    return this.http.post(url, body, httpOptions)
+    const options: HttpOptions = this.createHttpOptions(httpOptions);
+    return this.http.post(url, body, options)
       .map(response => new ODataResponse(response));
   }
 
-  patch(odataQuery: ODataQuery, body: any, etag?: string, httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  patch(odataQuery: ODataQuery, body: any, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const newHttpOptions: HttpOptions = this.mergeETag(httpOptions, etag);
-    return this.http.patch(url, body, newHttpOptions)
+    let options: HttpOptions = this.createHttpOptions(httpOptions);
+    options = this.mergeETag(options, etag);
+    return this.http.patch(url, body, options)
       .map(response => new ODataResponse(response));
   }
 
-  put(odataQuery: ODataQuery, body: any, etag?: string, httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  put(odataQuery: ODataQuery, body: any, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const newHttpOptions: HttpOptions = this.mergeETag(httpOptions, etag);
-    return this.http.put(url, body, newHttpOptions)
+    let options: HttpOptions = this.createHttpOptions(httpOptions);
+    options = this.mergeETag(options, etag);
+    return this.http.put(url, body, options)
       .map(response => new ODataResponse(response));
   }
 
-  delete(odataQuery: ODataQuery, etag?: string, httpOptions: HttpOptions = new HttpOptions()): Observable<ODataResponse> {
+  delete(odataQuery: ODataQuery, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
-    const newHttpOptions: HttpOptions = this.mergeETag(httpOptions, etag);
-    return this.http.delete(url, newHttpOptions)
+    let options: HttpOptions = this.createHttpOptions(httpOptions);
+    options = this.mergeETag(options, etag);
+    return this.http.delete(url, options)
       .map(response => new ODataResponse(response));
   }
 
-  protected mergeETag(options: HttpOptions, etag: string): HttpOptions {
+  protected createHttpOptions(httpOptions: HttpOptionsI): HttpOptions {
+    if (httpOptions instanceof HttpOptions) {
+      return httpOptions;
+    }
+    return Object.assign(new HttpOptions(), httpOptions);
+  }
+
+  protected mergeETag(httpOptions: HttpOptions, etag: string): HttpOptions {
     if (Utils.isNullOrUndefined(etag)) {
-      return options;
+      return httpOptions;
+    }
+    if (Utils.isNullOrUndefined(httpOptions)) {
+      httpOptions = new HttpOptions();
+    }
+    if (Utils.isNullOrUndefined(httpOptions.headers)) {
+      httpOptions.headers = new HttpHeaders();
     }
 
-    if (Utils.isNullOrUndefined(options)) {
-      options = new HttpOptions();
-    }
-    if (Utils.isNullOrUndefined(options.headers)) {
-      options.headers = new HttpHeaders();
-    }
+    httpOptions.headers[ODataService.IF_MATCH_HEADER] = etag;
 
-    options.headers.set(ODataService.IF_MATCH_HEADER, etag);
-
-    return options;
-  }
-
-  protected mergeOverride(options1: HttpOptions, options2: HttpOptions): HttpOptions {
-    if (Utils.isNullOrUndefined(options1)) {
-      return options2;
-    }
-    if (Utils.isNullOrUndefined(options2)) {
-      return options1;
-    }
-
-    const options: HttpOptions = new HttpOptions();
-
-    // merge headers
-    for (const key of options1.headers.keys()) {
-      options.headers.append(key, options1.headers.getAll(key));
-    }
-    for (const key of options2.headers.keys()) {
-      options.headers.append(key, options2.headers.getAll(key));
-    }
-
-    // override withCredentials
-    options.withCredentials = options2.withCredentials;
-
-    // override responseType
-    options.responseType = options2.responseType;
-
-    return options;
+    return httpOptions;
   }
 }

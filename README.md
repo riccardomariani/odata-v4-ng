@@ -8,6 +8,10 @@ To install the package use `npm install --save odata-v4-ng`
 
 See [here](https://riccardomariani.github.io/odata-v4-ng).
 
+## Code quality
+
+See [here](https://sonarcloud.io/dashboard?id=odata-v4-ng).
+
 ## Development
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli).

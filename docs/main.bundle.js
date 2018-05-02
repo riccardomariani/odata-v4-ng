@@ -1211,11 +1211,10 @@ var ODataQueryAbstract = /** @class */ (function () {
 /* unused harmony export BatchRequest */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataQueryBatch; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_common_http__ = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("./src/app/odata/utils/utils.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__ = __webpack_require__("./src/app/odata/odata-query/odata-query-abstract.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__ = __webpack_require__("./node_modules/angular2-uuid/index.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_angular2_uuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_angular2_uuid__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__ = __webpack_require__("./src/app/odata/odata-service/http-options.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angular2_uuid__ = __webpack_require__("./node_modules/angular2-uuid/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_angular2_uuid___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_angular2_uuid__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_utils__ = __webpack_require__("./src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_query_abstract__ = __webpack_require__("./src/app/odata/odata-query/odata-query-abstract.ts");
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1230,7 +1229,6 @@ var __extends = (this && this.__extends) || (function () {
 
 
 
-
 var Method;
 (function (Method) {
     Method[Method["GET"] = 0] = "GET";
@@ -1240,11 +1238,11 @@ var Method;
     Method[Method["DELETE"] = 4] = "DELETE";
 })(Method || (Method = {}));
 var BatchRequest = /** @class */ (function () {
-    function BatchRequest(method, odataQuery, body, options) {
+    function BatchRequest(method, odataQuery, body, httpOptions) {
         this.method = method;
         this.odataQuery = odataQuery;
         this.body = body;
-        this.options = options;
+        this.httpOptions = httpOptions;
     }
     return BatchRequest;
 }());
@@ -1253,48 +1251,47 @@ var ODataQueryBatch = /** @class */ (function (_super) {
     __extends(ODataQueryBatch, _super);
     function ODataQueryBatch(odataService, serviceRoot) {
         var _this = _super.call(this, odataService, serviceRoot) || this;
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataService, 'odataService');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
-        _this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(serviceRoot, ODataQueryBatch.$BATCH);
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataService, 'odataService');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
+        _this.queryString = __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].appendSegment(serviceRoot, ODataQueryBatch.$BATCH);
         _this.requests = [];
-        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__["UUID"].UUID();
+        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + __WEBPACK_IMPORTED_MODULE_1_angular2_uuid__["UUID"].UUID();
         _this.changesetBoundary = null;
         _this.changesetID = 1;
         return _this;
     }
     ODataQueryBatch.prototype.get = function (odataQuery, httpOptions) {
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
         this.requests.push(new BatchRequest(Method.GET, odataQuery, undefined, httpOptions));
         return this;
     };
     ODataQueryBatch.prototype.post = function (odataQuery, body, httpOptions) {
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
         this.requests.push(new BatchRequest(Method.POST, odataQuery, body, httpOptions));
         return this;
     };
     ODataQueryBatch.prototype.put = function (odataQuery, body, httpOptions) {
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
         this.requests.push(new BatchRequest(Method.PUT, odataQuery, body, httpOptions));
         return this;
     };
     ODataQueryBatch.prototype.patch = function (odataQuery, body, httpOptions) {
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
         this.requests.push(new BatchRequest(Method.PATCH, odataQuery, body, httpOptions));
         return this;
     };
     ODataQueryBatch.prototype.delete = function (odataQuery, httpOptions) {
-        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
+        __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataQuery, 'odataQuery');
         this.requests.push(new BatchRequest(Method.DELETE, odataQuery, undefined, httpOptions));
         return this;
     };
     ODataQueryBatch.prototype.execute = function (httpOptions) {
-        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */](); }
         // set headers
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions)) {
-            httpOptions = new __WEBPACK_IMPORTED_MODULE_4__odata_service_http_options__["a" /* HttpOptions */]();
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions)) {
+            httpOptions = {};
         }
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions.headers)) {
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions.headers)) {
             httpOptions.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]();
         }
         httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
@@ -1310,10 +1307,10 @@ var ODataQueryBatch = /** @class */ (function (_super) {
             var request = _a[_i];
             var method = request.method;
             var odataQuery = request.odataQuery;
-            var options = request.options;
+            var httpOptions = request.httpOptions;
             var body = request.body;
             if (method === Method.GET) {
-                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
+                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
                     res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
                     this.changesetBoundary = null;
                 }
@@ -1328,12 +1325,12 @@ var ODataQueryBatch = /** @class */ (function (_super) {
             else {
                 // get If-Match
                 var ifMatch = null;
-                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(options)
-                    && __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(options.headers)) {
-                    ifMatch = options.headers.get(ODataQueryBatch.IF_MATCH);
+                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(httpOptions)
+                    && __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(httpOptions.headers)) {
+                    ifMatch = httpOptions.headers.get(ODataQueryBatch.IF_MATCH);
                 }
-                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
-                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_3_angular2_uuid__["UUID"].UUID();
+                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
+                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_1_angular2_uuid__["UUID"].UUID();
                     res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.NEWLINE;
@@ -1345,7 +1342,7 @@ var ODataQueryBatch = /** @class */ (function (_super) {
                 res += ODataQueryBatch.NEWLINE;
                 res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
                 res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
-                if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(ifMatch)) {
+                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(ifMatch)) {
                     res += ODataQueryBatch.IF_MATCH + ': ' + ifMatch + ODataQueryBatch.NEWLINE;
                 }
                 res += ODataQueryBatch.NEWLINE;
@@ -1353,7 +1350,7 @@ var ODataQueryBatch = /** @class */ (function (_super) {
             }
         }
         if (res.length) {
-            if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
+            if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
                 res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
                 this.changesetBoundary = null;
             }
@@ -1379,7 +1376,7 @@ var ODataQueryBatch = /** @class */ (function (_super) {
     ODataQueryBatch.BINARY = 'binary';
     ODataQueryBatch.APPLICATION_JSON = 'application/json';
     return ODataQueryBatch;
-}(__WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__["a" /* ODataQueryAbstract */]));
+}(__WEBPACK_IMPORTED_MODULE_3__odata_query_abstract__["a" /* ODataQueryAbstract */]));
 
 
 
@@ -1390,10 +1387,10 @@ var ODataQueryBatch = /** @class */ (function (_super) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataQuery; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_utils__ = __webpack_require__("./src/app/odata/utils/utils.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__query_options_query_options__ = __webpack_require__("./src/app/odata/query-options/query-options.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_query_batch__ = __webpack_require__("./src/app/odata/odata-query/odata-query-batch.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_query_abstract__ = __webpack_require__("./src/app/odata/odata-query/odata-query-abstract.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__query_options_query_options__ = __webpack_require__("./src/app/odata/query-options/query-options.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("./src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__ = __webpack_require__("./src/app/odata/odata-query/odata-query-abstract.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_query_batch__ = __webpack_require__("./src/app/odata/odata-query/odata-query-batch.ts");
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -1412,29 +1409,29 @@ var ODataQuery = /** @class */ (function (_super) {
     __extends(ODataQuery, _super);
     function ODataQuery(odataService, serviceRoot) {
         var _this = _super.call(this, odataService, serviceRoot) || this;
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataService, 'odataService');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
-        _this.queryOptions = new __WEBPACK_IMPORTED_MODULE_1__query_options_query_options__["a" /* QueryOptions */](ODataQuery.SEPARATOR);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(odataService, 'odataService');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(serviceRoot, 'serviceRoot');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
+        _this.queryOptions = new __WEBPACK_IMPORTED_MODULE_0__query_options_query_options__["a" /* QueryOptions */](ODataQuery.SEPARATOR);
         _this.segments = [];
         _this.lastSegment = null;
         return _this;
     }
     // QUERY SEGMENTS
     ODataQuery.prototype.metadata = function () {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.METADATA), ODataQuery.METADATA);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.METADATA), ODataQuery.METADATA);
         if (this.segments.length) {
             throw new Error('metadata segment cannot be appended to other segments');
         }
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$METADATA);
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$METADATA);
         this.addSegment(ODataQuery.METADATA);
         return this;
     };
     ODataQuery.prototype.entitySet = function (entitySet) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.ENTITY_SET), ODataQuery.ENTITY_SET);
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entitySet, 'entitySet');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(entitySet, 'entitySet');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, entitySet);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.ENTITY_SET), ODataQuery.ENTITY_SET);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entitySet, 'entitySet');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(entitySet, 'entitySet');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, entitySet);
         this.addSegment(ODataQuery.ENTITY_SET);
         return this;
     };
@@ -1442,10 +1439,10 @@ var ODataQuery = /** @class */ (function (_super) {
         if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
             throw new Error('entityKey can only be appended to entitySet or navigationProperty');
         }
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entityKey, 'entityKey');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(entityKey, 'entityKey');
-        entityKey = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].getValueURI(entityKey, true);
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].removeEndingSeparator(this.queryString) + '(' + entityKey + ')';
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(entityKey, 'entityKey');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(entityKey, 'entityKey');
+        entityKey = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].getValueURI(entityKey, true);
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].removeEndingSeparator(this.queryString) + '(' + entityKey + ')';
         this.addSegment(ODataQuery.ENTITY_KEY);
         return this;
     };
@@ -1453,9 +1450,9 @@ var ODataQuery = /** @class */ (function (_super) {
         if (this.segments.length) {
             throw new Error('singleton segment cannot be appended to other segments');
         }
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(singleton, 'singleton');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(singleton, 'singleton');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, singleton);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(singleton, 'singleton');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(singleton, 'singleton');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, singleton);
         this.addSegment(ODataQuery.SINGLETON);
         return this;
     };
@@ -1463,20 +1460,20 @@ var ODataQuery = /** @class */ (function (_super) {
         if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY && this.lastSegment !== ODataQuery.ENTITY_KEY) {
             throw new Error('typeName can only be appended to entitySet, navigationProperty or entityKey');
         }
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(typeName, 'typeName');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(typeName, 'typeName');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, typeName);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(typeName, 'typeName');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(typeName, 'typeName');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, typeName);
         this.addSegment(ODataQuery.TYPE_NAME);
         return this;
     };
     ODataQuery.prototype.property = function (property) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.PROPERTY), ODataQuery.PROPERTY);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.PROPERTY), ODataQuery.PROPERTY);
         if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON) {
             throw new Error('property can only be appended to entityKey or singleton');
         }
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(property, 'property');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(property, 'property');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, property);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(property, 'property');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(property, 'property');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, property);
         this.addSegment(ODataQuery.PROPERTY);
         return this;
     };
@@ -1484,55 +1481,55 @@ var ODataQuery = /** @class */ (function (_super) {
         if (this.lastSegment !== ODataQuery.ENTITY_KEY && this.lastSegment !== ODataQuery.SINGLETON && this.lastSegment !== ODataQuery.TYPE_NAME) {
             throw new Error('navigationProperty can only be appended to entityKey, singleton or typeName');
         }
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(navigationProperty, 'navigationProperty');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, navigationProperty);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(navigationProperty, 'navigationProperty');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(navigationProperty, 'navigationProperty');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, navigationProperty);
         this.addSegment(ODataQuery.NAVIGATION_PROPERTY);
         return this;
     };
     ODataQuery.prototype.ref = function () {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.REF), ODataQuery.REF);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.REF), ODataQuery.REF);
         if (this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
             throw new Error('ref can only be appended to navigationProperty');
         }
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$REF);
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$REF);
         this.addSegment(ODataQuery.REF);
         return this;
     };
     ODataQuery.prototype.value = function () {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.VALUE), ODataQuery.VALUE);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.VALUE), ODataQuery.VALUE);
         if (this.lastSegment !== ODataQuery.PROPERTY) {
             throw new Error('value can only be appended to property');
         }
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$VALUE);
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$VALUE);
         this.addSegment(ODataQuery.VALUE);
         return this;
     };
     ODataQuery.prototype.countSegment = function () {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.COUNT), ODataQuery.COUNT);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNullOrUndefined(this.getSegment(ODataQuery.COUNT), ODataQuery.COUNT);
         if (this.lastSegment !== ODataQuery.ENTITY_SET && this.lastSegment !== ODataQuery.NAVIGATION_PROPERTY) {
             throw new Error('count can only be appended to entitySet or navigationProperty');
         }
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$COUNT);
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, ODataQuery.$COUNT);
         this.addSegment(ODataQuery.COUNT);
         return this;
     };
     ODataQuery.prototype.functionCall = function (functionCall) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(functionCall, 'functionCall');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(functionCall, 'functionCall');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, functionCall);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(functionCall, 'functionCall');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(functionCall, 'functionCall');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, functionCall);
         this.addSegment(ODataQuery.FUNCTION_CALL);
         return this;
     };
     ODataQuery.prototype.actionCall = function (actionCall) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(actionCall, 'actionCall');
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotEmpty(actionCall, 'actionCall');
-        this.queryString = __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].appendSegment(this.queryString, actionCall);
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNullNorUndefined(actionCall, 'actionCall');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotEmpty(actionCall, 'actionCall');
+        this.queryString = __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].appendSegment(this.queryString, actionCall);
         this.addSegment(ODataQuery.ACTION_CALL);
         return this;
     };
-    ODataQuery.prototype.batch = function (httpOptions) {
-        return new __WEBPACK_IMPORTED_MODULE_2__odata_query_batch__["a" /* ODataQueryBatch */](this.odataService, this.serviceRoot);
+    ODataQuery.prototype.batch = function () {
+        return new __WEBPACK_IMPORTED_MODULE_3__odata_query_batch__["a" /* ODataQueryBatch */](this.odataService, this.serviceRoot);
     };
     // QUERY OPTIONS
     ODataQuery.prototype.select = function (select) {
@@ -1576,39 +1573,39 @@ var ODataQuery = /** @class */ (function (_super) {
         return this;
     };
     // QUERY EXECUTION
-    ODataQuery.prototype.get = function (options) {
-        return this.odataService.get(this, options);
+    ODataQuery.prototype.get = function (httpOptions) {
+        return this.odataService.get(this, httpOptions);
     };
-    ODataQuery.prototype.post = function (body, options) {
-        return this.odataService.post(this, body, options);
+    ODataQuery.prototype.post = function (body, httpOptions) {
+        return this.odataService.post(this, body, httpOptions);
     };
-    ODataQuery.prototype.patch = function (body, etag, options) {
-        return this.odataService.patch(this, body, etag, options);
+    ODataQuery.prototype.patch = function (body, etag, httpOptions) {
+        return this.odataService.patch(this, body, etag, httpOptions);
     };
-    ODataQuery.prototype.put = function (body, etag, options) {
-        return this.odataService.put(this, body, etag, options);
+    ODataQuery.prototype.put = function (body, etag, httpOptions) {
+        return this.odataService.put(this, body, etag, httpOptions);
     };
-    ODataQuery.prototype.delete = function (etag, options) {
-        return this.odataService.delete(this, etag, options);
+    ODataQuery.prototype.delete = function (etag, httpOptions) {
+        return this.odataService.delete(this, etag, httpOptions);
     };
     ODataQuery.prototype.toString = function () {
         var res = this.queryString;
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.queryOptions) && !this.queryOptions.isEmpty()) {
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.queryOptions) && !this.queryOptions.isEmpty()) {
             res += '?' + this.queryOptions.toString();
         }
         return res;
     };
     ODataQuery.prototype.getSegment = function (segment) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNull(segment, 'segment');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNull(segment, 'segment');
         var res = this.segments.find(function (value, index, segments) {
             return value === segment;
         });
         return res;
     };
     ODataQuery.prototype.addSegment = function (segment) {
-        __WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].requireNotNull(segment, 'segment');
+        __WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].requireNotNull(segment, 'segment');
         this.segments.push(segment);
-        if (__WEBPACK_IMPORTED_MODULE_0__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.segments) && this.segments.length) {
+        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.segments) && this.segments.length) {
             this.lastSegment = this.segments[this.segments.length - 1];
         }
     };
@@ -1633,7 +1630,7 @@ var ODataQuery = /** @class */ (function (_super) {
     ODataQuery.$VALUE = '$value';
     ODataQuery.$COUNT = '$count';
     return ODataQuery;
-}(__WEBPACK_IMPORTED_MODULE_3__odata_query_abstract__["a" /* ODataQueryAbstract */]));
+}(__WEBPACK_IMPORTED_MODULE_2__odata_query_abstract__["a" /* ODataQueryAbstract */]));
 
 
 
@@ -3120,12 +3117,12 @@ var HttpOptions = /** @class */ (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ODataService; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__http_options__ = __webpack_require__("./src/app/odata/odata-service/http-options.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_utils__ = __webpack_require__("./src/app/odata/utils/utils.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__ = __webpack_require__("./src/app/odata/odata-response/odata-response.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common_http__ = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__angular_core__ = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_rxjs_add_operator_map__ = __webpack_require__("./node_modules/rxjs/_esm5/add/operator/map.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_rxjs_add_operator_map__ = __webpack_require__("./node_modules/rxjs/_esm5/add/operator/map.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__("./node_modules/@angular/common/esm5/http.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__("./node_modules/@angular/core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__odata_response_odata_response__ = __webpack_require__("./src/app/odata/odata-response/odata-response.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_utils__ = __webpack_require__("./src/app/odata/utils/utils.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__http_options__ = __webpack_require__("./src/app/odata/odata-service/http-options.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -3147,78 +3144,61 @@ var ODataService = /** @class */ (function () {
     }
     ODataService_1 = ODataService;
     ODataService.prototype.get = function (odataQuery, httpOptions) {
-        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        return this.http.get(url, httpOptions)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var options = this.createHttpOptions(httpOptions);
+        return this.http.get(url, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_3__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.post = function (odataQuery, body, httpOptions) {
-        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        return this.http.post(url, body, httpOptions)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var options = this.createHttpOptions(httpOptions);
+        return this.http.post(url, body, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_3__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.patch = function (odataQuery, body, etag, httpOptions) {
-        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var newHttpOptions = this.mergeETag(httpOptions, etag);
-        return this.http.patch(url, body, newHttpOptions)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var options = this.createHttpOptions(httpOptions);
+        options = this.mergeETag(options, etag);
+        return this.http.patch(url, body, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_3__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.put = function (odataQuery, body, etag, httpOptions) {
-        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var newHttpOptions = this.mergeETag(httpOptions, etag);
-        return this.http.put(url, body, newHttpOptions)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var options = this.createHttpOptions(httpOptions);
+        options = this.mergeETag(options, etag);
+        return this.http.put(url, body, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_3__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
     ODataService.prototype.delete = function (odataQuery, etag, httpOptions) {
-        if (httpOptions === void 0) { httpOptions = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */](); }
         var url = odataQuery.toString();
-        var newHttpOptions = this.mergeETag(httpOptions, etag);
-        return this.http.delete(url, newHttpOptions)
-            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_2__odata_response_odata_response__["a" /* ODataResponse */](response); });
+        var options = this.createHttpOptions(httpOptions);
+        options = this.mergeETag(options, etag);
+        return this.http.delete(url, options)
+            .map(function (response) { return new __WEBPACK_IMPORTED_MODULE_3__odata_response_odata_response__["a" /* ODataResponse */](response); });
     };
-    ODataService.prototype.mergeETag = function (options, etag) {
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(etag)) {
-            return options;
+    ODataService.prototype.createHttpOptions = function (httpOptions) {
+        if (httpOptions instanceof __WEBPACK_IMPORTED_MODULE_5__http_options__["a" /* HttpOptions */]) {
+            return httpOptions;
         }
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options)) {
-            options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */]();
-        }
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options.headers)) {
-            options.headers = new __WEBPACK_IMPORTED_MODULE_3__angular_common_http__["c" /* HttpHeaders */]();
-        }
-        options.headers.set(ODataService_1.IF_MATCH_HEADER, etag);
-        return options;
+        return Object.assign(new __WEBPACK_IMPORTED_MODULE_5__http_options__["a" /* HttpOptions */](), httpOptions);
     };
-    ODataService.prototype.mergeOverride = function (options1, options2) {
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options1)) {
-            return options2;
+    ODataService.prototype.mergeETag = function (httpOptions, etag) {
+        if (__WEBPACK_IMPORTED_MODULE_4__utils_utils__["a" /* Utils */].isNullOrUndefined(etag)) {
+            return httpOptions;
         }
-        if (__WEBPACK_IMPORTED_MODULE_1__utils_utils__["a" /* Utils */].isNullOrUndefined(options2)) {
-            return options1;
+        if (__WEBPACK_IMPORTED_MODULE_4__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions)) {
+            httpOptions = new __WEBPACK_IMPORTED_MODULE_5__http_options__["a" /* HttpOptions */]();
         }
-        var options = new __WEBPACK_IMPORTED_MODULE_0__http_options__["a" /* HttpOptions */]();
-        // merge headers
-        for (var _i = 0, _a = options1.headers.keys(); _i < _a.length; _i++) {
-            var key = _a[_i];
-            options.headers.append(key, options1.headers.getAll(key));
+        if (__WEBPACK_IMPORTED_MODULE_4__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions.headers)) {
+            httpOptions.headers = new __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["c" /* HttpHeaders */]();
         }
-        for (var _b = 0, _c = options2.headers.keys(); _b < _c.length; _b++) {
-            var key = _c[_b];
-            options.headers.append(key, options2.headers.getAll(key));
-        }
-        // override withCredentials
-        options.withCredentials = options2.withCredentials;
-        // override responseType
-        options.responseType = options2.responseType;
-        return options;
+        httpOptions.headers[ODataService_1.IF_MATCH_HEADER] = etag;
+        return httpOptions;
     };
     ODataService.IF_MATCH_HEADER = 'If-Match';
     ODataService = ODataService_1 = __decorate([
-        Object(__WEBPACK_IMPORTED_MODULE_4__angular_core__["Injectable"])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_3__angular_common_http__["a" /* HttpClient */]])
+        Object(__WEBPACK_IMPORTED_MODULE_2__angular_core__["Injectable"])(),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */]])
     ], ODataService);
     return ODataService;
     var ODataService_1;

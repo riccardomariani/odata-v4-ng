@@ -1,16 +1,16 @@
-import { Filter } from '../query-options/filter/filter';
-import { RequestOptionsArgs } from '@angular/http';
-import { ODataResponse } from '../odata-response/odata-response';
-import { ODataService } from '../odata-service/odata.service';
-import { Orderby } from '../query-options/orderby';
-import { Expand } from '../query-options/expand';
-import { Utils } from '../utils/utils';
-import { QueryOptions } from '../query-options/query-options';
 import { Observable } from 'rxjs/Observable';
-import { ODataQueryBatch } from './odata-query-batch';
-import { ODataQueryAbstract } from './odata-query-abstract';
+
+import { ODataResponse } from '../odata-response/odata-response';
+import { HttpOptionsI } from '../odata-service/http-options';
+import { ODataService } from '../odata-service/odata.service';
+import { Expand } from '../query-options/expand';
+import { Filter } from '../query-options/filter/filter';
+import { Orderby } from '../query-options/orderby';
+import { QueryOptions } from '../query-options/query-options';
 import { Search } from '../query-options/search/search';
-import { HttpOptions } from '../odata-service/http-options';
+import { Utils } from '../utils/utils';
+import { ODataQueryAbstract } from './odata-query-abstract';
+import { ODataQueryBatch } from './odata-query-batch';
 
 export class ODataQuery extends ODataQueryAbstract {
   // QUERY OPTIONS SEPARATOR
@@ -175,7 +175,7 @@ export class ODataQuery extends ODataQueryAbstract {
     return this;
   }
 
-  batch(httpOptions?: HttpOptions): ODataQueryBatch {
+  batch(): ODataQueryBatch {
     return new ODataQueryBatch(this.odataService, this.serviceRoot);
   }
 
@@ -233,24 +233,24 @@ export class ODataQuery extends ODataQueryAbstract {
 
   // QUERY EXECUTION
 
-  get(options?: HttpOptions): Observable<ODataResponse> {
-    return this.odataService.get(this, options);
+  get(httpOptions?: HttpOptionsI): Observable<ODataResponse> {
+    return this.odataService.get(this, httpOptions);
   }
 
-  post(body: any, options?: HttpOptions): Observable<ODataResponse> {
-    return this.odataService.post(this, body, options);
+  post(body: any, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
+    return this.odataService.post(this, body, httpOptions);
   }
 
-  patch(body: any, etag?: string, options?: HttpOptions): Observable<ODataResponse> {
-    return this.odataService.patch(this, body, etag, options);
+  patch(body: any, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
+    return this.odataService.patch(this, body, etag, httpOptions);
   }
 
-  put(body: any, etag?: string, options?: HttpOptions): Observable<ODataResponse> {
-    return this.odataService.put(this, body, etag, options);
+  put(body: any, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
+    return this.odataService.put(this, body, etag, httpOptions);
   }
 
-  delete(etag?: string, options?: HttpOptions): Observable<ODataResponse> {
-    return this.odataService.delete(this, etag, options);
+  delete(etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
+    return this.odataService.delete(this, etag, httpOptions);
   }
 
   toString(): string {

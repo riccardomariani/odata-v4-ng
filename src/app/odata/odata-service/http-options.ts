@@ -1,6 +1,13 @@
-import { HttpParams, HttpHeaders } from '@angular/common/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 
-export class HttpOptions {
+export interface HttpOptionsI {
+    headers?: HttpHeaders;
+    params?: HttpParams;
+    reportProgress?: boolean;
+    withCredentials?: boolean;
+}
+
+export class HttpOptions implements HttpOptionsI {
     constructor(
         public headers?: HttpHeaders,
         public observe: 'response' = 'response',
