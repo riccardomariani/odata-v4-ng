@@ -23,6 +23,6 @@
 <div *ngFor="let batchItem of batchData">
   <h4>{{batchItem.requestDescription}} Batch Response</h4>
   <textarea class="response" readonly="true">{{batchItem.responseBatch.toString()}}</textarea>
-  <h4>{{batchItem.requestDescription}} Batch Response Parts</h4>
+  <h4 *ngIf="batchItem.responses.length">{{batchItem.requestDescription}} Batch Response Parts</h4>
   <textarea *ngFor="let response of batchItem.responses" class="response" readonly="true">{{response?.toString()}}</textarea>
 </div>

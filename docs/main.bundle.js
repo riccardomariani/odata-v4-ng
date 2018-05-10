@@ -886,7 +886,7 @@ var BasicWriteComponent = /** @class */ (function (_super) {
 /***/ "./src/app/docs/batch/batch.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<span class=\"ui-float-label\">\n  <input id=\"service-root\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"serviceRoot\">\n  <label for=\"service-root\">Service Root</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-set\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entitySet\">\n  <label for=\"entity-set\">Entity Set</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-id\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityId\">\n  <label for=\"entity-id\">Entity ID</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-property-patch\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityPropertyPatch\">\n  <label for=\"entity-property-patch\">Entity property to change using PATCH</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-property-put\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityPropertyPut\">\n  <label for=\"entity-property-put\">Entity property to change using PUT</label>\n</span>\n<br/>\n<input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllQueries()\">\n<div *ngFor=\"let batchItem of batchData\">\n  <h4>{{batchItem.requestDescription}} Batch Response</h4>\n  <textarea class=\"response\" readonly=\"true\">{{batchItem.responseBatch.toString()}}</textarea>\n  <h4>{{batchItem.requestDescription}} Batch Response Parts</h4>\n  <textarea *ngFor=\"let response of batchItem.responses\" class=\"response\" readonly=\"true\">{{response?.toString()}}</textarea>\n</div>"
+module.exports = "<span class=\"ui-float-label\">\n  <input id=\"service-root\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"serviceRoot\">\n  <label for=\"service-root\">Service Root</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-set\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entitySet\">\n  <label for=\"entity-set\">Entity Set</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-id\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityId\">\n  <label for=\"entity-id\">Entity ID</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-property-patch\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityPropertyPatch\">\n  <label for=\"entity-property-patch\">Entity property to change using PATCH</label>\n</span>\n<span class=\"ui-float-label\">\n  <input id=\"entity-property-put\" type=\"text\" size=\"60\" pInputText [(ngModel)]=\"entityPropertyPut\">\n  <label for=\"entity-property-put\">Entity property to change using PUT</label>\n</span>\n<br/>\n<input type=\"button\" value=\"Execute all queries\" (click)=\"executeAllQueries()\">\n<div *ngFor=\"let batchItem of batchData\">\n  <h4>{{batchItem.requestDescription}} Batch Response</h4>\n  <textarea class=\"response\" readonly=\"true\">{{batchItem.responseBatch.toString()}}</textarea>\n  <h4 *ngIf=\"batchItem.responses.length\">{{batchItem.requestDescription}} Batch Response Parts</h4>\n  <textarea *ngFor=\"let response of batchItem.responses\" class=\"response\" readonly=\"true\">{{response?.toString()}}</textarea>\n</div>"
 
 /***/ }),
 
@@ -1256,7 +1256,7 @@ var ODataQueryBatch = /** @class */ (function (_super) {
         __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].requireNotEmpty(serviceRoot, 'serviceRoot');
         _this.queryString = __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].appendSegment(serviceRoot, ODataQueryBatch.$BATCH);
         _this.requests = [];
-        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + __WEBPACK_IMPORTED_MODULE_1_angular2_uuid__["UUID"].UUID();
+        _this.batchBoundary = ODataQueryBatch.BATCH_PREFIX + _this.getUUID();
         _this.changesetBoundary = null;
         _this.changesetID = 1;
         return _this;
@@ -1294,7 +1294,9 @@ var ODataQueryBatch = /** @class */ (function (_super) {
         if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions.headers)) {
             httpOptions.headers = new __WEBPACK_IMPORTED_MODULE_0__angular_common_http__["c" /* HttpHeaders */]();
         }
-        httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED + this.batchBoundary);
+        httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.ODATA_VERSION, ODataQueryBatch.VERSION_4_0);
+        httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.CONTENT_TYPE, ODataQueryBatch.MULTIPART_MIXED_BOUNDARY + this.batchBoundary);
+        httpOptions.headers = httpOptions.headers.set(ODataQueryBatch.ACCEPT, ODataQueryBatch.MULTIPART_MIXED);
         // send request
         return this.odataService.post(this, this.getBody(), httpOptions);
     };
@@ -1309,43 +1311,37 @@ var ODataQueryBatch = /** @class */ (function (_super) {
             var odataQuery = request.odataQuery;
             var httpOptions = request.httpOptions;
             var body = request.body;
-            if (method === Method.GET) {
-                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
-                    res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
-                    this.changesetBoundary = null;
-                }
-                res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.NEWLINE;
-                res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.NEWLINE;
+            // if method is GET and there is a changeset boundary open then close it
+            if (method === Method.GET && __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(this.changesetBoundary)) {
+                res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + ODataQueryBatch.NEWLINE;
+                this.changesetBoundary = null;
             }
-            else {
-                // get If-Match
-                var ifMatch = null;
-                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(httpOptions)
-                    && __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(httpOptions.headers)) {
-                    ifMatch = httpOptions.headers.get(ODataQueryBatch.IF_MATCH);
-                }
+            // if there is no changeset boundary open then open a batch boundary
+            if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
+                res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
+            }
+            // if method is not GET and there is no changeset boundary open then open a changeset boundary
+            if (method !== Method.GET) {
                 if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(this.changesetBoundary)) {
-                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + __WEBPACK_IMPORTED_MODULE_1_angular2_uuid__["UUID"].UUID();
-                    res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.batchBoundary + ODataQueryBatch.NEWLINE;
-                    res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED + this.changesetBoundary + ODataQueryBatch.NEWLINE;
+                    this.changesetBoundary = ODataQueryBatch.CHANGESET_PREFIX + this.getUUID();
+                    res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.MULTIPART_MIXED_BOUNDARY + this.changesetBoundary + ODataQueryBatch.NEWLINE;
                     res += ODataQueryBatch.NEWLINE;
                 }
                 res += ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX + this.changesetBoundary + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
+            }
+            res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_HTTP + ODataQueryBatch.NEWLINE;
+            res += ODataQueryBatch.CONTENT_TRANSFER_ENCODING + ': ' + ODataQueryBatch.BINARY + ODataQueryBatch.NEWLINE;
+            if (method !== Method.GET) {
                 res += ODataQueryBatch.CONTENT_ID + ': ' + this.changesetID++ + ODataQueryBatch.NEWLINE;
+            }
+            res += ODataQueryBatch.NEWLINE;
+            res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
+            res += this.getHeaders(method, httpOptions);
+            res += ODataQueryBatch.NEWLINE;
+            if (method === Method.GET || method === Method.DELETE) {
                 res += ODataQueryBatch.NEWLINE;
-                res += Method[method] + ' ' + odataQuery + ' ' + ODataQueryBatch.HTTP11 + ODataQueryBatch.NEWLINE;
-                res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
-                if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNotNullNorUndefined(ifMatch)) {
-                    res += ODataQueryBatch.IF_MATCH + ': ' + ifMatch + ODataQueryBatch.NEWLINE;
-                }
-                res += ODataQueryBatch.NEWLINE;
+            }
+            else {
                 res += JSON.stringify(body) + ODataQueryBatch.NEWLINE;
             }
         }
@@ -1358,6 +1354,23 @@ var ODataQueryBatch = /** @class */ (function (_super) {
         }
         return res;
     };
+    ODataQueryBatch.prototype.getHeaders = function (method, httpOptions) {
+        var res = '';
+        if (method === Method.POST || method === Method.PATCH || method === Method.PUT) {
+            res += ODataQueryBatch.CONTENT_TYPE + ': ' + ODataQueryBatch.APPLICATION_JSON + ODataQueryBatch.NEWLINE;
+        }
+        if (__WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions) || __WEBPACK_IMPORTED_MODULE_2__utils_utils__["a" /* Utils */].isNullOrUndefined(httpOptions.headers)) {
+            return res;
+        }
+        for (var _i = 0, _a = httpOptions.headers.keys(); _i < _a.length; _i++) {
+            var key = _a[_i];
+            res += key + ': ' + httpOptions.headers.getAll(key) + ODataQueryBatch.NEWLINE;
+        }
+        return res;
+    };
+    ODataQueryBatch.prototype.getUUID = function () {
+        return __WEBPACK_IMPORTED_MODULE_1_angular2_uuid__["UUID"].UUID();
+    };
     ODataQueryBatch.BOUNDARY_PREFIX_SUFFIX = '--';
     ODataQueryBatch.BATCH_PREFIX = 'batch_';
     ODataQueryBatch.CHANGESET_PREFIX = 'changeset_';
@@ -1366,12 +1379,15 @@ var ODataQueryBatch = /** @class */ (function (_super) {
     ODataQueryBatch.$BATCH = '$batch';
     // HEADERS
     ODataQueryBatch.HTTP11 = 'HTTP/1.1';
+    ODataQueryBatch.ODATA_VERSION = 'OData-Version';
     ODataQueryBatch.CONTENT_TYPE = 'Content-Type';
+    ODataQueryBatch.ACCEPT = 'Accept';
     ODataQueryBatch.CONTENT_TRANSFER_ENCODING = 'Content-Transfer-Encoding';
     ODataQueryBatch.CONTENT_ID = 'Content-ID';
-    ODataQueryBatch.IF_MATCH = 'If-Match';
     // HEADER VALUES
-    ODataQueryBatch.MULTIPART_MIXED = 'multipart/mixed;boundary=';
+    ODataQueryBatch.VERSION_4_0 = '4.0';
+    ODataQueryBatch.MULTIPART_MIXED = 'multipart/mixed';
+    ODataQueryBatch.MULTIPART_MIXED_BOUNDARY = 'multipart/mixed;boundary=';
     ODataQueryBatch.APPLICATION_HTTP = 'application/http';
     ODataQueryBatch.BINARY = 'binary';
     ODataQueryBatch.APPLICATION_JSON = 'application/json';

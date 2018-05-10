@@ -1,11 +1,10 @@
-import { ODataQueryBatch, BatchRequest, Method } from './odata-query-batch';
+import { HttpHeaders } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing';
+import { HttpOptions, HttpOptionsI } from '../odata-service/http-options';
 import { ODataService } from '../odata-service/odata.service';
 import { ODataModule } from './../odata.module';
 import { ODataQuery } from './odata-query';
-import { HttpModule } from '@angular/http';
-import { TestBed } from '@angular/core/testing';
-import { HttpHeaders } from '@angular/common/http';
-import { HttpOptionsI, HttpOptions } from '../odata-service/http-options';
+import { BatchRequest, Method, ODataQueryBatch } from './odata-query-batch';
 
 describe('ODataQueryBatch', () => {
   let odataService: ODataService;
@@ -89,7 +88,10 @@ describe('ODataQueryBatch', () => {
     expect(spy.calls.mostRecent().args[1]).toEqual(odataQueryBatch.getBody());
     const httpOptionsIArg: HttpOptionsI = spy.calls.mostRecent().args[2];
     expect(httpOptionsIArg instanceof HttpOptions).toBeFalsy();
+    expect(httpOptionsIArg.headers.keys().length).toEqual(3);
+    expect(httpOptionsIArg.headers.get('OData-Version')).toEqual('4.0');
     expect(httpOptionsIArg.headers.get('Content-Type')).toEqual('multipart/mixed;boundary=batchBoundary');
+    expect(httpOptionsIArg.headers.get('Accept')).toEqual('multipart/mixed');
     expect(httpOptionsIArg.params).toEqual(undefined);
     expect(httpOptionsIArg.reportProgress).toEqual(undefined);
     expect(httpOptionsIArg.withCredentials).toEqual(undefined);
@@ -100,7 +102,10 @@ describe('ODataQueryBatch', () => {
     const httpOptionsArg: HttpOptions = spy.calls.mostRecent().args[2];
     expect(httpOptionsArg instanceof HttpOptions).toBeTruthy();
     expect(httpOptionsArg.headers.get('test')).toEqual('test');
+    expect(httpOptionsIArg.headers.keys().length).toEqual(3);
+    expect(httpOptionsIArg.headers.get('OData-Version')).toEqual('4.0');
     expect(httpOptionsArg.headers.get('Content-Type')).toEqual('multipart/mixed;boundary=batchBoundary');
+    expect(httpOptionsIArg.headers.get('Accept')).toEqual('multipart/mixed');
     expect(httpOptionsArg.params).toEqual(undefined);
     expect(httpOptionsArg.reportProgress).toEqual(undefined);
     expect(httpOptionsArg.withCredentials).toEqual(undefined);
@@ -109,5 +114,95 @@ describe('ODataQueryBatch', () => {
   it('test toString', () => {
     const odataQueryBatch: ODataQueryBatch = new ODataQueryBatch(odataService, SERVICE_ROOT);
     expect(odataQueryBatch.toString()).toEqual(SERVICE_ROOT + '/$batch');
+  });
+
+  it('test getBody', () => {
+    const odataQueryBatch: ODataQueryBatch = new ODataQueryBatch(odataService, SERVICE_ROOT);
+    odataQueryBatch['batchBoundary'] = 'batch_';
+    spyOn(odataQueryBatch, 'getUUID').and.returnValue('');
+
+    odataQueryBatch.get(odataQuery, { headers: new HttpHeaders({ 'header': 'value' }) });
+    odataQueryBatch.post(odataQuery, body, { headers: new HttpHeaders({ 'header2': 'value2' }) });
+    odataQueryBatch.patch(odataQuery, body, { headers: new HttpHeaders({ 'header3': 'value3' }) });
+    odataQueryBatch.put(odataQuery, body, { headers: new HttpHeaders({ 'header4': 'value4' }) });
+    odataQueryBatch.delete(odataQuery, { headers: new HttpHeaders({ 'header5': 'value5' }) });
+    odataQueryBatch.get(odataQuery, { headers: new HttpHeaders({ 'header6': 'value6' }) });
+
+    expect(odataQueryBatch.getBody()).toEqual(
+      // BATCH SEPARATOR
+      '--batch_\r\n'
+      + 'Content-Type: application/http\r\n'
+      + 'Content-Transfer-Encoding: binary\r\n'
+      + '\r\n'
+      // GET
+      + 'GET serviceRoot HTTP/1.1\r\n'
+      + 'header: value\r\n'
+      + '\r\n'
+      + '\r\n'
+      // BATCH SEPARATOR
+      + '--batch_\r\n'
+      + 'Content-Type: multipart/mixed;boundary=changeset_\r\n'
+      + '\r\n'
+      // CHANGESET SEPARATOR
+      + '--changeset_\r\n'
+      + 'Content-Type: application/http\r\n'
+      + 'Content-Transfer-Encoding: binary\r\n'
+      + 'Content-ID: 1\r\n'
+      + '\r\n'
+      // POST
+      + 'POST serviceRoot HTTP/1.1\r\n'
+      + 'Content-Type: application/json\r\n'
+      + 'header2: value2\r\n'
+      + '\r\n'
+      + '{"test":"test"}\r\n'
+      // CHANGESET SEPARATOR
+      + '--changeset_\r\n'
+      + 'Content-Type: application/http\r\n'
+      + 'Content-Transfer-Encoding: binary\r\n'
+      + 'Content-ID: 2\r\n'
+      + '\r\n'
+      // PATCH
+      + 'PATCH serviceRoot HTTP/1.1\r\n'
+      + 'Content-Type: application/json\r\n'
+      + 'header3: value3\r\n'
+      + '\r\n'
+      + '{"test":"test"}\r\n'
+      // CHANGESET SEPARATOR
+      + '--changeset_\r\n'
+      + 'Content-Type: application/http\r\n'
+      + 'Content-Transfer-Encoding: binary\r\n'
+      + 'Content-ID: 3\r\n'
+      + '\r\n'
+      // PUT
+      + 'PUT serviceRoot HTTP/1.1\r\n'
+      + 'Content-Type: application/json\r\n'
+      + 'header4: value4\r\n'
+      + '\r\n'
+      + '{"test":"test"}\r\n'
+      // CHANGESET SEPARATOR
+      + '--changeset_\r\n'
+      + 'Content-Type: application/http\r\n'
+      + 'Content-Transfer-Encoding: binary\r\n'
+      + 'Content-ID: 4\r\n'
+      + '\r\n'
+      // DELETE
+      + 'DELETE serviceRoot HTTP/1.1\r\n'
+      + 'header5: value5\r\n'
+      + '\r\n'
+      + '\r\n'
+      // CHANGESET END
+      + '--changeset_--\r\n'
+      // BATCH SEPARATOR
+      + '--batch_\r\n'
+      + 'Content-Type: application/http\r\n'
+      + 'Content-Transfer-Encoding: binary\r\n'
+      + '\r\n'
+      // GET
+      + 'GET serviceRoot HTTP/1.1\r\n'
+      + 'header6: value6\r\n'
+      + '\r\n'
+      + '\r\n'
+      // BATCH END
+      + '--batch_--');
   });
 });
