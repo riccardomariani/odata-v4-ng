@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 import { ODataResponse } from '../odata-response/odata-response';
 import { HttpOptionsI } from '../odata-service/http-options';

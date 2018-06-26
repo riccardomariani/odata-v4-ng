@@ -1,6 +1,6 @@
 import { ODataQueryBatch } from '../../odata/odata-query/odata-query-batch';
 import { ODataQuery } from '../../odata/odata-query/odata-query';
-import { Subscription } from 'rxjs/Subscription';
+import { Subscription } from 'rxjs';
 
 export const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 

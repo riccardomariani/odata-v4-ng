@@ -1,7 +1,7 @@
-import 'rxjs/add/observable/concat';
+
 
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 import { ODataQuery } from '../../odata/odata-query/odata-query';
 import { ODataQueryBatch } from '../../odata/odata-query/odata-query-batch';

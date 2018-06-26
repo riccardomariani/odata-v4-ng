@@ -1,13 +1,12 @@
-import { HttpClient, HttpHeaders, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-
+import { Observable, of } from 'rxjs';
 import { ODataQuery } from '../odata-query/odata-query';
+import { ODataResponse } from '../odata-response/odata-response';
 import { ODataModule } from '../odata.module';
 import { HttpOptions, HttpOptionsI } from './http-options';
 import { ODataService } from './odata.service';
-import { ODataResponse } from '../odata-response/odata-response';
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
+
 
 describe('OdataService', () => {
   let odataService: ODataService;
@@ -51,7 +50,7 @@ describe('OdataService', () => {
     undefined,
     undefined
   );
-  const odataResponse: Observable<ODataResponse> = Observable.of(new ODataResponse(new HttpResponse()));
+  const odataResponse: Observable<ODataResponse> = of(new ODataResponse(new HttpResponse()));
 
   function expectEquals(httpOptions1: HttpOptions, httpOptions2: HttpOptions): void {
     // both httpOptions are undefined

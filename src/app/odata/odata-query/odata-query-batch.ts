@@ -1,6 +1,6 @@
 import { HttpHeaders } from '@angular/common/http';
 import { UUID } from 'angular2-uuid';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { ODataResponse } from '../odata-response/odata-response';
 import { HttpOptionsI } from '../odata-service/http-options';
 import { ODataService } from '../odata-service/odata.service';

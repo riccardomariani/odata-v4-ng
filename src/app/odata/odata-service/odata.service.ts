@@ -1,8 +1,10 @@
-import 'rxjs/add/operator/map';
+
+import {map} from 'rxjs/operators';
+
 
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 import { ODataQuery } from '../odata-query/odata-query';
 import { ODataQueryAbstract } from '../odata-query/odata-query-abstract';
@@ -19,39 +21,39 @@ export class ODataService {
   get(odataQuery: ODataQuery, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     const options: HttpOptions = this.createHttpOptions(httpOptions);
-    return this.http.get(url, options)
-      .map(response => new ODataResponse(response));
+    return this.http.get(url, options).pipe(
+      map(response => new ODataResponse(response)));
   }
 
   post(odataQuery: ODataQueryAbstract, body: any, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     const options: HttpOptions = this.createHttpOptions(httpOptions);
-    return this.http.post(url, body, options)
-      .map(response => new ODataResponse(response));
+    return this.http.post(url, body, options).pipe(
+      map(response => new ODataResponse(response)));
   }
 
   patch(odataQuery: ODataQuery, body: any, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     let options: HttpOptions = this.createHttpOptions(httpOptions);
     options = this.mergeETag(options, etag);
-    return this.http.patch(url, body, options)
-      .map(response => new ODataResponse(response));
+    return this.http.patch(url, body, options).pipe(
+      map(response => new ODataResponse(response)));
   }
 
   put(odataQuery: ODataQuery, body: any, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     let options: HttpOptions = this.createHttpOptions(httpOptions);
     options = this.mergeETag(options, etag);
-    return this.http.put(url, body, options)
-      .map(response => new ODataResponse(response));
+    return this.http.put(url, body, options).pipe(
+      map(response => new ODataResponse(response)));
   }
 
   delete(odataQuery: ODataQuery, etag?: string, httpOptions?: HttpOptionsI): Observable<ODataResponse> {
     const url: string = odataQuery.toString();
     let options: HttpOptions = this.createHttpOptions(httpOptions);
     options = this.mergeETag(options, etag);
-    return this.http.delete(url, options)
-      .map(response => new ODataResponse(response));
+    return this.http.delete(url, options).pipe(
+      map(response => new ODataResponse(response)));
   }
 
   protected createHttpOptions(httpOptions: HttpOptionsI): HttpOptions {
