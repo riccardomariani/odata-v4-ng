@@ -2357,9 +2357,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _utils_utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils/utils */ "./src/app/odata/utils/utils.ts");
 
 var EntitySet = /** @class */ (function () {
-    function EntitySet(entities, count) {
+    function EntitySet(entities, count, type) {
+        var _this = this;
         _utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].requireNotNullNorUndefined(entities, 'entities');
-        this.entities = entities;
+        this.entities = [];
+        entities.forEach(function (entity) {
+            if (_utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].isNullOrUndefined(type)) {
+                _this.entities.push(Object.assign({}, entity));
+            }
+            else {
+                _this.entities.push(Object.assign(new type(), entity));
+            }
+        });
         this.count = count;
     }
     EntitySet.prototype.getEntities = function () {
@@ -3230,19 +3239,36 @@ var ODataResponse = /** @class */ (function (_super) {
         var xml = this.getBodyAsText();
         return new _metadata__WEBPACK_IMPORTED_MODULE_2__["Metadata"](xml);
     };
-    ODataResponse.prototype.toEntitySet = function () {
+    ODataResponse.prototype.toEntitySet = function (type) {
         var json = this.getBodyAsJson();
         if (_utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].isNotNullNorUndefined(json) && json.hasOwnProperty(ODataResponse.VALUE)) {
             var count = null;
             if (json.hasOwnProperty(ODataResponse.ODATA_COUNT)) {
                 count = json[ODataResponse.ODATA_COUNT];
             }
-            return new _entity_collection__WEBPACK_IMPORTED_MODULE_1__["EntitySet"](json[ODataResponse.VALUE], count);
+            return new _entity_collection__WEBPACK_IMPORTED_MODULE_1__["EntitySet"](json[ODataResponse.VALUE], count, type);
         }
         return null;
     };
-    ODataResponse.prototype.toEntity = function () {
-        return this.toObject();
+    ODataResponse.prototype.toComplexCollection = function (type) {
+        var json = this.getBodyAsJson();
+        if (_utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].isNotNullNorUndefined(json) && json.hasOwnProperty(ODataResponse.VALUE)) {
+            var res = [];
+            for (var _i = 0, _a = json[ODataResponse.VALUE]; _i < _a.length; _i++) {
+                var object = _a[_i];
+                res.push(this.toObject(object, type));
+            }
+            return res;
+        }
+        return null;
+    };
+    ODataResponse.prototype.toEntity = function (type) {
+        var json = this.getBodyAsJson();
+        return this.toObject(json, type);
+    };
+    ODataResponse.prototype.toComplexValue = function (type) {
+        var json = this.getBodyAsJson();
+        return this.toObject(json, type);
     };
     ODataResponse.prototype.toPropertyValue = function () {
         var json = this.getBodyAsJson();
@@ -3256,19 +3282,20 @@ var ODataResponse = /** @class */ (function (_super) {
             return JSON.parse(this.getBodyAsText());
         }
     };
-    ODataResponse.prototype.toComplexValue = function () {
-        return this.toObject();
-    };
     ODataResponse.prototype.toCount = function () {
         return Number(this.getBodyAsText());
     };
     ODataResponse.prototype.toODataResponseBatch = function () {
         return new _odata_response_batch__WEBPACK_IMPORTED_MODULE_4__["ODataResponseBatch"](this.getHttpResponse());
     };
-    ODataResponse.prototype.toObject = function () {
-        var json = this.getBodyAsJson();
-        if (_utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].isNotNullNorUndefined(json)) {
-            return json;
+    ODataResponse.prototype.toObject = function (object, type) {
+        if (_utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].isNotNullNorUndefined(object)) {
+            if (_utils_utils__WEBPACK_IMPORTED_MODULE_0__["Utils"].isNullOrUndefined(type)) {
+                return Object.assign({}, object);
+            }
+            else {
+                return Object.assign(new type(), object);
+            }
         }
         return null;
     };

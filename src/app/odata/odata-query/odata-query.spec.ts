@@ -1,6 +1,9 @@
 import { HttpHeaders } from '@angular/common/http';
-import { TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { BehaviorSubject } from 'rxjs';
+import { EntitySet } from '../odata-response/entity-collection';
+import { ODataResponse } from '../odata-response/odata-response';
 import { HttpOptions, HttpOptionsI } from '../odata-service/http-options';
 import { ODataService } from '../odata-service/odata.service';
 import { ODataModule } from '../odata.module';
@@ -22,7 +25,7 @@ describe('OdataQuery', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [ODataModule]
+      imports: [ODataModule, HttpClientTestingModule]
     });
 
     odataService = TestBed.get(ODataService);
@@ -320,4 +323,205 @@ describe('OdataQuery', () => {
     odataQuery.delete(undefined, httpOptionsI);
     expect(odataQuery.delete).toHaveBeenCalledWith(undefined, httpOptionsI);
   });
+
+  class Type {
+    type: string;
+    getType(): string {
+      return this.type;
+    }
+  }
+
+  it('test toEntitySet', fakeAsync(() => {
+    const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
+    const responseBody: any = { value: [{ 'type': 'type1' }, { 'type': 'type2' }] };
+    const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const entitySetData: EntitySet<Type> = odataResponse.toEntitySet<Type>();
+        const types: Type[] = entitySetData.getEntities();
+
+        expect(types[0].type).toEqual('type1');
+        expect(types[1].type).toEqual('type2');
+        expect(types[0]['getType']).toBeUndefined();
+        expect(types[1]['getType']).toBeUndefined();
+      }, error => {
+        console.log('Failed to fetch addressType');
+      });
+
+    let request: TestRequest = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const entitySetData: EntitySet<Type> = odataResponse.toEntitySet<Type>(Type);
+        const types: Type[] = entitySetData.getEntities();
+
+        expect(types[0].type).toEqual('type1');
+        expect(types[1].type).toEqual('type2');
+        expect(types[0]['getType']).toBeDefined();
+        expect(types[1]['getType']).toBeDefined();
+      }, error => {
+        console.log('Failed to fetch addressType');
+      });
+
+    request = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+  }));
+
+  it('test toComplexCollection', fakeAsync(() => {
+    const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
+    const responseBody: any = { value: [{ 'type': 'type1' }, { 'type': 'type2' }] };
+    const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const complexCollection: Type[] = odataResponse.toComplexCollection<Type>();
+
+        expect(complexCollection[0].type).toEqual('type1');
+        expect(complexCollection[1].type).toEqual('type2');
+        expect(complexCollection[0]['getType']).toBeUndefined();
+        expect(complexCollection[1]['getType']).toBeUndefined();
+      }, error => {
+        console.log('Failed to fetch addressType');
+      });
+
+    let request: TestRequest = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const complexCollection: Type[] = odataResponse.toComplexCollection<Type>(Type);
+
+        expect(complexCollection[0].type).toEqual('type1');
+        expect(complexCollection[1].type).toEqual('type2');
+        expect(complexCollection[0]['getType']).toBeDefined();
+        expect(complexCollection[1]['getType']).toBeDefined();
+      }, error => {
+        console.log('Failed to fetch addressType');
+      });
+
+    request = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+  }));
+
+  it('test toEntity', fakeAsync(() => {
+    const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
+    const responseBody: any = { 'type': 'type1' };
+    const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const entity: Type = odataResponse.toEntity<Type>();
+
+        expect(entity.type).toEqual('type1');
+        expect(entity['getType']).toBeUndefined();
+      }, error => {
+        console.log('Failed to fetch Type');
+      });
+
+    let request: TestRequest = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People(entityKey)');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const entity: Type = odataResponse.toEntity<Type>(Type);
+
+        expect(entity.type).toEqual('type1');
+        expect(entity['getType']).toBeDefined();
+      }, error => {
+        console.log('Failed to fetch Type');
+      });
+
+    request = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People(entityKey)');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+  }));
+
+  it('test toComplexValue', fakeAsync(() => {
+    const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
+    const responseBody: any = { 'type': 'type1' };
+    const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const entity: Type = odataResponse.toComplexValue<Type>();
+
+        expect(entity.type).toEqual('type1');
+        expect(entity['getType']).toBeUndefined();
+      }, error => {
+        console.log('Failed to fetch Type');
+      });
+
+    let request: TestRequest = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People(entityKey)');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const entity: Type = odataResponse.toComplexValue<Type>(Type);
+
+        expect(entity.type).toEqual('type1');
+        expect(entity['getType']).toBeDefined();
+      }, error => {
+        console.log('Failed to fetch Type');
+      });
+
+    request = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People(entityKey)');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+  }));
+
+  it('test toPropertyValue', fakeAsync(() => {
+    const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
+    const responseBody: any = { 'value': 'type1' };
+    const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').property('property').get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const propertyValue: string = odataResponse.toPropertyValue<string>();
+
+        expect(propertyValue).toEqual('type1');
+      }, error => {
+        console.log('Failed to fetch Type');
+      });
+
+    const request: TestRequest = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People(entityKey)/property');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+  }));
+
+  it('test toCount', fakeAsync(() => {
+    const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
+    const responseBody: any = 0;
+    const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
+
+    new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).countSegment().get().subscribe(
+      (odataResponse: ODataResponse) => {
+        const count: number = odataResponse.toCount();
+
+        expect(count).toEqual(0);
+      }, error => {
+        console.log('Failed to fetch Type');
+      });
+
+    const request: TestRequest = httpMock.expectOne('https://services.odata.org/v4/TripPinServiceRW/People/$count');
+    request.flush(responseBody, responseHeaders);
+    tick();
+    httpMock.verify();
+  }));
 });

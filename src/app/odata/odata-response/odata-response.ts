@@ -31,20 +31,40 @@ export class ODataResponse extends ODataResponseAbstract {
         return new Metadata(xml);
     }
 
-    toEntitySet<T>(): EntitySet<T> {
+    toEntitySet<T>(type?: (new () => T)): EntitySet<T> {
         const json: any = this.getBodyAsJson();
         if (Utils.isNotNullNorUndefined(json) && json.hasOwnProperty(ODataResponse.VALUE)) {
             let count: number = null;
             if (json.hasOwnProperty(ODataResponse.ODATA_COUNT)) {
                 count = json[ODataResponse.ODATA_COUNT];
             }
-            return new EntitySet<T>(json[ODataResponse.VALUE], count);
+            return new EntitySet<T>(json[ODataResponse.VALUE], count, type);
         }
         return null;
     }
 
-    toEntity<T>(): T {
-        return this.toObject<T>();
+    toComplexCollection<T>(type?: (new () => T)): T[] {
+        const json: any = this.getBodyAsJson();
+
+        if (Utils.isNotNullNorUndefined(json) && json.hasOwnProperty(ODataResponse.VALUE)) {
+            const res: T[] = [];
+            for (const object of json[ODataResponse.VALUE]) {
+                res.push(this.toObject<T>(object, type));
+            }
+            return res;
+        }
+
+        return null;
+    }
+
+    toEntity<T>(type?: (new () => T)): T {
+        const json: any = this.getBodyAsJson();
+        return this.toObject<T>(json, type);
+    }
+
+    toComplexValue<T>(type?: (new () => T)): T {
+        const json: any = this.getBodyAsJson();
+        return this.toObject<T>(json, type);
     }
 
     toPropertyValue<T>(): T {
@@ -59,10 +79,6 @@ export class ODataResponse extends ODataResponseAbstract {
         }
     }
 
-    toComplexValue<T>(): T {
-        return this.toObject<T>();
-    }
-
     toCount(): number {
         return Number(this.getBodyAsText());
     }
@@ -71,10 +87,13 @@ export class ODataResponse extends ODataResponseAbstract {
         return new ODataResponseBatch(this.getHttpResponse());
     }
 
-    protected toObject<T>(): T {
-        const json: any = this.getBodyAsJson();
-        if (Utils.isNotNullNorUndefined(json)) {
-            return <T>json;
+    protected toObject<T>(object: any, type: (new () => T)): T {
+        if (Utils.isNotNullNorUndefined(object)) {
+            if (Utils.isNullOrUndefined(type)) {
+                return Object.assign({}, object);
+            } else {
+                return Object.assign(new type(), object);
+            }
         }
         return null;
     }
