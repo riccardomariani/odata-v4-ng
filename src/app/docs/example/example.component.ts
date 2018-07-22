@@ -1,6 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { ExampleData } from './example-data';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ODataResponse } from '../../odata/odata-response/odata-response';
 import { ODataService } from '../../odata/odata-service/odata.service';
+import { ExampleData } from './example-data';
 
 @Component({
   selector: 'ov4-example',
@@ -28,6 +29,25 @@ export class ExampleComponent implements OnInit, OnDestroy {
   execute(example: ExampleData): void {
     if (example.func) {
       example.func(example, this.odataService);
+    }
+  }
+
+  executeGet(example: ExampleData, odataService: ODataService): void {
+    example.subscr = example.odataQuery.get().subscribe(
+      (odataResponse: ODataResponse) => {
+        example.response = odataResponse.toString();
+      },
+      (error: string) => {
+        example.response = error;
+      }
+    );
+  }
+
+  executeAllGet(): void {
+    if (this.examples) {
+      for (const example of this.examples) {
+        this.executeGet(example, this.odataService);
+      }
     }
   }
 }

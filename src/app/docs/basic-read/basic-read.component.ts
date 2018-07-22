@@ -1,7 +1,6 @@
-import { ODataResponse } from '../../odata/odata-response/odata-response';
+import { Component, OnInit } from '@angular/core';
 import { ODataQuery } from '../../odata/odata-query/odata-query';
 import { ODataService } from '../../odata/odata-service/odata.service';
-import { Component, OnInit } from '@angular/core';
 import { ExampleData, SERVICE_ROOT } from '../example/example-data';
 import { ExampleComponent } from '../example/example.component';
 
@@ -267,30 +266,5 @@ ${EXECUTE_GET}`;
     .functionCall('Microsoft.OData.SampleService.Models.TripPin.GetFavoriteAirline()');
 ${EXECUTE_GET}`;
     example.func = this.executeGet;
-  }
-
-  execute(example: ExampleData): void {
-    if (example.func) {
-      example.func(example, this.odataService);
-    }
-  }
-
-  executeGet(example: ExampleData, odataService: ODataService): void {
-    example.subscr = example.odataQuery.get().subscribe(
-      (odataResponse: ODataResponse) => {
-        example.response = odataResponse.toString();
-      },
-      (error: string) => {
-        example.response = error;
-      }
-    );
-  }
-
-  executeAllGet(): void {
-    if (this.examples) {
-      for (const example of this.examples) {
-        this.executeGet(example, this.odataService);
-      }
-    }
   }
 }

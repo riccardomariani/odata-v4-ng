@@ -1,4 +1,4 @@
-<input type="button" value="Execute all queries" (click)="executeAllGet()">
+<input *ngIf="executeEnabled" type="button" value="Execute all queries" (click)="executeAllGet()">
 
 <div *ngFor="let example of examples">
   <h3>{{example.title}}</h3>

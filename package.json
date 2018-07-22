@@ -1,6 +1,6 @@
 {
   "name": "odata-v4-ng",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "license": "MIT",
   "description": "Client side OData V4 typescript library for Angular 6",
   "repository": {
@@ -27,7 +27,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "buildProject": "npm install && ng lint && ng test --watch=false --code-coverage && ng e2e && ng build --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng docs",
+    "buildProject": "npm install && ng lint && ng test --watch=false --code-coverage && ng e2e && ng build --prod --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng docs",
     "packageProject": "ng-packagr -p ng-package.json",
     "publishDist": "npm publish dist",
     "buildPackagePublish": "npm run buildProject && npm run packageProject && npm run publishDist"
