@@ -1,6 +1,6 @@
 {
   "name": "odata-v4-ng",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "license": "MIT",
   "description": "Client side OData V4 typescript library for Angular 6",
   "repository": {
@@ -30,8 +30,8 @@
     "commitmsg": "commitlint -E GIT_PARAMS",
     "buildProject": "npm install && ng lint && ng test --watch=false --code-coverage && ng e2e && ng build --prod --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng docs",
     "packageProject": "ng-packagr -p ng-package.json",
-    "generateChangelog": "standard-version",
-    "publishProject": "git push --follow-tags origin master && npm publish dist"
+    "publishProject": "git push --follow-tags origin master && npm publish dist",
+    "release": "npm run buildProject && standard-version && npm run packageProject && npm run publishProject"
   },
   "private": false,
   "peerDependencies": {
