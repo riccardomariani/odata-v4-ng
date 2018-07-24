@@ -4,6 +4,10 @@ This project is a client side OData V4 typescript library for Angular2+. The goa
 
 To install the package use `npm install --save odata-v4-ng`
 
+## Changelog
+
+See [here](https://github.com/riccardomariani/odata-v4-ng/blob/master/CHANGELOG.md).
+
 ## Usage examples
 
 See [here](https://riccardomariani.github.io/odata-v4-ng).
