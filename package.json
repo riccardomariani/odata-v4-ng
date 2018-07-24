@@ -27,10 +27,11 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
+    "commitmsg": "commitlint -E GIT_PARAMS",
     "buildProject": "npm install && ng lint && ng test --watch=false --code-coverage && ng e2e && ng build --prod --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng docs",
     "packageProject": "ng-packagr -p ng-package.json",
-    "publishDist": "npm publish dist",
-    "buildPackagePublish": "npm run buildProject && npm run packageProject && npm run publishDist"
+    "generateChangelog": "standard-version",
+    "publishProject": "git push --follow-tags origin master && npm publish dist"
   },
   "private": false,
   "peerDependencies": {
@@ -56,6 +57,8 @@
     "@angular/platform-browser": "^6.0.9",
     "@angular/platform-browser-dynamic": "^6.0.9",
     "@angular/router": "^6.0.9",
+    "@commitlint/cli": "^7.0.0",
+    "@commitlint/config-conventional": "^7.0.1",
     "@types/jasmine": "~2.8.6",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
@@ -63,6 +66,7 @@
     "codelyzer": "~4.2.1",
     "core-js": "^2.5.4",
     "font-awesome": "^4.7.0",
+    "husky": "^0.14.3",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~1.7.1",
@@ -75,6 +79,7 @@
     "protractor": "~5.3.0",
     "rxjs": "^6.2.2",
     "rxjs-tslint": "^0.1.5",
+    "standard-version": "^4.4.0",
     "ts-node": "~5.0.1",
     "tslint": "~5.9.1",
     "typescript": "~2.7.2",
