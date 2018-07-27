@@ -1,12 +1,6 @@
-
-
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ODataQuery, ODataQueryBatch, ODataResponse, ODataService } from 'odata-v4-ng';
 import { Observable } from 'rxjs';
-
-import { ODataQuery } from '../../odata/odata-query/odata-query';
-import { ODataQueryBatch } from '../../odata/odata-query/odata-query-batch';
-import { ODataService } from '../../odata/odata-service/odata.service';
-import { ODataResponse } from '../../odata/odata-response/odata-response';
 
 export class BatchItem {
   constructor(

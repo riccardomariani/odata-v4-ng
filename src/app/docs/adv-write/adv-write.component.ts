@@ -1,9 +1,7 @@
-import { ODataResponse } from '../../odata/odata-response/odata-response';
-import { ODataQuery } from '../../odata/odata-query/odata-query';
-import { SERVICE_ROOT, ExampleData } from '../example/example-data';
-import { ODataService } from '../../odata/odata-service/odata.service';
-import { BasicWriteComponent } from '../basic-write/basic-write.component';
 import { Component, OnInit } from '@angular/core';
+import { ODataQuery, ODataResponse, ODataService } from 'odata-v4-ng';
+import { BasicWriteComponent } from '../basic-write/basic-write.component';
+import { ExampleData, SERVICE_ROOT } from '../example/example-data';
 
 const EXECUTE_BATCH = `example.subscr = example.odataQuery.execute().subscribe(
   (odataResponse: ODataResponse) => {

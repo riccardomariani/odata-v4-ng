@@ -1,4 +1,3 @@
-import { ODataResponse } from './odata/odata-response/odata-response';
 import { Component, OnInit } from '@angular/core';
 import { SERVICE_ROOT } from './docs/example/example-data';
 

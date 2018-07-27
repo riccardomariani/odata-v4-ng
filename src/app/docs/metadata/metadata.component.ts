@@ -1,9 +1,7 @@
-import { ODataResponse } from '../../odata/odata-response/odata-response';
-import { ODataQuery } from '../../odata/odata-query/odata-query';
-import { SERVICE_ROOT, ExampleData } from '../example/example-data';
-import { EXECUTE_GET, BasicReadComponent } from '../basic-read/basic-read.component';
-import { ODataService } from '../../odata/odata-service/odata.service';
 import { Component, OnInit } from '@angular/core';
+import { ODataQuery, ODataResponse, ODataService } from 'odata-v4-ng';
+import { BasicReadComponent, EXECUTE_GET } from '../basic-read/basic-read.component';
+import { ExampleData, SERVICE_ROOT } from '../example/example-data';
 
 export const EXECUTE_GET_TO_METADATA = `example.odataQuery.get().subscribe(
   (odataResponse: ODataResponse) => {

@@ -1,6 +1,5 @@
-import { ODataQuery } from '../../odata/odata-query/odata-query';
-import { ODataService } from '../../odata/odata-service/odata.service';
 import { Component, OnInit } from '@angular/core';
+import { ODataQuery, ODataService } from 'odata-v4-ng';
 import { BasicReadComponent, EXECUTE_GET } from '../basic-read/basic-read.component';
 import { ExampleData, SERVICE_ROOT } from '../example/example-data';
 

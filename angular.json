@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "odata-v4-ng": {
+    "odata-v4-ng-app": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/odata-v4-ng",
+            "outputPath": "dist/odata-v4-ng-app",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -28,9 +28,9 @@
             ],
             "styles": [
               "src/styles.less",
-              "node_modules/font-awesome/css/font-awesome.min.css",
-              "node_modules/primeng/resources/primeng.min.css",
-              "node_modules/primeng/resources/themes/omega/theme.css"
+              "node_modules/primeicons/primeicons.css",
+              "node_modules/primeng/resources/themes/omega/theme.css",
+              "node_modules/primeng/resources/primeng.min.css"
             ],
             "scripts": []
           },
@@ -57,18 +57,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "odata-v4-ng:build"
+            "browserTarget": "odata-v4-ng-app:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "odata-v4-ng:build:production"
+              "browserTarget": "odata-v4-ng-app:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "odata-v4-ng:build"
+            "browserTarget": "odata-v4-ng-app:build"
           }
         },
         "test": {
@@ -80,15 +80,17 @@
             "karmaConfig": "src/karma.conf.js",
             "styles": [
               "src/styles.less",
-              "node_modules/font-awesome/css/font-awesome.min.css",
-              "node_modules/primeng/resources/primeng.min.css",
-              "node_modules/primeng/resources/themes/omega/theme.css"
+              "node_modules/primeicons/primeicons.css",
+              "node_modules/primeng/resources/themes/omega/theme.css",
+              "node_modules/primeng/resources/primeng.min.css"
             ],
             "scripts": [],
             "assets": [
               "src/favicon.ico",
               "src/assets"
-            ]
+            ],
+            "watch": false,
+            "codeCoverage": true
           }
         },
         "lint": {
@@ -105,7 +107,7 @@
         }
       }
     },
-    "odata-v4-ng-e2e": {
+    "odata-v4-ng-app-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "architect": {
@@ -113,11 +115,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "odata-v4-ng:serve"
+            "devServerTarget": "odata-v4-ng-app:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "odata-v4-ng:serve:production"
+              "devServerTarget": "odata-v4-ng-app:serve:production"
             }
           }
         },
@@ -131,7 +133,49 @@
           }
         }
       }
+    },
+    "odata-v4-ng": {
+      "root": "projects/odata-v4-ng",
+      "sourceRoot": "projects/odata-v4-ng/src",
+      "projectType": "library",
+      "prefix": "ov4",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/odata-v4-ng/tsconfig.lib.json",
+            "project": "projects/odata-v4-ng/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "project": "projects/odata-v4-ng/ng-package.prod.json"
+            }
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/odata-v4-ng/src/test.ts",
+            "tsConfig": "projects/odata-v4-ng/tsconfig.spec.json",
+            "karmaConfig": "projects/odata-v4-ng/karma.conf.js",
+            "watch": false,
+            "codeCoverage": true
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/odata-v4-ng/tsconfig.lib.json",
+              "projects/odata-v4-ng/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
     }
   },
-  "defaultProject": "odata-v4-ng"
+  "defaultProject": "odata-v4-ng-app"
 }

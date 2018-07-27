@@ -15,6 +15,14 @@
     "lib": [
       "es2017",
       "dom"
-    ]
+    ],
+    "paths": {
+      "odata-v4-ng": [
+        "dist/odata-v4-ng"
+      ],
+      "odata-v4-ng/*": [
+        "dist/odata-v4-ng/*"
+      ]
+    }
   }
 }

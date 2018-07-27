@@ -1,8 +1,12 @@
 cd ..
-rm -rf temp
+rm -Rf temp
 mkdir temp
 cd temp
-ng new odata-v4-ng --routing --prefix=ov4 --style=less --skip-install
+ng new odata-v4-ng-app --prefix=ov4 --routing --style=less --skip-install
+mv odata-v4-ng-app odata-v4-ng
+cd odata-v4-ng
+ng g library odata-v4-ng --prefix=ov4 --style=less --skip-install
+cd ..
 cd ..
 rm -Rf temp/odata-v4-ng/.git
 rm odata-v4-ng/*.json

@@ -1,9 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ODataService } from '../../odata/odata-service/odata.service';
+import { ODataQuery, ODataResponse, ODataService } from 'odata-v4-ng';
 import { ExampleData, SERVICE_ROOT } from '../example/example-data';
-import { ODataQuery } from '../../odata/odata-query/odata-query';
 import { ExampleComponent } from '../example/example.component';
-import { ODataResponse } from '../../odata/odata-response/odata-response';
 
 const EXECUTE_CREATE_ENTITY = `example.subscr = example.odataQuery.post({
   '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
@@ -261,7 +259,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       (error: string) => {
         example.response = error;
       }
-      );
+    );
   }
 
   executeDeleteEntity(example: ExampleData, odataService: ODataService): void {
@@ -297,7 +295,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       (error: string) => {
         example.response = error;
       }
-      );
+    );
   }
 
   executeUpdateEntityETag(example: ExampleData, odataService: ODataService): void {
@@ -311,7 +309,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       (error: string) => {
         example.response = error;
       }
-      );
+    );
   }
 
   executeCreateRelationship(example: ExampleData, odataService: ODataService): void {
@@ -324,7 +322,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       (error: string) => {
         example.response = error;
       }
-      );
+    );
   }
 
   executeChangeRelationship(example: ExampleData, odataService: ODataService): void {
@@ -337,7 +335,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       (error: string) => {
         example.response = error;
       }
-      );
+    );
   }
 
   executeBoundAction(example: ExampleData, odataService: ODataService): void {
@@ -351,7 +349,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
       (error: string) => {
         example.response = error;
       }
-      );
+    );
   }
 
 }

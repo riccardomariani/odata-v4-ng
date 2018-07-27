@@ -12,7 +12,7 @@ import { BasicWriteComponent } from './docs/basic-write/basic-write.component';
 import { BatchComponent } from './docs/batch/batch.component';
 import { ExampleComponent } from './docs/example/example.component';
 import { MetadataComponent } from './docs/metadata/metadata.component';
-import { ODataModule } from './odata/odata.module';
+import { ODataModule } from 'odata-v4-ng';
 
 @NgModule({
   declarations: [

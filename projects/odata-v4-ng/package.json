@@ -1,0 +1,29 @@
+{
+  "name": "odata-v4-ng",
+  "version": "1.0.11",
+  "license": "MIT",
+  "description": "Client side OData V4 typescript library for Angular 6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riccardomariani/odata-v4-ng.git"
+  },
+  "keywords": [
+    "client",
+    "odata",
+    "odata v4",
+    "typescript",
+    "angular",
+    "angular 6"
+  ],
+  "author": "Riccardo Mariani",
+  "bugs": {
+    "url": "https://github.com/riccardomariani/odata-v4-ng/issues"
+  },
+  "homepage": "https://github.com/riccardomariani/odata-v4-ng#readme",
+  "private": false,
+  "peerDependencies": {
+    "@angular/common": "^6.0.0",
+    "@angular/core": "^6.0.0",
+    "angular2-uuid": "^1.1.1"
+  }
+}

@@ -2,7 +2,7 @@ import { HttpHeaders } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { HttpOptions, HttpOptionsI } from '../odata-service/http-options';
 import { ODataService } from '../odata-service/odata.service';
-import { ODataModule } from './../odata.module';
+import { ODataModule } from '../odata.module';
 import { ODataQuery } from './odata-query';
 import { BatchRequest, Method, ODataQueryBatch } from './odata-query-batch';
 

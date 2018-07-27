@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { ODataResponse } from '../../odata/odata-response/odata-response';
-import { ODataService } from '../../odata/odata-service/odata.service';
+import { ODataResponse, ODataService } from 'odata-v4-ng';
 import { ExampleData } from './example-data';
 
 @Component({
