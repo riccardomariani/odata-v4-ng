@@ -28,16 +28,15 @@
     "lint": "ng lint",
     "e2e": "ng e2e",
     "commitmsg": "commitlint -E GIT_PARAMS",
+    "versioningLib": "cd projects/odata-v4-ng && npm version 1.0.13 && cd ../..",
     "buildLib": "ng build odata-v4-ng --prod",
     "buildApp": "ng build --prod --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng-app docs",
-    "buildAll": "ng lint && ng test && ng e2e && npm run buildLib && npm run buildApp",
-    "versioningLib": "cd projects/odata-v4-ng && npm version 1.0.12 && cd ../.. && git commit -a -m 'chore(release): new library release'",
-    "versioningApp": "standard-version --release-as 1.0.12",
-    "versioningAll": "npm run versioningLib && npm run versioningApp",
+    "versioningApp": "git add -A && git commit -m 'docs: update' && standard-version --release-as 1.0.13",
+    "buildAll": "ng lint && ng test && ng e2e && npm run versioningLib && npm run buildLib && npm run buildApp && npm run versioningApp",
     "publishApp": "git push --follow-tags origin master",
     "publishLib": "npm publish dist/odata-v4-ng",
     "publishAll": "npm run publishApp && npm run publishLib",
-    "release": "npm run buildAll && npm run versioningAll && npm run publishAll"
+    "release": "cp README.md projects/odata-v4-ng/README.md && npm run buildAll && npm run publishAll"
   },
   "private": false,
   "dependencies": {
