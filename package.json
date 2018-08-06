@@ -30,10 +30,14 @@
     "commitmsg": "commitlint -E GIT_PARAMS",
     "buildLib": "ng build odata-v4-ng --prod",
     "buildApp": "ng build --prod --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng-app docs",
-    "buildAll": "npm run buildLib && npm run buildApp",
+    "buildAll": "ng lint && ng test && ng e2e && npm run buildLib && npm run buildApp",
+    "versioningLib": "cd projects/odata-v4-ng && npm version 1.0.12 && cd ../.. && git commit -a -m 'chore(release): new library release'",
+    "versioningApp": "standard-version --release-as 1.0.12",
+    "versioningAll": "npm run versioningLib && npm run versioningApp",
     "publishApp": "git push --follow-tags origin master",
     "publishLib": "npm publish dist/odata-v4-ng",
-    "release": "ng lint && ng test && ng e2e && npm run buildAll && standard-version && npm run publishApp && npm run publishLib"
+    "publishAll": "npm run publishApp && npm run publishLib",
+    "release": "npm run buildAll && npm run versioningAll && npm run publishAll"
   },
   "private": false,
   "dependencies": {
