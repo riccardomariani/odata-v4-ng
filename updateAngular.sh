@@ -1,32 +1,28 @@
-# uninstall globally cli
+clear
+echo -e '--- uninstall global @angular/cli ---'
 sudo npm uninstall -g angular-cli
 sudo npm uninstall -g @angular/cli
 
-# uninstall locally cli
-npm uninstall --save-dev angular-cli
-npm uninstall --save-dev @angular-cli
-
-# verify cache
+echo -e '\n\n'
+echo -e '--- verify cache ---'
 npm cache verify
 
-# clean 
-# use rmdir /S/Q node_modules dist in Windows Command Prompt; use rm -r -fo node_modules,dist in Windows PowerShell
-rm -rf package-lock.json node_modules dist 
-
-# install globally cli
+echo -e '\n\n'
+echo -e '--- install global @angular/cli ---'
 sudo npm install -g @angular/cli
 
-# install locally cli
-npm install --save-dev @angular/cli
+echo -e '\n\n'
+echo -e '--- clean package-lock.json, node_modules, dist ---'
+rm -r -f package-lock.json node_modules dist
 
-# update cli
+echo -e '\n\n'
+echo -e '--- update @angular/cli ---'
 ng update @angular/cli
 
-# update angular
+echo -e '\n\n'
+echo -e '--- update @angular/core ---'
 ng update @angular/core
 
-# install all node modules
-npm install
-
-# update all node modules
+echo -e '\n\n'
+echo -e '--- update node modules ---'
 npm update
