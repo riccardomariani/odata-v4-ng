@@ -1,4 +1,4 @@
-primeng@6.0.1
+primeng@6.1.2
 MIT
 The MIT License (MIT)
 
@@ -354,11 +354,11 @@ If the Work includes a "NOTICE" text file as part of its distribution, then any 
 
 END OF TERMS AND CONDITIONS
 
-@angular/common@6.0.9
+@angular/common@6.1.3
 MIT
 MIT
 
-@angular/platform-browser@6.0.9
+@angular/platform-browser@6.1.3
 MIT
 MIT
 
@@ -386,10 +386,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-@angular/core@6.0.9
+@angular/core@6.1.3
 MIT
 MIT
 
-@angular/forms@6.0.9
+@angular/forms@6.1.3
 MIT
 MIT
