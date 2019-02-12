@@ -1,5 +1,5 @@
-import { Subscription } from 'rxjs';
-import {ODataService} from '../../../../projects/odata-v4-ng/src/lib/odata-service/odata.service';
+import {Subscription} from 'rxjs';
+import {ODataService} from 'odata-v4-ng';
 
 export const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 
