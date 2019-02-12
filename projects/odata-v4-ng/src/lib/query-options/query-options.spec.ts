@@ -1,12 +1,10 @@
-import { Orderby } from './orderby';
-import { Expand } from './expand';
-import { OperatorComparison } from './operator';
-import { QueryOptions } from './query-options';
-import { Search } from './search/search';
-import { SearchSimple } from './search/search-simple';
-import { Filter } from './filter/filter';
-import { FilterComparison } from './filter/filter-comparison';
-import { ODataQuery } from '../odata-query/odata-query';
+import {Orderby} from './orderby';
+import {Expand} from './expand';
+import {OperatorComparison} from './operator';
+import {QueryOptions} from './query-options';
+import {SearchSimple} from './search/search-simple';
+import {FilterComparison} from './filter/filter-comparison';
+import {ODataQuery} from '../odata-query/odata-query';
 
 describe('QueryOptions', () => {
   it('test select', () => {

@@ -73,37 +73,7 @@ describe('FilterLambda', () => {
     const propertyOrEntitySet = 'entitySet';
     const lambdaOperator = LambdaOperator.ANY;
     const filter = new FilterComparison('property', OperatorComparison.EQ, 'value');
-    const filterLambda = new FilterLambda(lambdaCollection, propertyOrEntitySet, lambdaOperator, filter);
+    let filterLambda = new FilterLambda(lambdaCollection, propertyOrEntitySet, lambdaOperator, filter);
     expect(filterLambda.isEmpty()).toBeFalsy();
-    //
-    filterLambda['lambdaCollection'] = undefined;
-    filterLambda['propertyOrEntitySet'] = undefined;
-    filterLambda['lambdaOperator'] = undefined;
-    filterLambda['filter'] = undefined;
-    expect(filterLambda.isEmpty()).toBeTruthy();
-    //
-    filterLambda['lambdaCollection'] = null;
-    filterLambda['propertyOrEntitySet'] = null;
-    filterLambda['lambdaOperator'] = null;
-    filterLambda['filter'] = null;
-    expect(filterLambda.isEmpty()).toBeTruthy();
-    //
-    filterLambda['lambdaCollection'] = LambdaCollection.ENTITY_SET;
-    filterLambda['propertyOrEntitySet'] = '';
-    filterLambda['lambdaOperator'] = LambdaOperator.ANY;
-    filterLambda['filter'] = null;
-    expect(filterLambda.isEmpty()).toBeTruthy();
-    //
-    filterLambda['lambdaCollection'] = LambdaCollection.ENTITY_SET;
-    filterLambda['propertyOrEntitySet'] = null;
-    filterLambda['lambdaOperator'] = LambdaOperator.ANY;
-    filterLambda['filter'] = [];
-    expect(filterLambda.isEmpty()).toBeTruthy();
-    //
-    filterLambda['lambdaCollection'] = LambdaCollection.ENTITY_SET;
-    filterLambda['propertyOrEntitySet'] = '';
-    filterLambda['lambdaOperator'] = LambdaOperator.ANY;
-    filterLambda['filter'] = [];
-    expect(filterLambda.isEmpty()).toBeTruthy();
   });
 });

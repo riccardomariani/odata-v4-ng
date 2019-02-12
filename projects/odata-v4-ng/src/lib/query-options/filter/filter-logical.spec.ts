@@ -34,20 +34,7 @@ describe('FilterLogical', () => {
 
   it('test isEmpty', () => {
     const filterString: Filter = new FilterString('property eq v1');
-    const filterLogical: Filter = new FilterLogical([filterString], OperatorLogical.NOT);
+    let filterLogical: Filter = new FilterLogical([filterString], OperatorLogical.NOT);
     expect(filterLogical.isEmpty()).toBeFalsy();
-    //
-    filterString['filter'] = '';
-    filterLogical['filters'] = [filterString];
-    expect(filterLogical.isEmpty()).toBeTruthy();
-    //
-    filterLogical['filters'] = [];
-    expect(filterLogical.isEmpty()).toBeTruthy();
-    //
-    filterLogical['filters'] = undefined;
-    expect(filterLogical.isEmpty()).toBeTruthy();
-    //
-    filterLogical['filters'] = null;
-    expect(filterLogical.isEmpty()).toBeTruthy();
   });
 });

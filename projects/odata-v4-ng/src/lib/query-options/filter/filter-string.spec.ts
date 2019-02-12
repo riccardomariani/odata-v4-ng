@@ -19,14 +19,5 @@ describe('FilterString', () => {
   it('test isEmpty', () => {
     const filter: Filter = new FilterString('value');
     expect(filter.isEmpty()).toBeFalsy();
-    //
-    filter['filter'] = '';
-    expect(filter.isEmpty()).toBeTruthy();
-    //
-    filter['filter'] = undefined;
-    expect(filter.isEmpty()).toBeTruthy();
-    //
-    filter['filter'] = null;
-    expect(filter.isEmpty()).toBeTruthy();
   });
 });

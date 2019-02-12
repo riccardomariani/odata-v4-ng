@@ -11,7 +11,7 @@ describe('HttpOptions', () => {
     expect(options.withCredentials).toBeUndefined();
 
     options = {
-      headers: new HttpHeaders({ 'test': 'test' }),
+      headers: new HttpHeaders({ test: 'test' }),
       params: new HttpParams({ fromString: 'test=test' }),
       reportProgress: true,
       withCredentials: true
@@ -32,7 +32,7 @@ describe('HttpOptions', () => {
     expect(options.withCredentials).toBeUndefined();
 
     options = new HttpOptions(
-      new HttpHeaders({ 'test': 'test' }),
+      new HttpHeaders({ test: 'test' }),
       'response',
       new HttpParams({ fromString: 'test=test' }),
       true,

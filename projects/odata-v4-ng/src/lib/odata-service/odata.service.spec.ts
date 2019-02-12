@@ -17,9 +17,9 @@ describe('OdataService', () => {
   const body: any = { test: 'test' };
   const etag = 'etag';
   const SERVICE_ROOT = 'serviceRoot';
-  const HTTP_OPTIONS_I: HttpOptionsI = { headers: new HttpHeaders({ 'header': 'value' }) };
+  const HTTP_OPTIONS_I: HttpOptionsI = { headers: new HttpHeaders({ header: 'value' }) };
   const HTTP_OPTIONS_I_RES: HttpOptions = new HttpOptions(
-    new HttpHeaders({ 'header': 'value' }),
+    new HttpHeaders({ header: 'value' }),
     'response',
     undefined,
     undefined,
@@ -27,7 +27,7 @@ describe('OdataService', () => {
     undefined
   );
   const HTTP_OPTIONS_I_RES_ETAG: HttpOptions = new HttpOptions(
-    new HttpHeaders({ 'header': 'value', 'etag': 'etag' }),
+    new HttpHeaders({ header: 'value', etag: 'etag' }),
     'response',
     undefined,
     undefined,
@@ -43,7 +43,7 @@ describe('OdataService', () => {
     undefined
   );
   const HTTP_OPTIONS_ETAG: HttpOptions = new HttpOptions(
-    new HttpHeaders({ 'etag': 'etag' }),
+    new HttpHeaders({ etag: 'etag' }),
     undefined,
     undefined,
     undefined,

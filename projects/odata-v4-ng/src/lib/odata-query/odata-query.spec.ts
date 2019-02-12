@@ -1,21 +1,20 @@
-import { HttpHeaders } from '@angular/common/http';
-import { HttpClientTestingModule, HttpTestingController, TestRequest } from '@angular/common/http/testing';
-import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { BehaviorSubject } from 'rxjs';
-import { EntitySet } from '../odata-response/entity-collection';
-import { ODataResponse } from '../odata-response/odata-response';
-import { HttpOptions, HttpOptionsI } from '../odata-service/http-options';
-import { ODataService } from '../odata-service/odata.service';
-import { ODataModule } from '../odata.module';
-import { Expand } from '../query-options/expand';
-import { FilterComparison } from '../query-options/filter/filter-comparison';
-import { FilterContains, FilterEndswith } from '../query-options/filter/filter-function';
-import { FilterLambda, LambdaCollection, LambdaOperator } from '../query-options/filter/filter-lambda';
-import { OperatorComparison } from '../query-options/operator';
-import { Order, Orderby } from '../query-options/orderby';
-import { SearchSimple } from '../query-options/search/search-simple';
-import { ODataQuery } from './odata-query';
-import { QuotedString } from './quoted-string';
+import {HttpHeaders} from '@angular/common/http';
+import {HttpClientTestingModule, HttpTestingController, TestRequest} from '@angular/common/http/testing';
+import {fakeAsync, TestBed, tick} from '@angular/core/testing';
+import {EntitySet} from '../odata-response/entity-collection';
+import {ODataResponse} from '../odata-response/odata-response';
+import {HttpOptions, HttpOptionsI} from '../odata-service/http-options';
+import {ODataService} from '../odata-service/odata.service';
+import {ODataModule} from '../odata.module';
+import {Expand} from '../query-options/expand';
+import {FilterComparison} from '../query-options/filter/filter-comparison';
+import {FilterContains, FilterEndswith} from '../query-options/filter/filter-function';
+import {FilterLambda, LambdaCollection, LambdaOperator} from '../query-options/filter/filter-lambda';
+import {OperatorComparison} from '../query-options/operator';
+import {Order, Orderby} from '../query-options/orderby';
+import {SearchSimple} from '../query-options/search/search-simple';
+import {ODataQuery} from './odata-query';
+import {QuotedString} from './quoted-string';
 
 const SERVICE_ROOT = 'https://services.odata.org/v4/TripPinServiceRW';
 const ENTITY_SET = 'People';
@@ -296,7 +295,7 @@ describe('OdataQuery', () => {
     spyOn(odataQuery, 'delete');
 
     const httpOptions: HttpOptions = new HttpOptions();
-    const httpOptionsI: HttpOptionsI = { headers: new HttpHeaders({ 'test': 'test' }) };
+    const httpOptionsI: HttpOptionsI = { headers: new HttpHeaders({ test: 'test' }) };
 
     odataQuery.get(httpOptions);
     expect(odataQuery.get).toHaveBeenCalledWith(httpOptions);
@@ -333,7 +332,7 @@ describe('OdataQuery', () => {
 
   it('test toEntitySet', fakeAsync(() => {
     const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
-    const responseBody: any = { value: [{ 'type': 'type1' }, { 'type': 'type2' }] };
+    const responseBody: any = { value: [{ type: 'type1' }, { type: 'type2' }] };
     const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
 
     new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).get().subscribe(
@@ -343,8 +342,8 @@ describe('OdataQuery', () => {
 
         expect(types[0].type).toEqual('type1');
         expect(types[1].type).toEqual('type2');
-        expect(types[0]['getType']).toBeUndefined();
-        expect(types[1]['getType']).toBeUndefined();
+        expect(types[0].getType).toBeUndefined();
+        expect(types[1].getType).toBeUndefined();
       }, error => {
         console.log('Failed to fetch addressType');
       });
@@ -361,8 +360,8 @@ describe('OdataQuery', () => {
 
         expect(types[0].type).toEqual('type1');
         expect(types[1].type).toEqual('type2');
-        expect(types[0]['getType']).toBeDefined();
-        expect(types[1]['getType']).toBeDefined();
+        expect(types[0].getType).toBeDefined();
+        expect(types[1].getType).toBeDefined();
       }, error => {
         console.log('Failed to fetch addressType');
       });
@@ -375,7 +374,7 @@ describe('OdataQuery', () => {
 
   it('test toComplexCollection', fakeAsync(() => {
     const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
-    const responseBody: any = { value: [{ 'type': 'type1' }, { 'type': 'type2' }] };
+    const responseBody: any = { value: [{ type: 'type1' }, { type: 'type2' }] };
     const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
 
     new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).get().subscribe(
@@ -384,8 +383,8 @@ describe('OdataQuery', () => {
 
         expect(complexCollection[0].type).toEqual('type1');
         expect(complexCollection[1].type).toEqual('type2');
-        expect(complexCollection[0]['getType']).toBeUndefined();
-        expect(complexCollection[1]['getType']).toBeUndefined();
+        expect(complexCollection[0].getType).toBeUndefined();
+        expect(complexCollection[1].getType).toBeUndefined();
       }, error => {
         console.log('Failed to fetch addressType');
       });
@@ -401,8 +400,8 @@ describe('OdataQuery', () => {
 
         expect(complexCollection[0].type).toEqual('type1');
         expect(complexCollection[1].type).toEqual('type2');
-        expect(complexCollection[0]['getType']).toBeDefined();
-        expect(complexCollection[1]['getType']).toBeDefined();
+        expect(complexCollection[0].getType).toBeDefined();
+        expect(complexCollection[1].getType).toBeDefined();
       }, error => {
         console.log('Failed to fetch addressType');
       });
@@ -415,7 +414,7 @@ describe('OdataQuery', () => {
 
   it('test toEntity', fakeAsync(() => {
     const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
-    const responseBody: any = { 'type': 'type1' };
+    const responseBody: any = { type: 'type1' };
     const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
 
     new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').get().subscribe(
@@ -423,7 +422,7 @@ describe('OdataQuery', () => {
         const entity: Type = odataResponse.toEntity<Type>();
 
         expect(entity.type).toEqual('type1');
-        expect(entity['getType']).toBeUndefined();
+        expect(entity.getType).toBeUndefined();
       }, error => {
         console.log('Failed to fetch Type');
       });
@@ -438,7 +437,7 @@ describe('OdataQuery', () => {
         const entity: Type = odataResponse.toEntity<Type>(Type);
 
         expect(entity.type).toEqual('type1');
-        expect(entity['getType']).toBeDefined();
+        expect(entity.getType).toBeDefined();
       }, error => {
         console.log('Failed to fetch Type');
       });
@@ -451,7 +450,7 @@ describe('OdataQuery', () => {
 
   it('test toComplexValue', fakeAsync(() => {
     const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
-    const responseBody: any = { 'type': 'type1' };
+    const responseBody: any = { type: 'type1' };
     const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
 
     new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').get().subscribe(
@@ -459,7 +458,7 @@ describe('OdataQuery', () => {
         const entity: Type = odataResponse.toComplexValue<Type>();
 
         expect(entity.type).toEqual('type1');
-        expect(entity['getType']).toBeUndefined();
+        expect(entity.getType).toBeUndefined();
       }, error => {
         console.log('Failed to fetch Type');
       });
@@ -474,7 +473,7 @@ describe('OdataQuery', () => {
         const entity: Type = odataResponse.toComplexValue<Type>(Type);
 
         expect(entity.type).toEqual('type1');
-        expect(entity['getType']).toBeDefined();
+        expect(entity.getType).toBeDefined();
       }, error => {
         console.log('Failed to fetch Type');
       });
@@ -487,7 +486,7 @@ describe('OdataQuery', () => {
 
   it('test toPropertyValue', fakeAsync(() => {
     const httpMock: HttpTestingController = TestBed.get(HttpTestingController);
-    const responseBody: any = { 'value': 'type1' };
+    const responseBody: any = { value: 'type1' };
     const responseHeaders: any = { headers: { 'Content-Type': 'application/json' } };
 
     new ODataQuery(odataService, SERVICE_ROOT).entitySet(ENTITY_SET).entityKey('entityKey').property('property').get().subscribe(

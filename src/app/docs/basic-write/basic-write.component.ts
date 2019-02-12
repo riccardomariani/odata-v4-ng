@@ -237,19 +237,19 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
   executeCreateEntity(example: ExampleData, odataService: ODataService): void {
     example.subscr = example.odataQuery.post({
       '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
-      'UserName': 'teresa',
-      'FirstName': 'Teresa',
-      'LastName': 'Gilbert',
-      'Gender': 'Female',
-      'Emails': ['teresa@example.com', 'teresa@contoso.com'],
-      'AddressInfo': [
+      UserName: 'teresa',
+      FirstName: 'Teresa',
+      LastName: 'Gilbert',
+      Gender: 'Female',
+      Emails: ['teresa@example.com', 'teresa@contoso.com'],
+      AddressInfo: [
         {
-          'Address': '1 Suffolk Ln.',
-          'City':
+          Address: '1 Suffolk Ln.',
+          City:
           {
-            'CountryRegion': 'United States',
-            'Name': 'Boise',
-            'Region': 'ID'
+            CountryRegion: 'United States',
+            Name: 'Boise',
+            Region: 'ID'
           }
         }]
     }).subscribe(
@@ -287,7 +287,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
   executeUpdateEntity(example: ExampleData, odataService: ODataService): void {
     example.subscr = example.odataQuery.patch({
       '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
-      'Emails': ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
+      Emails: ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
     }).subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
@@ -301,7 +301,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
   executeUpdateEntityETag(example: ExampleData, odataService: ODataService): void {
     example.subscr = example.odataQuery.patch({
       '@odata.type': '#Microsoft.OData.SampleService.Models.TripPin.Person',
-      'FirstName': 'CLYDE'
+      FirstName: 'CLYDE'
     }, 'W/"08D15F3DD9126D84"').subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
@@ -340,8 +340,8 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
 
   executeBoundAction(example: ExampleData, odataService: ODataService): void {
     example.subscr = example.odataQuery.post({
-      'userName': 'scottketchum',
-      'tripId': 1001
+      userName: 'scottketchum',
+      tripId: 1001
     }).subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();

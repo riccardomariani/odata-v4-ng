@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 clear
 echo -e '--- uninstall global @angular/cli ---'
 sudo npm uninstall -g angular-cli
@@ -5,7 +7,7 @@ sudo npm uninstall -g @angular/cli
 
 echo -e '\n\n'
 echo -e '--- verify cache ---'
-npm cache verify
+sudo npm cache verify
 
 echo -e '\n\n'
 echo -e '--- install global @angular/cli ---'

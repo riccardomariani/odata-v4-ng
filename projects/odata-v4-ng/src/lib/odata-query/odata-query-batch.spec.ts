@@ -12,7 +12,7 @@ describe('ODataQueryBatch', () => {
 
   const SERVICE_ROOT = 'serviceRoot';
   const body: any = { test: 'test' };
-  const httpOptionsI: HttpOptionsI = { headers: new HttpHeaders({ 'test': 'test' }) };
+  const httpOptionsI: HttpOptionsI = { headers: new HttpHeaders({ test: 'test' }) };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -30,8 +30,8 @@ describe('ODataQueryBatch', () => {
 
     odataQueryBatch.get(odataQuery);
     odataQueryBatch.get(odataQuery, httpOptionsI);
-    expect(odataQueryBatch['requests'][0]).toEqual(new BatchRequest(Method.GET, odataQuery));
-    expect(odataQueryBatch['requests'][1]).toEqual(new BatchRequest(Method.GET, odataQuery, undefined, httpOptionsI));
+    expect(odataQueryBatch.getRequests()[0]).toEqual(new BatchRequest(Method.GET, odataQuery));
+    expect(odataQueryBatch.getRequests()[1]).toEqual(new BatchRequest(Method.GET, odataQuery, undefined, httpOptionsI));
   });
 
   it('test post', () => {
@@ -41,8 +41,8 @@ describe('ODataQueryBatch', () => {
 
     odataQueryBatch.post(odataQuery, body);
     odataQueryBatch.post(odataQuery, body, httpOptionsI);
-    expect(odataQueryBatch['requests'][0]).toEqual(new BatchRequest(Method.POST, odataQuery, body));
-    expect(odataQueryBatch['requests'][1]).toEqual(new BatchRequest(Method.POST, odataQuery, body, httpOptionsI));
+    expect(odataQueryBatch.getRequests()[0]).toEqual(new BatchRequest(Method.POST, odataQuery, body));
+    expect(odataQueryBatch.getRequests()[1]).toEqual(new BatchRequest(Method.POST, odataQuery, body, httpOptionsI));
   });
 
   it('test put', () => {
@@ -52,8 +52,8 @@ describe('ODataQueryBatch', () => {
 
     odataQueryBatch.put(odataQuery, body);
     odataQueryBatch.put(odataQuery, body, httpOptionsI);
-    expect(odataQueryBatch['requests'][0]).toEqual(new BatchRequest(Method.PUT, odataQuery, body));
-    expect(odataQueryBatch['requests'][1]).toEqual(new BatchRequest(Method.PUT, odataQuery, body, httpOptionsI));
+    expect(odataQueryBatch.getRequests()[0]).toEqual(new BatchRequest(Method.PUT, odataQuery, body));
+    expect(odataQueryBatch.getRequests()[1]).toEqual(new BatchRequest(Method.PUT, odataQuery, body, httpOptionsI));
   });
 
   it('test patch', () => {
@@ -63,8 +63,8 @@ describe('ODataQueryBatch', () => {
 
     odataQueryBatch.patch(odataQuery, body);
     odataQueryBatch.patch(odataQuery, body, httpOptionsI);
-    expect(odataQueryBatch['requests'][0]).toEqual(new BatchRequest(Method.PATCH, odataQuery, body));
-    expect(odataQueryBatch['requests'][1]).toEqual(new BatchRequest(Method.PATCH, odataQuery, body, httpOptionsI));
+    expect(odataQueryBatch.getRequests()[0]).toEqual(new BatchRequest(Method.PATCH, odataQuery, body));
+    expect(odataQueryBatch.getRequests()[1]).toEqual(new BatchRequest(Method.PATCH, odataQuery, body, httpOptionsI));
   });
 
   it('test delete', () => {
@@ -74,14 +74,14 @@ describe('ODataQueryBatch', () => {
 
     odataQueryBatch.delete(odataQuery);
     odataQueryBatch.delete(odataQuery, httpOptionsI);
-    expect(odataQueryBatch['requests'][0]).toEqual(new BatchRequest(Method.DELETE, odataQuery));
-    expect(odataQueryBatch['requests'][1]).toEqual(new BatchRequest(Method.DELETE, odataQuery, undefined, httpOptionsI));
+    expect(odataQueryBatch.getRequests()[0]).toEqual(new BatchRequest(Method.DELETE, odataQuery));
+    expect(odataQueryBatch.getRequests()[1]).toEqual(new BatchRequest(Method.DELETE, odataQuery, undefined, httpOptionsI));
   });
 
   it('test execute', () => {
     const odataQueryBatch: ODataQueryBatch = new ODataQueryBatch(odataService, SERVICE_ROOT);
     const spy: jasmine.Spy = spyOn(odataService, 'post').and.returnValue(null);
-    odataQueryBatch['batchBoundary'] = 'batchBoundary';
+    odataQueryBatch.setBatchBoundary('batchBoundary');
 
     odataQueryBatch.execute();
     expect(spy.calls.mostRecent().args[0]).toEqual(odataQueryBatch);
@@ -96,7 +96,7 @@ describe('ODataQueryBatch', () => {
     expect(httpOptionsIArg.reportProgress).toEqual(undefined);
     expect(httpOptionsIArg.withCredentials).toEqual(undefined);
 
-    odataQueryBatch.execute(new HttpOptions(new HttpHeaders({ 'test': 'test' })));
+    odataQueryBatch.execute(new HttpOptions(new HttpHeaders({ test: 'test' })));
     expect(spy.calls.mostRecent().args[0]).toEqual(odataQueryBatch);
     expect(spy.calls.mostRecent().args[1]).toEqual(odataQueryBatch.getBody());
     const httpOptionsArg: HttpOptions = spy.calls.mostRecent().args[2];
@@ -118,15 +118,15 @@ describe('ODataQueryBatch', () => {
 
   it('test getBody', () => {
     const odataQueryBatch: ODataQueryBatch = new ODataQueryBatch(odataService, SERVICE_ROOT);
-    odataQueryBatch['batchBoundary'] = 'batch_';
+    odataQueryBatch.setBatchBoundary('batch_');
     spyOn(odataQueryBatch, 'getUUID').and.returnValue('');
 
-    odataQueryBatch.get(odataQuery, { headers: new HttpHeaders({ 'header': 'value' }) });
-    odataQueryBatch.post(odataQuery, body, { headers: new HttpHeaders({ 'header2': 'value2' }) });
-    odataQueryBatch.patch(odataQuery, body, { headers: new HttpHeaders({ 'header3': 'value3' }) });
-    odataQueryBatch.put(odataQuery, body, { headers: new HttpHeaders({ 'header4': 'value4' }) });
-    odataQueryBatch.delete(odataQuery, { headers: new HttpHeaders({ 'header5': 'value5' }) });
-    odataQueryBatch.get(odataQuery, { headers: new HttpHeaders({ 'header6': 'value6' }) });
+    odataQueryBatch.get(odataQuery, { headers: new HttpHeaders({ header: 'value' }) });
+    odataQueryBatch.post(odataQuery, body, { headers: new HttpHeaders({ header2: 'value2' }) });
+    odataQueryBatch.patch(odataQuery, body, { headers: new HttpHeaders({ header3: 'value3' }) });
+    odataQueryBatch.put(odataQuery, body, { headers: new HttpHeaders({ header4: 'value4' }) });
+    odataQueryBatch.delete(odataQuery, { headers: new HttpHeaders({ header5: 'value5' }) });
+    odataQueryBatch.get(odataQuery, { headers: new HttpHeaders({ header6: 'value6' }) });
 
     expect(odataQueryBatch.getBody()).toEqual(
       // BATCH SEPARATOR

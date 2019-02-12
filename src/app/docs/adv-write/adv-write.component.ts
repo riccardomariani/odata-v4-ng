@@ -34,8 +34,8 @@ export class AdvWriteComponent extends BasicWriteComponent implements OnInit {
       .get(new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines'))
       .post(new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines'), {
         '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Airline',
-        'AirlineCode': 'EK',
-        'Name': 'Emirates Airline'
+        AirlineCode: 'EK',
+        Name: 'Emirates Airline'
       })
       .get(new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines'));
     example.code = `example.odataQuery = new ODataQuery(this.odataService, SERVICE_ROOT)

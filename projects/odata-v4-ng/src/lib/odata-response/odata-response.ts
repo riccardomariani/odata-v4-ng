@@ -71,11 +71,11 @@ export class ODataResponse extends ODataResponseAbstract {
         const json: any = this.getBodyAsJson();
         if (Utils.isNotNullNorUndefined(json)) {
             if (json.hasOwnProperty(ODataResponse.VALUE)) {
-                return <T>json[ODataResponse.VALUE];
+                return json[ODataResponse.VALUE] as T;
             }
             return null;
         } else {
-            return <T>JSON.parse(this.getBodyAsText());
+            return JSON.parse(this.getBodyAsText()) as T;
         }
     }
 

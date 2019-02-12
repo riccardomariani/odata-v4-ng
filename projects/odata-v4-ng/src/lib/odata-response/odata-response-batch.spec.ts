@@ -12,10 +12,10 @@ describe('ODataResponseBatch', () => {
         const status = 200;
         const statusText = 'Ok';
         const httpResponse: HttpResponse<string> = new HttpResponse({
-            body: body,
-            headers: headers,
-            status: status,
-            statusText: statusText,
+            body,
+            headers,
+            status,
+            statusText,
         });
 
         const odataResponse: ODataResponse = new ODataResponse(httpResponse);
