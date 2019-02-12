@@ -34,7 +34,7 @@ describe('FilterLogical', () => {
 
   it('test isEmpty', () => {
     const filterString: Filter = new FilterString('property eq v1');
-    let filterLogical: Filter = new FilterLogical([filterString], OperatorLogical.NOT);
+    const filterLogical: Filter = new FilterLogical([filterString], OperatorLogical.NOT);
     expect(filterLogical.isEmpty()).toBeFalsy();
   });
 });

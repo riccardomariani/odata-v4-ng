@@ -73,7 +73,7 @@ describe('FilterLambda', () => {
     const propertyOrEntitySet = 'entitySet';
     const lambdaOperator = LambdaOperator.ANY;
     const filter = new FilterComparison('property', OperatorComparison.EQ, 'value');
-    let filterLambda = new FilterLambda(lambdaCollection, propertyOrEntitySet, lambdaOperator, filter);
+    const filterLambda = new FilterLambda(lambdaCollection, propertyOrEntitySet, lambdaOperator, filter);
     expect(filterLambda.isEmpty()).toBeFalsy();
   });
 });
