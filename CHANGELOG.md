@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.1.1"></a>
+## [1.1.1](https://github.com/riccardomariani/odata-v4-ng/compare/v1.1.0...v1.1.1) (2019-04-24)
+
+
+### Bug Fixes
+
+* content-type check to get the body as json is case insensitive ([1c5462e](https://github.com/riccardomariani/odata-v4-ng/commit/1c5462e))
+
+
+
 <a name="1.1.0"></a>
 # [1.1.0](https://github.com/riccardomariani/odata-v4-ng/compare/v1.0.15...v1.1.0) (2019-02-12)
 
