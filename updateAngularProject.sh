@@ -8,31 +8,34 @@ cd ..
 rm -Rf temp
 mkdir temp
 cd temp
-ng new $APP --prefix=ov4 --routing --style=less --skip-install
-mv $APP $LIBRARY
+ng new $LIBRARY --create-application=false --routing=false --style=less --skip-install
 cd $LIBRARY
+ng g application $APP --routing --prefix=ov4 --style=less --skip-install
 ng g library $LIBRARY --prefix=ov4 --style=less --skip-install
-cd ..
-cd ..
+
 
 # remove git stuff from project template
-rm -Rf temp/$LIBRARY/.git
-rm temp/$LIBRARY/.gitignore
+rm -Rf .git
+rm .gitignore
 
-# remove config files from app
-rm $LIBRARY/*.json
-rm $LIBRARY/*.js
-rm $LIBRARY/*.ts
-rm $LIBRARY/src/*.*
-rm -Rf $LIBRARY/src/assets
-rm -Rf $LIBRARY/src/environments
+# move outside from project template
+cd ..
+cd ..
 
-# remove config files from library
-rm $LIBRARY/projects/$LIBRARY/*.json
-rm $LIBRARY/projects/$LIBRARY/*.js
-rm $LIBRARY/projects/$LIBRARY/*.ts
-rm $LIBRARY/projects/$LIBRARY/src/*.*
+# copy folders from project to project template
+cp -Rf $LIBRARY/.git temp/$LIBRARY
+cp $LIBRARY/.gitignore temp/$LIBRARY
+cp -Rf $LIBRARY/.idea temp/$LIBRARY/
+cp $LIBRARY/updateAngularProject.sh temp/$LIBRARY
+cp -Rf $LIBRARY/projects/$APP/src/app temp/$LIBRARY/projects/$APP/src
+cp -Rf $LIBRARY/projects/$LIBRARY/src temp/$LIBRARY/projects/$LIBRARY
+cp -Rf $LIBRARY/docs temp/$LIBRARY/
+
+# remove files from project
+rm -Rf $LIBRARY
 
 # copy new template over app
 cp -Rfv temp/$LIBRARY ./
+
+# delete template project
 rm -Rf temp

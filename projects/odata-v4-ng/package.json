@@ -22,9 +22,9 @@
   "homepage": "https://github.com/riccardomariani/odata-v4-ng#readme",
   "private": false,
   "peerDependencies": {
-    "@angular/common": "^7.0.0",
-    "@angular/core": "^7.0.0",
-    "angular2-uuid": "^1.1.0",
-    "rxjs": "^6.4.0"
+    "@angular/common": "~7.0.0",
+    "@angular/core": "~7.0.0",
+    "angular2-uuid": "~1.1.0",
+    "rxjs": "~6.4.0"
   }
 }
