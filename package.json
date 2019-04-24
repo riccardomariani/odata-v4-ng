@@ -1,6 +1,6 @@
 {
   "name": "odata-v4-ng",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "description": "Client side OData V4 typescript library for Angular 7",
   "repository": {
@@ -27,10 +27,10 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "versioningLib": "cd projects/odata-v4-ng && npm version 1.1.0 --allow-same-version && cd ../..",
+    "versioningLib": "cd projects/odata-v4-ng && npm version 1.1.1 --allow-same-version && cd ../..",
     "buildLib": "ng lint odata-v4-ng && ng test odata-v4-ng && ng build odata-v4-ng",
     "buildApp": "ng lint odata-v4-ng-app && ng test odata-v4-ng-app && ng build odata-v4-ng-app --prod --deploy-url=odata-v4-ng/ && rm -R -f docs && mv dist/odata-v4-ng-app docs",
-    "versioningApp": "git add -A && git commit -m 'docs: update' && standard-version --release-as 1.1.0",
+    "versioningApp": "git add -A && git commit -m 'docs: update' && standard-version --release-as 1.1.1",
     "buildAll": "npm run versioningLib && npm run buildLib && npm run buildApp && npm run versioningApp",
     "publishApp": "git push --follow-tags origin master",
     "publishLib": "npm publish dist/odata-v4-ng",
