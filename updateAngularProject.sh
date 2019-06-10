@@ -11,7 +11,7 @@ cd temp
 ng new $LIBRARY --create-application=false --routing=false --style=less --skip-install
 cd $LIBRARY
 ng g application $APP --routing --prefix=ov4 --style=less --skip-install
-ng g library $LIBRARY --prefix=ov4 --style=less --skip-install
+ng g library $LIBRARY --prefix=ov4 --skip-install
 
 
 # remove git stuff from project template
@@ -26,6 +26,7 @@ cd ..
 cp -Rf $LIBRARY/.git temp/$LIBRARY
 cp $LIBRARY/.gitignore temp/$LIBRARY
 cp -Rf $LIBRARY/.idea temp/$LIBRARY/
+cp $LIBRARY/updateNode&AngularCli.sh temp/$LIBRARY
 cp $LIBRARY/updateAngularProject.sh temp/$LIBRARY
 cp -Rf $LIBRARY/projects/$APP/src/app temp/$LIBRARY/projects/$APP/src
 cp -Rf $LIBRARY/projects/$LIBRARY/src temp/$LIBRARY/projects/$LIBRARY
