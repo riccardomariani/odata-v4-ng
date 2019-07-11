@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
 clear
-echo -e '--- update Node.js ---'
+echo -e '--- update Node.js and npm ---'
 sudo npm cache clean -f
 npx n 10
+sudo npm install -g npm
 
 echo -e '\n'
 echo -e '--- uninstall global @angular/cli ---'

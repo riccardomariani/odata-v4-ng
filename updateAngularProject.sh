@@ -26,7 +26,8 @@ cd ..
 cp -Rf $LIBRARY/.git temp/$LIBRARY
 cp $LIBRARY/.gitignore temp/$LIBRARY
 cp -Rf $LIBRARY/.idea temp/$LIBRARY/
-cp $LIBRARY/updateNode&AngularCli.sh temp/$LIBRARY
+cp $LIBRARY/run-sonar-scanner.sh temp/$LIBRARY
+cp $LIBRARY/updateNodeAndAngularCli.sh temp/$LIBRARY
 cp $LIBRARY/updateAngularProject.sh temp/$LIBRARY
 cp -Rf $LIBRARY/projects/$APP/src/app temp/$LIBRARY/projects/$APP/src
 cp -Rf $LIBRARY/projects/$LIBRARY/src temp/$LIBRARY/projects/$LIBRARY
