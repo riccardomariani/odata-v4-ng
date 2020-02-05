@@ -3,7 +3,7 @@
 clear
 echo -e '--- update Node.js and npm ---'
 sudo npm cache clean -f
-npx n 10
+npx n 12
 sudo npm install -g npm
 
 echo -e '\n'
