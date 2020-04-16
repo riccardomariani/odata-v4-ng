@@ -22,7 +22,7 @@
             "main": "projects/odata-v4-ng-app/src/main.ts",
             "polyfills": "projects/odata-v4-ng-app/src/polyfills.ts",
             "tsConfig": "projects/odata-v4-ng-app/tsconfig.app.json",
-            "aot": false,
+            "aot": true,
             "assets": [
               "projects/odata-v4-ng-app/src/favicon.ico",
               "projects/odata-v4-ng-app/src/assets"
@@ -48,7 +48,6 @@
               "sourceMap": false,
               "extractCss": true,
               "namedChunks": false,
-              "aot": true,
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
@@ -57,6 +56,11 @@
                   "type": "initial",
                   "maximumWarning": "2mb",
                   "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
                 }
               ]
             }
@@ -139,6 +143,11 @@
           "options": {
             "tsConfig": "projects/odata-v4-ng/tsconfig.lib.json",
             "project": "projects/odata-v4-ng/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/odata-v4-ng/tsconfig.lib.prod.json"
+            }
           }
         },
         "test": {
