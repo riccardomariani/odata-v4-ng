@@ -25,9 +25,11 @@
 !.vscode/extensions.json
 
 # misc
+/.angular/cache
 /.sass-cache
 /connect.lock
-/coverage
+/projects/odata-v4-ng/coverage
+/projects/odata-v4-ng-app/coverage
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log

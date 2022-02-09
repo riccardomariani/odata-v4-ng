@@ -51,7 +51,7 @@ ${EXECUTE_BATCH}`;
     example.func = this.executeBatch;
   }
 
-  executeBatch(example: ExampleData, odataService: ODataService): void {
+  executeBatch(example: ExampleData): void {
     example.subscr = example.odataQuery.execute().subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();

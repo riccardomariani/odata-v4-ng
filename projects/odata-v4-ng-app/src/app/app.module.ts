@@ -1,8 +1,6 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { InputTextModule, TabViewModule } from 'primeng';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AdvReadComponent } from './docs/adv-read/adv-read.component';
@@ -13,6 +11,8 @@ import { BatchComponent } from './docs/batch/batch.component';
 import { ExampleComponent } from './docs/example/example.component';
 import { MetadataComponent } from './docs/metadata/metadata.component';
 import { ODataModule } from 'odata-v4-ng';
+import { TabViewModule } from 'primeng/tabview';
+import { InputTextModule } from 'primeng/inputtext';
 
 @NgModule({
   declarations: [
@@ -31,7 +31,8 @@ import { ODataModule } from 'odata-v4-ng';
     ODataModule,
     TabViewModule,
     InputTextModule,
-    FormsModule
+    FormsModule,
+    TabViewModule
   ],
   bootstrap: [AppComponent]
 })

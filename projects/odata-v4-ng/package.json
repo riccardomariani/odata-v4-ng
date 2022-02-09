@@ -1,6 +1,6 @@
 {
   "name": "odata-v4-ng",
-  "version": "1.3.4",
+  "version": "13.0.0",
   "license": "MIT",
   "description": "Client side OData V4 typescript library for Angular",
   "repository": {
@@ -20,11 +20,13 @@
   },
   "homepage": "https://github.com/riccardomariani/odata-v4-ng#readme",
   "private": false,
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "peerDependencies": {
     "angular2-uuid": "^1.1.0",
     "@angular/common": "^9.1.1",
     "@angular/core": "^9.1.1",
-    "rxjs": "~6.5.4",
-    "tslib": "^1.10.0"
+    "rxjs": "~6.5.4"
   }
 }

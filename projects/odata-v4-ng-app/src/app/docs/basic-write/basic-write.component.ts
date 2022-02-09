@@ -104,7 +104,7 @@ const EXECUTE_BOUND_ACTION = `example.subscr = example.odataQuery.post({
 })
 export class BasicWriteComponent extends ExampleComponent implements OnInit {
   constructor(protected odataService: ODataService) {
-    super(odataService);
+    super();
     this.executeEnabled = false;
   }
 
@@ -234,7 +234,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     example.func = this.executeDeleteEntityETag;
   }
 
-  executeCreateEntity(example: ExampleData, odataService: ODataService): void {
+  executeCreateEntity(example: ExampleData): void {
     example.subscr = example.odataQuery.post({
       '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
       UserName: 'teresa',
@@ -262,7 +262,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeDeleteEntity(example: ExampleData, odataService: ODataService): void {
+  executeDeleteEntity(example: ExampleData): void {
     example.subscr = example.odataQuery.delete().subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
@@ -273,7 +273,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeDeleteEntityETag(example: ExampleData, odataService: ODataService): void {
+  executeDeleteEntityETag(example: ExampleData): void {
     example.subscr = example.odataQuery.delete('W/"08D15F3DD9A61539"').subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
@@ -284,7 +284,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeUpdateEntity(example: ExampleData, odataService: ODataService): void {
+  executeUpdateEntity(example: ExampleData): void {
     example.subscr = example.odataQuery.patch({
       '@odata.type': 'Microsoft.OData.SampleService.Models.TripPin.Person',
       Emails: ['Russell@example.com', 'Russell@contoso.com', 'newRussell@contoso.com']
@@ -298,7 +298,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeUpdateEntityETag(example: ExampleData, odataService: ODataService): void {
+  executeUpdateEntityETag(example: ExampleData): void {
     example.subscr = example.odataQuery.patch({
       '@odata.type': '#Microsoft.OData.SampleService.Models.TripPin.Person',
       FirstName: 'CLYDE'
@@ -312,9 +312,9 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeCreateRelationship(example: ExampleData, odataService: ODataService): void {
+  executeCreateRelationship(example: ExampleData): void {
     example.subscr = example.odataQuery.post({
-      '@odata.id': new ODataQuery(odataService, SERVICE_ROOT).entitySet('People').entityKey('\'vincentcalabrese\'').toString()
+      '@odata.id': new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('People').entityKey('\'vincentcalabrese\'').toString()
     }).subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
@@ -325,9 +325,9 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeChangeRelationship(example: ExampleData, odataService: ODataService): void {
+  executeChangeRelationship(example: ExampleData): void {
     example.subscr = example.odataQuery.put({
-      '@odata.id': new ODataQuery(odataService, SERVICE_ROOT).entitySet('Airlines').entityKey('\'FM\'').toString()
+      '@odata.id': new ODataQuery(this.odataService, SERVICE_ROOT).entitySet('Airlines').entityKey('\'FM\'').toString()
     }).subscribe(
       (odataResponse: ODataResponse) => {
         example.response = odataResponse.toString();
@@ -338,7 +338,7 @@ export class BasicWriteComponent extends ExampleComponent implements OnInit {
     );
   }
 
-  executeBoundAction(example: ExampleData, odataService: ODataService): void {
+  executeBoundAction(example: ExampleData): void {
     example.subscr = example.odataQuery.post({
       userName: 'scottketchum',
       tripId: 1001

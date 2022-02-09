@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [13.0.0](https://github.com/riccardomariani/odata-v4-ng/compare/v1.3.4...v13.0.0) (2022-02-09)
+
 ### [1.3.4](https://github.com/riccardomariani/odata-v4-ng/compare/v1.3.3...v1.3.4) (2020-04-16)
 
 ### [1.3.3](https://github.com/riccardomariani/odata-v4-ng/compare/v1.3.2...v1.3.3) (2020-04-16)
