@@ -4,7 +4,7 @@ This project is a client side OData V4 typescript library for Angular 13+. The g
 
 ## Install
 
-To install the package use `npm install --save odata-v4-ng`
+To install the package use `npm install --save @ebenefitsbv/odata-v4-ng`
 
 ## Import
 ```
