@@ -13,7 +13,7 @@ const determinedVersion = packageJsonContent['version'];
 const projectPackageJsonContent = JSON.parse(fs.readFileSync(projectPackageLocation, {encoding: 'utf8'}));
 projectPackageJsonContent['version'] = determinedVersion;
 const projectFileToWrite = JSON.stringify(projectPackageJsonContent, null, 2);
-fs.writeFileSync(distPackageLocation, projectFileToWrite, {encoding: 'utf8'});
+fs.writeFileSync(projectPackageLocation, projectFileToWrite, {encoding: 'utf8'});
 
 // Update dist package.json version numbers
 const distPackageJsonContent = JSON.parse(fs.readFileSync(distPackageLocation, {encoding: 'utf8'}));
