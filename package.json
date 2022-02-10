@@ -28,9 +28,9 @@
     "e2e": "ng e2e",
     "tag-package-version": "npm version 13.0.0 --allow-same-version --git-tag-version && node scripts/align-package-version-number.js",
     "buildLib": "ncp README.md projects/odata-v4-ng/README.md && ng lint odata-v4-ng && ng test odata-v4-ng && ng build odata-v4-ng --configuration=production",
-    "buildApp": "ng lint odata-v4-ng-app && ng test odata-v4-ng-app && ng build odata-v4-ng-app --configuration=production --baseHref=odata-v4-ng/ && rimraf docs && move-cli dist/odata-v4-ng-app docs",
+    "buildApp": "ng lint odata-v4-ng-app && ng test odata-v4-ng-app && ng build odata-v4-ng-app --configuration=production --baseHref=/odata-v4-ng/ && rimraf docs && move-cli dist/odata-v4-ng-app docs",
     "buildAll": "npm run buildLib && npm run buildApp",
-    "publish": "npm run tag-package-version && npm run buildLib && npm publish dist/odata-v4-ng"
+    "publish": "npm run tag-package-version && npm run buildLib && cd dist/odata-v4-ng && npm publish --access public && cd ../../"
   },
   "private": false,
   "dependencies": {

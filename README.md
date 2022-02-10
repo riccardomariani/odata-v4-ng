@@ -31,7 +31,7 @@ export class AppModule { }
 See [here](https://ebenefits.github.io/odata-v4-ng).
 
 ## Changelog
-See [here](https://ebenefits.github.io/odata-v4-ng/blob/master/CHANGELOG.md).
+See [here](https://github.com/ebenefits/odata-v4-ng/blob/master/CHANGELOG.md).
 
 ## Compatiblity
 
