@@ -1,11 +1,11 @@
 {
-  "name": "odata-v4-ng",
-  "version": "1.3.4",
+  "name": "@ebenefitsbv/odata-v4-ng",
+  "version": "13.0.0",
   "license": "MIT",
-  "description": "Client side OData V4 typescript library for Angular",
+  "description": "Client side OData V4 typescript library for Angular, continuance on the version originally built by Riccardo Mariani",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/riccardomariani/odata-v4-ng.git"
+    "url": "git+https://github.com/ebenefits/odata-v4-ng/odata-v4-ng.git"
   },
   "keywords": [
     "client",
@@ -14,17 +14,19 @@
     "typescript",
     "angular"
   ],
-  "author": "Riccardo Mariani",
+  "author": "eBenefits B.V.",
   "bugs": {
-    "url": "https://github.com/riccardomariani/odata-v4-ng/issues"
+    "url": "https://github.com/ebenefits/odata-v4-ng/issues"
   },
-  "homepage": "https://github.com/riccardomariani/odata-v4-ng#readme",
+  "homepage": "https://github.com/ebenefits/odata-v4-ng#readme",
   "private": false,
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "peerDependencies": {
     "angular2-uuid": "^1.1.0",
     "@angular/common": "^9.1.1",
     "@angular/core": "^9.1.1",
-    "rxjs": "~6.5.4",
-    "tslib": "^1.10.0"
+    "rxjs": "~6.5.4"
   }
 }

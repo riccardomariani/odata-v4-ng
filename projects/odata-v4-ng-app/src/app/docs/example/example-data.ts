@@ -9,6 +9,6 @@ export class ExampleData {
     public odataQuery: any;
     public code: string;
     public response: string;
-    public func: (example: ExampleData, odataService: ODataService) => void;
+    public func: (example: ExampleData) => void;
     public subscr: Subscription;
 }

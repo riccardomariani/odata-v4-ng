@@ -54,7 +54,7 @@ ${EXECUTE_GET_TO_METADATA}`;
     example.func = this.executeGetToMetadata;
   }
 
-  executeGetToMetadata(example: ExampleData, odataService: ODataService): void {
+  executeGetToMetadata(example: ExampleData): void {
     example.subscr = example.odataQuery.get().subscribe(
       (odataResponse: ODataResponse) => {
         example.response = JSON.stringify(odataResponse.toMetadata(), null, 4);

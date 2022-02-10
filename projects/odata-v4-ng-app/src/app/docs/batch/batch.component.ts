@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { ODataQuery, ODataQueryBatch, ODataResponse, ODataService } from 'odata-v4-ng';
 import { Observable } from 'rxjs';
 
@@ -14,7 +14,7 @@ export class BatchItem {
   selector: 'ov4-batch',
   templateUrl: './batch.component.html'
 })
-export class BatchComponent implements OnInit, OnDestroy {
+export class BatchComponent {
   serviceRoot: string;
   entitySet: string;
   entityId: string;
@@ -23,10 +23,6 @@ export class BatchComponent implements OnInit, OnDestroy {
   batchData: BatchItem[] = [];
 
   constructor(private odataService: ODataService) { }
-
-  ngOnInit() { }
-
-  ngOnDestroy() { }
 
   executeAllQueries(): void {
     const batchData: BatchItem[] = [];

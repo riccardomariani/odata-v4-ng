@@ -1,5 +1,9 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "cli": {
+    "analytics": false,
+    "defaultCollection": "@angular-eslint/schematics"
+  },
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
@@ -22,18 +26,23 @@
             "main": "projects/odata-v4-ng-app/src/main.ts",
             "polyfills": "projects/odata-v4-ng-app/src/polyfills.ts",
             "tsConfig": "projects/odata-v4-ng-app/tsconfig.app.json",
-            "aot": true,
             "assets": [
               "projects/odata-v4-ng-app/src/favicon.ico",
               "projects/odata-v4-ng-app/src/assets"
             ],
             "styles": [
               "node_modules/primeicons/primeicons.css",
-              "node_modules/primeng/resources/themes/nova-light/theme.css",
+              "node_modules/primeng/resources/themes/nova/theme.css",
               "node_modules/primeng/resources/primeng.min.css",
               "projects/odata-v4-ng-app/src/styles.less"
             ],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -46,7 +55,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -64,7 +72,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -96,26 +105,13 @@
             ],
             "styles": [
               "node_modules/primeicons/primeicons.css",
-              "node_modules/primeng/resources/themes/nova-light/theme.css",
+              "node_modules/primeng/resources/themes/nova/theme.css",
               "node_modules/primeng/resources/primeng.min.css",
               "projects/odata-v4-ng-app/src/styles.less"
             ],
             "scripts": [],
             "watch": false,
             "codeCoverage": true
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/odata-v4-ng-app/tsconfig.app.json",
-              "projects/odata-v4-ng-app/tsconfig.spec.json",
-              "projects/odata-v4-ng-app/e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         },
         "e2e": {
@@ -129,6 +125,15 @@
               "devServerTarget": "odata-v4-ng-app:serve:production"
             }
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "projects/odata-v4-ng-app/**/*.ts",
+              "projects/odata-v4-ng-app/**/*.html"
+            ]
+          }
         }
       }
     },
@@ -139,7 +144,7 @@
       "prefix": "ov4",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/odata-v4-ng/tsconfig.lib.json",
             "project": "projects/odata-v4-ng/ng-package.json"
@@ -161,18 +166,16 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "projects/odata-v4-ng/tsconfig.lib.json",
-              "projects/odata-v4-ng/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "lintFilePatterns": [
+              "projects/odata-v4-ng/**/*.ts",
+              "projects/odata-v4-ng/**/*.html"
             ]
           }
         }
       }
-    }},
+    }
+  },
   "defaultProject": "odata-v4-ng-app"
 }

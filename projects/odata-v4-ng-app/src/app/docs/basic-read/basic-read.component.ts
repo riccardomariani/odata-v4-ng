@@ -17,7 +17,7 @@ export const EXECUTE_GET = `example.odataQuery.get().subscribe(
   templateUrl: '../example/example.component.html'
 })
 export class BasicReadComponent extends ExampleComponent implements OnInit {
-  constructor(protected odataService: ODataService) { super(odataService); }
+  constructor(protected odataService: ODataService) { super(); }
 
   ngOnInit() {
     this.examples = [];
