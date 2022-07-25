@@ -35,7 +35,8 @@ See [here](https://github.com/ebenefits/odata-v4-ng/blob/master/CHANGELOG.md).
 
 ## Compatiblity
 
-| Angular Version  | @ebenefits/odata-v4-ng version                                           |
-|------------------|--------------------------------------------------------------------------|
-| 9.x.x - 12.x.x   | Use the original version: https://github.com/riccardomariani/odata-v4-ng |
-| 13.x.x           | 13.x.x                                                                   |
+| Angular Version | @ebenefits/odata-v4-ng version                                           |
+|-----------------|--------------------------------------------------------------------------|
+| 9.x.x - 12.x.x  | Use the original version: https://github.com/riccardomariani/odata-v4-ng |
+| 13.x.x          | 13.x.x                                                                   |
+| 14.x.x          | 14.x.x                                                                   |
