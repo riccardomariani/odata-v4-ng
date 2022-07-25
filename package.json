@@ -1,6 +1,6 @@
 {
   "name": "@ebenefitsbv/odata-v4-ng",
-  "version": "13.0.2",
+  "version": "13.0.3",
   "license": "MIT",
   "description": "Client side OData V4 typescript library for Angular, continuance on the version originally built by Riccardo Mariani",
   "repository": {
@@ -26,7 +26,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "tag-package-version": "npm version 13.0.2 --allow-same-version --git-tag-version && node scripts/align-package-version-number.js",
+    "tag-package-version": "npm version 13.0.3 --allow-same-version --git-tag-version && node scripts/align-package-version-number.js",
     "buildLib": "ncp README.md projects/odata-v4-ng/README.md && ng lint odata-v4-ng && ng test odata-v4-ng && ng build odata-v4-ng --configuration=production",
     "buildApp": "ng lint odata-v4-ng-app && ng test odata-v4-ng-app && ng build odata-v4-ng-app --configuration=production --baseHref=/odata-v4-ng/ && rimraf docs && move-cli dist/odata-v4-ng-app docs",
     "buildAll": "npm run buildLib && npm run buildApp",
